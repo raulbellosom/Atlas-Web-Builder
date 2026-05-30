@@ -1,0 +1,671 @@
+/* =============================================================================
+   Atlas Web Builder — Editor Chrome
+   All class names prefixed with atlas-wb- to avoid host collisions.
+   ============================================================================= */
+
+/* 1. Box-sizing reset */
+.atlas-wb-editor,
+.atlas-wb-editor *,
+.atlas-wb-editor *::before,
+.atlas-wb-editor *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Design tokens */
+.atlas-wb-editor {
+  --awb-bg:        #ffffff;
+  --awb-panel:     #f8fafc;
+  --awb-panel-fg:  #0f172a;
+  --awb-border:    #e2e8f0;
+  --awb-muted:     #64748b;
+  --awb-accent:    #2563eb;
+  --awb-accent-fg: #ffffff;
+  --awb-danger:    #dc2626;
+  --awb-radius:    8px;
+  --awb-radius-sm: 5px;
+  --awb-font: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --awb-hover:    rgba(15, 23, 42, 0.05);
+  --awb-hover-md: rgba(15, 23, 42, 0.09);
+  --awb-shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --awb-shadow:    0 4px 16px rgba(0,0,0,0.10);
+  --awb-shadow-lg: 0 12px 40px rgba(0,0,0,0.16);
+  /* Panel widths — used by grid and fixed-overlay transitions */
+  --awb-left-w:  272px;
+  --awb-right-w: 312px;
+  --awb-topbar-h: 52px;
+}
+
+/* 3. Grid layout + SCROLL FIX
+   Every element in the chain needs min-height:0 so flex/grid children
+   can scroll instead of expanding indefinitely. */
+.atlas-wb-editor {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--awb-left-w) minmax(0, 1fr) var(--awb-right-w);
+  grid-template-rows: var(--awb-topbar-h) minmax(0, 1fr);
+  grid-template-areas:
+    'topbar topbar topbar'
+    'left   canvas right';
+  height: 100%;
+  max-height: 100%;
+  min-height: 400px;
+  overflow: hidden; /* clip — do NOT remove; inner elements scroll independently */
+  color: var(--awb-panel-fg);
+  font-family: var(--awb-font);
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--awb-bg);
+  transition: grid-template-columns 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Panel collapse on desktop: shrink the relevant column to 0 ── */
+.atlas-wb-editor[data-left-closed]                        { grid-template-columns: 0 minmax(0,1fr) var(--awb-right-w); }
+.atlas-wb-editor[data-right-closed]                       { grid-template-columns: var(--awb-left-w) minmax(0,1fr) 0; }
+.atlas-wb-editor[data-left-closed][data-right-closed]     { grid-template-columns: 0 minmax(0,1fr) 0; }
+
+/* ── 4. Top Bar ─────────────────────────────────────────────────────────────── */
+.atlas-wb-topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px;
+  background: var(--awb-panel);
+  border-bottom: 1px solid var(--awb-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+  min-width: 0;
+  /* Prevent topbar from growing taller */
+  height: var(--awb-topbar-h);
+}
+.atlas-wb-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--awb-panel-fg);
+  padding: 0 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+.atlas-wb-topbar__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.atlas-wb-topbar__spacer { flex: 1; min-width: 4px; }
+.atlas-wb-topbar__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--awb-border);
+  margin: 0 3px;
+  flex-shrink: 0;
+}
+.atlas-wb-topbar__device-btn { padding: 5px 7px; display: inline-flex; align-items: center; justify-content: center; }
+.atlas-wb-topbar__icon-btn   { padding: 5px 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+.atlas-wb-topbar__preview-btn{ display: inline-flex; align-items: center; gap: 5px; }
+.atlas-wb-topbar__actions    { display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
+/* Panel toggles — always visible on desktop and mobile */
+.atlas-wb-topbar__panel-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── 5. Buttons ─────────────────────────────────────────────────────────────── */
+.atlas-wb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--awb-bg);
+  border: 1px solid var(--awb-border);
+  border-radius: var(--awb-radius-sm);
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--awb-panel-fg);
+  white-space: nowrap;
+  transition: background 100ms ease, border-color 100ms ease;
+  text-decoration: none;
+  user-select: none;
+  flex-shrink: 0;
+}
+.atlas-wb-btn:hover:not(:disabled) {
+  background: var(--awb-hover-md);
+  border-color: var(--awb-border);
+  color: var(--awb-panel-fg);
+}
+.atlas-wb-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+/* Primary */
+.atlas-wb-btn--primary { background: var(--awb-accent); border-color: var(--awb-accent); color: var(--awb-accent-fg); }
+.atlas-wb-btn--primary:hover:not(:disabled) { background: #1d4ed8; border-color: #1d4ed8; color: var(--awb-accent-fg); }
+
+/* Ghost */
+.atlas-wb-btn--ghost { background: transparent; border-color: transparent; color: var(--awb-muted); }
+.atlas-wb-btn--ghost:hover:not(:disabled) { background: var(--awb-hover-md); border-color: transparent; color: var(--awb-panel-fg); }
+
+/* Active — MUST use double class for specificity to beat generic :hover */
+.atlas-wb-btn.atlas-wb-btn--active { background: var(--awb-accent); border-color: var(--awb-accent); color: var(--awb-accent-fg); }
+.atlas-wb-btn.atlas-wb-btn--active:hover:not(:disabled) { background: #1d4ed8; border-color: #1d4ed8; color: var(--awb-accent-fg); }
+
+/* ── 6. Panels ──────────────────────────────────────────────────────────────── */
+.atlas-wb-panel {
+  background: var(--awb-panel);
+  /* SCROLL FIX: overflow:hidden clips panel + min-height:0 lets grid shrink it */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0; /* critical for scroll */
+}
+.atlas-wb-panel--left  { grid-area: left;  border-right: 1px solid var(--awb-border); }
+.atlas-wb-panel--right { grid-area: right; border-left:  1px solid var(--awb-border); }
+
+/* Hide panels when column is 0 (desktop collapse) */
+.atlas-wb-editor[data-left-closed]  .atlas-wb-panel--left  { overflow: hidden; pointer-events: none; }
+.atlas-wb-editor[data-right-closed] .atlas-wb-panel--right { overflow: hidden; pointer-events: none; }
+
+/* Tabs */
+.atlas-wb-panel__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--awb-border);
+  overflow-x: auto;
+  flex-shrink: 0; /* don't let tabs compress */
+}
+.atlas-wb-panel__tab {
+  flex: 1;
+  padding: 9px 4px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--awb-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  transition: color 100ms ease;
+}
+.atlas-wb-panel__tab:hover:not(.atlas-wb-panel__tab--active) { color: var(--awb-panel-fg); background: var(--awb-hover); }
+.atlas-wb-panel__tab--active { color: var(--awb-accent); border-bottom-color: var(--awb-accent); font-weight: 600; }
+
+/* Body — SCROLL FIX: flex:1 + min-height:0 + overflow-y:auto */
+.atlas-wb-panel__body {
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0; /* critical */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ── 7. Palette ─────────────────────────────────────────────────────────────── */
+.atlas-wb-palette { display: flex; flex-direction: column; gap: 4px; }
+.atlas-wb-palette__search {
+  width: 100%;
+  background: var(--awb-bg);
+  border: 1px solid var(--awb-border);
+  border-radius: var(--awb-radius-sm);
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  color: inherit;
+  margin-bottom: 8px;
+}
+.atlas-wb-palette__search:focus { outline: 2px solid var(--awb-accent); outline-offset: -2px; }
+.atlas-wb-palette__group-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--awb-muted);
+  margin: 10px 0 4px;
+  padding: 0 2px;
+}
+.atlas-wb-palette__item {
+  user-select: none;
+  padding: 8px 10px;
+  background: var(--awb-bg);
+  border: 1px solid var(--awb-border);
+  border-radius: var(--awb-radius-sm);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--awb-panel-fg);
+  transition: border-color 100ms ease, background 100ms ease;
+}
+.atlas-wb-palette__item:hover { border-color: var(--awb-accent); background: #eff6ff; }
+.atlas-wb-palette__item:active { cursor: grabbing; }
+.atlas-wb-palette__item--dragging { opacity: 0.4; }
+.atlas-wb-palette__item--template { width: 100%; text-align: left; font: inherit; color: inherit; align-items: flex-start; cursor: grab; flex-direction: column; gap: 2px; }
+.atlas-wb-palette__item--template:active { cursor: grabbing; }
+.atlas-wb-palette__item-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.atlas-wb-palette__item-desc { font-size: 11px; color: var(--awb-muted); line-height: 1.3; }
+
+/* ── 8. Canvas area — SCROLL FIX ─────────────────────────────────────────── */
+.atlas-wb-editor__main {
+  grid-area: canvas;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0; /* critical */
+  overflow: hidden; /* clip so canvas can scroll inside */
+}
+
+.atlas-wb-canvas {
+  flex: 1;
+  min-height: 0; /* critical */
+  background: #f1f5f9;
+  padding: 20px;
+  overflow: auto; /* the ONE element that actually scrolls */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Region tabs */
+.atlas-wb-region-tabs { display: flex; gap: 4px; align-self: stretch; justify-content: center; padding-bottom: 8px; flex-shrink: 0; }
+.atlas-wb-region-tabs__tab {
+  appearance: none;
+  border: 1px solid var(--awb-border);
+  background: white;
+  color: var(--awb-muted);
+  padding: 4px 14px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease, border-color 100ms ease;
+}
+.atlas-wb-region-tabs__tab:hover { background: var(--awb-hover-md); color: var(--awb-panel-fg); }
+.atlas-wb-region-tabs__tab--active { background: var(--awb-accent); color: white; border-color: var(--awb-accent); }
+
+/* Canvas frame */
+.atlas-wb-canvas__frame {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+  min-height: 200px;
+  width: 100%;
+  max-width: 1280px;
+  overflow: hidden;
+  border-radius: 10px;
+  flex-shrink: 0; /* don't compress — canvas scrolls around it */
+  transition: max-width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.atlas-wb-canvas__frame--tablet { max-width: 834px; }
+.atlas-wb-canvas__frame--mobile { max-width: 390px; }
+.atlas-wb-canvas__frame--tablet,
+.atlas-wb-canvas__frame--mobile { box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06); }
+
+/* ── 9. Drop zones ──────────────────────────────────────────────────────────── */
+.atlas-wb-dropzone          { min-height: 40px; }
+.atlas-wb-dropzone--slot    { min-height: 28px; }
+.atlas-wb-dropzone--empty   { outline: 1.5px dashed var(--awb-border); outline-offset: -1px; border-radius: var(--awb-radius-sm); }
+.atlas-wb-dropzone--over    { background: rgba(37, 99, 235, 0.06); outline: 2px solid var(--awb-accent); outline-offset: -2px; }
+
+/* Empty state */
+.atlas-wb-canvas__empty { padding: 56px 20px; text-align: center; color: var(--awb-muted); margin: 24px auto; max-width: 280px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.atlas-wb-canvas__empty-icon { opacity: 0.2; color: var(--awb-accent); }
+.atlas-wb-canvas__empty h3   { margin: 0; font-size: 14px; font-weight: 700; color: var(--awb-panel-fg); opacity: 0.5; }
+.atlas-wb-canvas__empty p    { margin: 0; font-size: 12.5px; line-height: 1.6; }
+
+/* ── 10. Block wrappers ─────────────────────────────────────────────────────── */
+.atlas-wb-block {
+  position: relative;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color 100ms ease;
+}
+.atlas-wb-block:hover        { outline-color: rgba(37, 99, 235, 0.3); }
+.atlas-wb-block--selected    { outline-color: var(--awb-accent); }
+.atlas-wb-block--dragging    { opacity: 0.35; }
+.atlas-wb-block--editing     { outline-color: #7c3aed; }
+
+/* Selection toolbar */
+.atlas-wb-block__toolbar {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--awb-accent);
+  color: var(--awb-accent-fg);
+  border-radius: 6px;
+  font-size: 11.5px;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+  overflow: hidden;
+  pointer-events: auto;
+}
+.atlas-wb-block__toolbar-label { padding: 4px 10px; font-size: 11px; font-weight: 600; opacity: 0.9; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.2); }
+.atlas-wb-block__toolbar button { background: transparent; color: inherit; border: 0; border-right: 1px solid rgba(255,255,255,0.15); padding: 4px 8px; cursor: pointer; font: inherit; line-height: 1; transition: background 100ms ease; }
+.atlas-wb-block__toolbar button:last-child { border-right: 0; }
+.atlas-wb-block__toolbar button:hover:not(:disabled) { background: rgba(255,255,255,0.2); }
+.atlas-wb-block__toolbar button:disabled { opacity: 0.3; cursor: default; }
+.atlas-wb-block__toolbar-remove { color: #fca5a5 !important; }
+.atlas-wb-block__toolbar-remove:hover:not(:disabled) { background: rgba(220,38,38,0.4) !important; color: white !important; }
+
+/* ── 11. Breadcrumb ─────────────────────────────────────────────────────────── */
+.atlas-wb-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--awb-panel);
+  border-bottom: 1px solid var(--awb-border);
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--awb-muted);
+  min-height: 28px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.atlas-wb-breadcrumb__item { background: transparent; color: inherit; border: 0; padding: 2px 5px; cursor: pointer; font: inherit; border-radius: 4px; white-space: nowrap; }
+.atlas-wb-breadcrumb__item:hover { background: var(--awb-hover-md); color: var(--awb-panel-fg); }
+.atlas-wb-breadcrumb__item-wrap { display: inline-flex; align-items: center; }
+.atlas-wb-breadcrumb__sep { opacity: 0.4; padding: 0 1px; }
+
+/* ── 12. Fields ─────────────────────────────────────────────────────────────── */
+.atlas-wb-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; min-width: 0; }
+.atlas-wb-field__label { font-size: 11px; font-weight: 600; color: var(--awb-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.atlas-wb-field__input,
+.atlas-wb-field__select,
+.atlas-wb-field__textarea {
+  background: var(--awb-bg);
+  border: 1px solid var(--awb-border);
+  border-radius: var(--awb-radius-sm);
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  width: 100%;
+  min-width: 0;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+}
+.atlas-wb-field__input:focus,
+.atlas-wb-field__select:focus,
+.atlas-wb-field__textarea:focus { outline: none; border-color: var(--awb-accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.atlas-wb-field__textarea { min-height: 80px; resize: vertical; font-family: var(--awb-font); }
+.atlas-wb-field__row { display: flex; gap: 6px; align-items: stretch; min-width: 0; }
+.atlas-wb-field__row .atlas-wb-field__input { flex: 1; min-width: 0; }
+.atlas-wb-field__button { appearance: none; border: 1px solid var(--awb-border); background: var(--awb-panel); color: inherit; font: inherit; font-size: 12px; font-weight: 500; padding: 0 10px; border-radius: var(--awb-radius-sm); cursor: pointer; white-space: nowrap; }
+.atlas-wb-field__button:hover { background: var(--awb-hover-md); }
+.atlas-wb-field__color { width: 28px; height: 28px; padding: 0; border-radius: 4px; border: 1px solid var(--awb-border); cursor: pointer; }
+.atlas-wb-field__token-options { display: flex; flex-wrap: wrap; gap: 4px; }
+.atlas-wb-field__token { padding: 3px 8px; border-radius: 4px; border: 1px solid var(--awb-border); background: var(--awb-bg); cursor: pointer; font: inherit; font-size: 11.5px; }
+.atlas-wb-field__token:hover { border-color: var(--awb-accent); }
+.atlas-wb-field__token--active { background: var(--awb-accent); color: var(--awb-accent-fg); border-color: var(--awb-accent); }
+
+/* ── 13. Layers panel ───────────────────────────────────────────────────────── */
+.atlas-wb-layers { display: flex; flex-direction: column; gap: 1px; }
+.atlas-wb-layer { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: var(--awb-radius-sm); cursor: pointer; user-select: none; font-size: 12.5px; color: var(--awb-panel-fg); }
+.atlas-wb-layer:hover:not(.atlas-wb-layer--selected) { background: var(--awb-hover); }
+.atlas-wb-layer--selected { background: var(--awb-accent); color: var(--awb-accent-fg); }
+.atlas-wb-layers--nested { margin-left: 0; }
+.atlas-wb-layers__slot-label { font-size: 10px; color: var(--awb-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 0; pointer-events: none; }
+
+/* ── 14. Drag overlay ───────────────────────────────────────────────────────── */
+.atlas-wb-drag-overlay { padding: 6px 12px; background: var(--awb-accent); color: var(--awb-accent-fg); border-radius: var(--awb-radius-sm); box-shadow: 0 8px 24px rgba(37,99,235,0.35); font-size: 12.5px; font-weight: 600; pointer-events: none; }
+
+/* ── 15. Empty helper ───────────────────────────────────────────────────────── */
+.atlas-wb-empty { color: var(--awb-muted); font-size: 12.5px; line-height: 1.5; }
+
+/* ── 16. Preview mode ───────────────────────────────────────────────────────── */
+.atlas-wb-editor--preview {
+  grid-template-columns: 1fr;
+  grid-template-rows: var(--awb-topbar-h) minmax(0, 1fr);
+  grid-template-areas: 'topbar' 'canvas';
+  transition: none;
+}
+.atlas-wb-preview { grid-area: canvas; overflow: auto; min-height: 0; background: #f1f5f9; }
+.atlas-wb-preview__themed { min-height: 100%; background: white; }
+
+/* ── 17. Notifications ──────────────────────────────────────────────────────── */
+.atlas-wb-toasts { position: absolute; top: 60px; right: 16px; z-index: 500; display: flex; flex-direction: column; gap: 8px; max-width: 340px; pointer-events: none; }
+.atlas-wb-toast { pointer-events: auto; display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: var(--awb-bg); border: 1px solid var(--awb-border); border-left-width: 4px; border-radius: var(--awb-radius); box-shadow: var(--awb-shadow); font-size: 12.5px; color: var(--awb-panel-fg); }
+.atlas-wb-toast--info    { border-left-color: var(--awb-accent); }
+.atlas-wb-toast--success { border-left-color: #16a34a; }
+.atlas-wb-toast--warning { border-left-color: #d97706; }
+.atlas-wb-toast--error   { border-left-color: var(--awb-danger); }
+.atlas-wb-toast__message { flex: 1; line-height: 1.4; word-break: break-word; }
+.atlas-wb-toast__close { background: transparent; color: inherit; border: 0; padding: 2px 6px; cursor: pointer; font: inherit; border-radius: 4px; opacity: 0.5; }
+.atlas-wb-toast__close:hover { opacity: 1; background: var(--awb-hover); }
+
+/* ── 18. Media modal (replaces old fixed popover) ───────────────────────────── */
+.atlas-wb-media-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 8999; backdrop-filter: blur(2px); animation: awb-fade-in 150ms ease; }
+
+.atlas-wb-media-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9000;
+  width: min(720px, 94vw);
+  max-height: min(600px, 90vh);
+  background: var(--awb-bg);
+  border: 1px solid var(--awb-border);
+  border-radius: 12px;
+  box-shadow: var(--awb-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: awb-modal-in 180ms cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes awb-modal-in { from { opacity: 0; transform: translate(-50%,-48%) scale(0.96) } to { opacity: 1; transform: translate(-50%,-50%) scale(1) } }
+
+.atlas-wb-media-modal__header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; border-bottom: 1px solid var(--awb-border); flex-shrink: 0; }
+.atlas-wb-media-modal__title  { flex: 1; font-size: 14px; font-weight: 700; margin: 0; }
+.atlas-wb-media-modal__close  { appearance: none; background: transparent; border: 0; color: var(--awb-muted); font: inherit; font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: var(--awb-radius-sm); line-height: 1; }
+.atlas-wb-media-modal__close:hover { background: var(--awb-hover-md); color: var(--awb-panel-fg); }
+
+.atlas-wb-media-modal__tabs { display: flex; border-bottom: 1px solid var(--awb-border); flex-shrink: 0; }
+.atlas-wb-media-modal__tab { flex: 1; padding: 9px 8px; background: transparent; border: 0; border-bottom: 2px solid transparent; font: inherit; font-size: 12px; font-weight: 500; color: var(--awb-muted); cursor: pointer; }
+.atlas-wb-media-modal__tab:hover { color: var(--awb-panel-fg); }
+.atlas-wb-media-modal__tab--active { color: var(--awb-accent); border-bottom-color: var(--awb-accent); font-weight: 600; }
+
+.atlas-wb-media-modal__body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; }
+
+/* URL tab */
+.atlas-wb-media-modal__url-tab { display: flex; flex-direction: column; gap: 10px; }
+.atlas-wb-media-modal__url-preview { margin-top: 4px; border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); overflow: hidden; max-height: 240px; display: flex; align-items: center; justify-content: center; background: var(--awb-hover); }
+.atlas-wb-media-modal__url-preview img { max-width: 100%; max-height: 240px; object-fit: contain; display: block; }
+
+/* Library tab */
+.atlas-wb-media-modal__library-tab { display: flex; flex-direction: column; gap: 0; }
+.atlas-wb-media-modal__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.atlas-wb-media-modal__asset-item { width: 100%; appearance: none; border: 1px solid var(--awb-border); background: var(--awb-bg); cursor: pointer; padding: 6px; border-radius: var(--awb-radius-sm); display: flex; flex-direction: column; align-items: center; gap: 5px; font: inherit; color: inherit; }
+.atlas-wb-media-modal__asset-item:hover { border-color: var(--awb-accent); background: #eff6ff; }
+.atlas-wb-media-modal__asset-item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 4px; }
+.atlas-wb-media-modal__asset-icon { width: 100%; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.atlas-wb-media-modal__asset-name { font-size: 10px; color: var(--awb-muted); width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Upload tab */
+.atlas-wb-media-modal__upload-tab { display: flex; flex-direction: column; gap: 10px; }
+.atlas-wb-media-modal__dropzone {
+  border: 2px dashed var(--awb-border);
+  border-radius: var(--awb-radius);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--awb-muted);
+  font-size: 13px;
+  transition: border-color 120ms ease, background 120ms ease;
+  user-select: none;
+}
+.atlas-wb-media-modal__dropzone:hover,
+.atlas-wb-media-modal__dropzone--over { border-color: var(--awb-accent); background: #eff6ff; color: var(--awb-accent); }
+.atlas-wb-media-modal__dropzone-icon { font-size: 28px; opacity: 0.5; }
+
+/* Image field drag-drop highlight */
+.atlas-wb-image-field--dragover { outline: 2px dashed var(--awb-accent); outline-offset: 2px; border-radius: var(--awb-radius-sm); }
+
+/* ── 19. Theme editor ───────────────────────────────────────────────────────── */
+.atlas-wb-theme { display: flex; flex-direction: column; gap: 12px; }
+.atlas-wb-theme__toolbar { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--awb-border); }
+.atlas-wb-theme__toolbar > strong { flex: 1; font-size: 13px; }
+.atlas-wb-theme__group { border: 1px solid var(--awb-border); border-radius: var(--awb-radius); padding: 10px; margin: 0; min-width: 0; }
+.atlas-wb-theme__group > legend { font-size: 11px; font-weight: 600; color: var(--awb-muted); padding: 0 4px; }
+.atlas-wb-theme__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: 6px; align-items: center; margin: 5px 0; min-width: 0; }
+.atlas-wb-theme__row > * { min-width: 0; }
+.atlas-wb-theme__name { font-size: 11px; color: var(--awb-muted); font-family: ui-monospace, SFMono-Regular, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.atlas-wb-theme__color { width: 32px; height: 28px; border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); padding: 0; background: white; cursor: pointer; }
+
+/* ── 20. Properties panel ───────────────────────────────────────────────────── */
+.atlas-wb-props { display: flex; flex-direction: column; gap: 0; }
+.atlas-wb-props__header { display: flex; align-items: center; gap: 8px; padding: 8px 0 10px; border-bottom: 1px solid var(--awb-border); margin-bottom: 2px; }
+.atlas-wb-props__header-icon   { color: var(--awb-accent); display: flex; align-items: center; }
+.atlas-wb-props__header-label  { flex: 1; font-weight: 700; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.atlas-wb-props__header-type   { font-size: 10px; font-family: ui-monospace, SFMono-Regular, monospace; color: var(--awb-muted); background: var(--awb-hover); padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+.atlas-wb-props__section { border-bottom: 1px solid var(--awb-border); margin: 0 -12px; }
+.atlas-wb-props__section-header { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background: transparent; border: 0; font: inherit; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--awb-muted); cursor: pointer; }
+.atlas-wb-props__section-header:hover { color: var(--awb-panel-fg); background: var(--awb-hover); }
+.atlas-wb-props__section-chevron { font-size: 14px; line-height: 1; transition: transform 150ms ease; display: inline-block; }
+.atlas-wb-props__section-chevron--open { transform: rotate(90deg); }
+.atlas-wb-props__section-body { padding: 8px 12px 12px; }
+.atlas-wb-props__ungrouped { padding-top: 4px; }
+.atlas-wb-props__empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 16px 24px; color: var(--awb-muted); text-align: center; }
+.atlas-wb-props__empty p { margin: 0; font-size: 12.5px; line-height: 1.6; }
+
+/* ── 21. Background field ───────────────────────────────────────────────────── */
+.atlas-wb-bg-field__tabs { display: flex; gap: 3px; background: var(--awb-hover); padding: 3px; border-radius: var(--awb-radius-sm); }
+.atlas-wb-bg-field__tab { flex: 1; border: 0; background: transparent; font: inherit; font-size: 12px; color: var(--awb-muted); padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+.atlas-wb-bg-field__tab:hover { color: var(--awb-panel-fg); }
+.atlas-wb-bg-field__tab--active { background: white; color: var(--awb-panel-fg); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.atlas-wb-bg-field__group { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+
+/* ── 22. Inline editing ─────────────────────────────────────────────────────── */
+.atlas-wb-block--editing { outline-color: #7c3aed; }
+[data-atlas-inline-prop] { cursor: text; }
+[data-atlas-inline-prop]:empty::before { content: attr(data-placeholder); opacity: 0.35; font-style: italic; pointer-events: none; }
+[contenteditable="true"] { outline: none; caret-color: #7c3aed; }
+
+/* ── 23. Page manager (Pages tab) ───────────────────────────────────────────── */
+.atlas-wb-pages { display: flex; flex-direction: column; gap: 0; }
+.atlas-wb-pages__header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.atlas-wb-pages__header h3 { margin: 0; font-size: 13px; font-weight: 700; flex: 1; }
+.atlas-wb-page-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--awb-border);
+  border-radius: var(--awb-radius-sm);
+  margin-bottom: 4px;
+  background: var(--awb-bg);
+  cursor: pointer;
+}
+.atlas-wb-page-item:hover { border-color: var(--awb-accent); background: #eff6ff; }
+.atlas-wb-page-item--active { border-color: var(--awb-accent); background: #eff6ff; }
+.atlas-wb-page-item__title { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.atlas-wb-page-item__slug { font-size: 11px; color: var(--awb-muted); }
+.atlas-wb-page-meta { display: flex; flex-direction: column; gap: 0; }
+.atlas-wb-page-meta__section { padding: 10px 0; border-bottom: 1px solid var(--awb-border); }
+.atlas-wb-page-meta__section:last-child { border-bottom: 0; }
+.atlas-wb-page-meta__section-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--awb-muted); margin: 0 0 8px; }
+.atlas-wb-seo-preview {
+  border: 1px solid var(--awb-border);
+  border-radius: var(--awb-radius-sm);
+  padding: 10px;
+  background: white;
+  font-family: Arial, sans-serif;
+}
+.atlas-wb-seo-preview__url   { font-size: 11px; color: #1a7f37; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.atlas-wb-seo-preview__title { font-size: 16px; color: #1a0dab; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.atlas-wb-seo-preview__desc  { font-size: 12px; color: #4d5156; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── 24. Canvas frame media constraints ─────────────────────────────────────── */
+.atlas-wb-canvas__frame img,
+.atlas-wb-canvas__frame video,
+.atlas-wb-canvas__frame iframe { max-width: 100%; }
+
+/* ── 25. Responsive layout ──────────────────────────────────────────────────── */
+/* Medium screens: tighter panels */
+@media (min-width: 961px) and (max-width: 1280px) {
+  .atlas-wb-editor:not([data-left-closed]):not([data-right-closed]) {
+    grid-template-columns: 240px minmax(0,1fr) 280px;
+  }
+}
+
+/* Narrow screens: panels become fixed overlays */
+@media (max-width: 960px) {
+  .atlas-wb-editor {
+    /* Override all column combinations — canvas always fills full width */
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      'topbar'
+      'canvas' !important;
+    transition: none;
+  }
+
+  /* Hide text in topbar to save space */
+  .atlas-wb-topbar__text-btn { display: none !important; }
+  .atlas-wb-topbar__btn-text  { display: none !important; }
+
+  /* Left panel: fixed overlay from left */
+  .atlas-wb-panel--left {
+    position: fixed !important;
+    inset: var(--awb-topbar-h) auto 0 0 !important;
+    width: var(--awb-left-w) !important;
+    z-index: 400;
+    /* Default: off-screen (closed) */
+    transform: translateX(-100%);
+    transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 240ms ease;
+    pointer-events: none;
+    overflow: hidden !important;
+  }
+  /* On mobile, "not closed" = open (overlay slides in) */
+  .atlas-wb-editor:not([data-left-closed]) .atlas-wb-panel--left {
+    transform: translateX(0) !important;
+    box-shadow: 6px 0 32px rgba(15,23,42,0.20);
+    pointer-events: auto;
+  }
+
+  /* Right panel: fixed overlay from right */
+  .atlas-wb-panel--right {
+    position: fixed !important;
+    inset: var(--awb-topbar-h) 0 0 auto !important;
+    width: var(--awb-right-w) !important;
+    z-index: 400;
+    transform: translateX(100%);
+    transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 240ms ease;
+    pointer-events: none;
+    overflow: hidden !important;
+  }
+  .atlas-wb-editor:not([data-right-closed]) .atlas-wb-panel--right {
+    transform: translateX(0) !important;
+    box-shadow: -6px 0 32px rgba(15,23,42,0.20);
+    pointer-events: auto;
+  }
+}
+
+/* Backdrop (mobile only — closes overlaid panels) */
+.atlas-wb-panel-backdrop {
+  position: fixed;
+  inset: var(--awb-topbar-h) 0 0 0;
+  background: rgba(15, 23, 42, 0.30);
+  z-index: 399;
+  backdrop-filter: blur(2px);
+  animation: awb-fade-in 180ms ease;
+}
+@keyframes awb-fade-in { from { opacity: 0 } to { opacity: 1 } }
