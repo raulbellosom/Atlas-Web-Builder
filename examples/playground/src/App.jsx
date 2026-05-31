@@ -180,9 +180,9 @@ export default function App() {
             <img
               src="/logo.png"
               alt="Atlas WB"
-              height={22}
-              width={22}
-              style={{ display: 'block', objectFit: 'contain', borderRadius: 4 }}
+              height={26}
+              width={26}
+              style={{ display: 'block', objectFit: 'contain' }}
             />
           }
           brandName="Atlas WB"
