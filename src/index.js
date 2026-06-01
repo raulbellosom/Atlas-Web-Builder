@@ -65,6 +65,11 @@ export { AssetPicker } from './editor/assets/AssetPicker.jsx'
 export { InlineText, createInlineTextHelper } from './editor/inline/InlineText.jsx'
 export { resolveBackground, resolveBackgroundCss } from './blocks/_background.js'
 export { BackgroundField } from './editor/fields/BackgroundField.jsx'
+export { AnimationField } from './editor/fields/AnimationField.jsx'
+export { FilterField, resolveFilter } from './editor/fields/FilterField.jsx'
+export { HoverField } from './editor/fields/HoverField.jsx'
+export { TransformField } from './editor/fields/TransformField.jsx'
+export { EffectsWrapper, resolveAnimation, resolveTransform } from './renderer/EffectsWrapper.jsx'
 
 // Notifications (Phase 7)
 export {

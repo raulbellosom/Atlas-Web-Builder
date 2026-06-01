@@ -3,6 +3,7 @@ import { useBuilder } from '../provider/BuilderContext.js'
 import { useTheme } from '../theme/ThemeProvider.jsx'
 import { useEditorRender } from '../editor/dnd/EditorRenderContext.js'
 import { createInlineTextHelper } from '../editor/inline/InlineText.jsx'
+import { EffectsWrapper } from './EffectsWrapper.jsx'
 
 /**
  * Render a single block instance by id. The block must exist in the page
@@ -77,7 +78,13 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public' }) {
   ctx.inlineText = createInlineTextHelper(ctx)
 
   const Component = def.render
-  return <Component {...props} ctx={ctx} />
+  const rendered = <Component {...props} ctx={ctx} />
+
+  return (
+    <EffectsWrapper blockId={blockId} props={props} mode={mode}>
+      {rendered}
+    </EffectsWrapper>
+  )
 }
 
 /**

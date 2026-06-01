@@ -11,12 +11,13 @@ Editor visual de páginas web para React. Inspirado en Puck, Webstudio y Plasmic
 3. [Setup rápido — Renderer (solo lectura)](#setup-rápido--renderer-solo-lectura)
 4. [Guardar y cargar páginas](#guardar-y-cargar-páginas)
 5. [Bloques disponibles](#bloques-disponibles)
-6. [Personalizar el tema](#personalizar-el-tema)
-7. [Gestión de assets (imágenes/video)](#gestión-de-assets-imágenesvideo)
-8. [Bloques personalizados](#bloques-personalizados)
-9. [Tipos de campo personalizados](#tipos-de-campo-personalizados)
-10. [Templates y layouts](#templates-y-layouts)
-11. [API de referencia](#api-de-referencia)
+6. [Efectos universales](#efectos-universales)
+7. [Personalizar el tema](#personalizar-el-tema)
+8. [Gestión de assets (imágenes/video)](#gestión-de-assets-imágenesvideo)
+9. [Bloques personalizados](#bloques-personalizados)
+10. [Tipos de campo personalizados](#tipos-de-campo-personalizados)
+11. [Templates y layouts](#templates-y-layouts)
+12. [API de referencia](#api-de-referencia)
 
 ---
 
@@ -46,7 +47,7 @@ pnpm add react react-dom
 ```jsx
 // src/pages/PageEditor.jsx
 import { AtlasWebBuilderEditor, baseBlocks } from '@racoondevs/atlas-web-builder'
-import '@racoondevs/atlas-web-builder/styles'  // ← CSS obligatorio
+import '@racoondevs/atlas-web-builder/styles' // ← CSS obligatorio
 
 export function PageEditor({ initialPage, onSave, onPublish }) {
   return (
@@ -104,7 +105,7 @@ const page = {
   id: 'page_home',
   slug: '/',
   title: 'Inicio',
-  visibility: 'public',   // 'public' | 'draft' | 'private'
+  visibility: 'public', // 'public' | 'draft' | 'private'
   layoutId: null,
   regions: {
     main: { id: 'region_main', children: ['blk_1', 'blk_2'] },
@@ -136,7 +137,7 @@ await supabase.from('pages').upsert({ id: page.id, content: json })
 
 // Cargar y parsear
 const { data } = await supabase.from('pages').select('content').eq('id', 'page_home').single()
-const page = parsePage(data.content)  // valida el esquema y migra versiones antiguas
+const page = parsePage(data.content) // valida el esquema y migra versiones antiguas
 ```
 
 ### Con el editor
@@ -165,42 +166,178 @@ const page = parsePage(data.content)  // valida el esquema y migra versiones ant
 Importa `baseBlocks` para registrar todos los bloques de serie. También puedes importarlos individualmente.
 
 ### Navegación
-| Bloque | Tipo | Descripción |
-|---|---|---|
-| Navbar | `NavbarBlock` | Barra de navegación. Links como `Inicio \| /ruta` por línea |
-| Footer | `FooterBlock` | Pie de página multi-columna |
+
+| Bloque | Tipo          | Descripción                                                                                                                     |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Navbar | `NavbarBlock` | Barra de navegación. Links como `Inicio \| /ruta` por línea. Sub-ítems indentados con 2 espacios/tab generan menús desplegables |
+| Footer | `FooterBlock` | Pie de página multi-columna                                                                                                     |
 
 ### Hero
-| Bloque | Tipo | Descripción |
-|---|---|---|
-| Hero | `HeroBlock` | Sección principal con título, subtítulo, CTA y 3 variantes |
+
+| Bloque | Tipo        | Descripción                                                |
+| ------ | ----------- | ---------------------------------------------------------- |
+| Hero   | `HeroBlock` | Sección principal con título, subtítulo, CTA y 3 variantes |
 
 ### Diseño
-| Bloque | Tipo | Descripción |
-|---|---|---|
-| Sección | `SectionBlock` | Banda con fondo, padding y slot de contenido |
-| Contenedor | `ContainerBlock` | Caja centrada con ancho máximo |
-| Columnas | `ColumnsBlock` | Grid de 2-4 columnas con distribución configurable |
-| Cuadrícula | `GridBlock` | Grid CSS libre |
-| Espaciador | `SpacerBlock` | Espacio vertical vacío |
-| Separador | `DividerBlock` | Línea divisoria horizontal |
+
+| Bloque     | Tipo             | Descripción                                        |
+| ---------- | ---------------- | -------------------------------------------------- |
+| Sección    | `SectionBlock`   | Banda con fondo, padding y slot de contenido       |
+| Contenedor | `ContainerBlock` | Caja centrada con ancho máximo                     |
+| Columnas   | `ColumnsBlock`   | Grid de 2-4 columnas con distribución configurable |
+| Cuadrícula | `GridBlock`      | Grid CSS libre                                     |
+| Espaciador | `SpacerBlock`    | Espacio vertical vacío                             |
+| Separador  | `DividerBlock`   | Línea divisoria horizontal                         |
 
 ### Contenido
-| Bloque | Tipo | Descripción |
-|---|---|---|
-| Encabezado | `HeadingBlock` | Títulos h1-h6 con control de peso, interlineado, mayúsculas |
-| Texto | `TextBlock` | Párrafo con control tipográfico completo |
-| Texto enriquecido | `RichTextBlock` | HTML sanitizado con formato básico |
-| Tarjeta | `CardBlock` | Card con imagen, título, descripción y CTA |
-| Testimonio | `TestimonialBlock` | Cita con autor y estrellas |
-| Precio | `PricingBlock` | Tarjeta de precio con features |
-| Botón | `ButtonBlock` | Enlace estilizado como botón |
+
+| Bloque            | Tipo               | Descripción                                                 |
+| ----------------- | ------------------ | ----------------------------------------------------------- |
+| Encabezado        | `HeadingBlock`     | Títulos h1-h6 con control de peso, interlineado, mayúsculas |
+| Texto             | `TextBlock`        | Párrafo con control tipográfico completo                    |
+| Texto enriquecido | `RichTextBlock`    | HTML sanitizado con formato básico                          |
+| Tarjeta           | `CardBlock`        | Card con imagen, título, descripción y CTA                  |
+| Testimonio        | `TestimonialBlock` | Cita con autor y estrellas                                  |
+| Precio            | `PricingBlock`     | Tarjeta de precio con features                              |
+| Botón             | `ButtonBlock`      | Enlace estilizado como botón                                |
 
 ### Multimedia
-| Bloque | Tipo | Descripción |
-|---|---|---|
+
+| Bloque | Tipo         | Descripción                                                 |
+| ------ | ------------ | ----------------------------------------------------------- |
 | Imagen | `ImageBlock` | Imagen con proporción (select), sombra, pie de foto, enlace |
-| Video | `VideoBlock` | YouTube, Vimeo o MP4. Detecta automáticamente por URL |
+| Video  | `VideoBlock` | YouTube, Vimeo o MP4. Detecta automáticamente por URL       |
+
+---
+
+## Efectos universales
+
+Todos los bloques soportan un conjunto de **props de efectos** con prefijo `_` que el editor expone en el panel "Efectos" del panel de propiedades derecho. No es necesario declararlos en `fields` del bloque — el sistema los aplica automáticamente a través de `EffectsWrapper`.
+
+### Props disponibles
+
+| Prop            | Tipo             | Descripción                                                                       |
+| --------------- | ---------------- | --------------------------------------------------------------------------------- |
+| `_opacity`      | `number` (0 – 1) | Opacidad del bloque                                                               |
+| `_animation`    | `AnimationValue` | Animación de entrada al cargar la página                                          |
+| `_scrollReveal` | `boolean`        | Dispara `_animation` cuando el bloque entra en el viewport (IntersectionObserver) |
+| `_hover`        | `HoverValue`     | Efectos de escala, sombra y brillo al pasar el cursor                             |
+| `_filter`       | `FilterValue`    | Filtros CSS: blur, brillo, contraste, escala de grises, sepia                     |
+| `_transform`    | `TransformValue` | Rotación y distorsión (rotate, skewX, skewY)                                      |
+| `_cursor`       | `string`         | Cursor CSS (`auto`, `pointer`, `grab`, `zoom-in`, `crosshair`, etc.)              |
+| `_zIndex`       | `number`         | Capa z-index (1, 10, 20, 50, 100, 200, 1000)                                      |
+| `_sticky`       | `boolean`        | `position: sticky; top: 0` — el bloque queda fijo al hacer scroll                 |
+
+### Tipos de valores
+
+```ts
+// Animación de entrada
+type AnimationValue = {
+  preset:
+    | 'none'
+    | 'fade-in'
+    | 'slide-up'
+    | 'slide-down'
+    | 'slide-left'
+    | 'slide-right'
+    | 'zoom-in'
+    | 'zoom-out'
+  duration: number // ms, default 600
+  delay: number // ms, default 0
+  easing: 'ease-out' | 'ease' | 'ease-in-out' | 'linear'
+}
+
+// Efectos hover (CSS inyectado via <style> con data-eid)
+type HoverValue = {
+  scale: '' | '0.97' | '1.02' | '1.05' | '1.08' | '1.12' // '' = sin cambio
+  shadow: '' | 'sm' | 'md' | 'lg' // sombra al hover
+  brightness: number // %, default 100
+  duration: number // ms, default 200
+  easing: 'ease' | 'ease-out' | 'ease-in-out'
+}
+
+// Filtros CSS
+type FilterValue = {
+  blur: number // px, default 0
+  brightness: number // %, default 100
+  contrast: number // %, default 100
+  grayscale: number // %, default 0
+  sepia: number // %, default 0
+}
+
+// Transformaciones CSS
+type TransformValue = {
+  rotate: number // grados, -180 a 180
+  skewX: number // grados, -45 a 45
+  skewY: number // grados, -45 a 45
+}
+```
+
+### Ejemplo de uso desde código
+
+Puedes pre-configurar efectos en el JSON de la página (`defaultProps` o datos guardados):
+
+```js
+const page = {
+  blocks: {
+    hero1: {
+      id: 'hero1',
+      type: 'HeroBlock',
+      props: {
+        title: 'Bienvenido',
+        // Efecto: aparece deslizándose desde abajo cuando entra en pantalla
+        _animation: { preset: 'slide-up', duration: 700, delay: 0, easing: 'ease-out' },
+        _scrollReveal: true,
+        // Hover: escala sutil + sombra
+        _hover: { scale: '1.02', shadow: 'md', brightness: 100, duration: 250, easing: 'ease' },
+      },
+      children: {},
+    },
+    card1: {
+      id: 'card1',
+      type: 'CardBlock',
+      props: {
+        title: 'Tarjeta',
+        // Filtro: blanco y negro que revierte al hover
+        _filter: { blur: 0, brightness: 100, contrast: 100, grayscale: 80, sepia: 0 },
+        _hover: { scale: '1.05', shadow: 'sm', brightness: 110, duration: 300, easing: 'ease-out' },
+      },
+      children: {},
+    },
+  },
+}
+```
+
+### Usar los helpers de resolución
+
+```js
+import { resolveAnimation, resolveTransform, resolveFilter } from '@racoondevs/atlas-web-builder'
+
+// resolveAnimation({ preset: 'fade-in', duration: 500, delay: 100, easing: 'ease-out' })
+// → 'atlas-anim-fade-in 500ms ease-out 100ms both'
+
+// resolveTransform({ rotate: 45, skewX: 0, skewY: 0 })
+// → 'rotate(45deg)'
+
+// resolveFilter({ blur: 4, brightness: 90, contrast: 110, grayscale: 0, sepia: 0 })
+// → 'blur(4px) brightness(90%) contrast(110%)'
+```
+
+### Navbar con menús desplegables
+
+El campo `links` del `NavbarBlock` soporta sub-ítems. Las líneas que empiezan con 2 espacios (o un tabulador) se convierten en elementos del menú desplegable del ítem anterior:
+
+```
+Inicio | /
+Productos | /productos
+  Producto A | /productos/a
+  Producto B | /productos/b
+  Ver todos | /productos
+Nosotros | /nosotros
+Contacto | /contacto
+```
+
+Los menús desplegables son **CSS-only** (`:hover` + `focus-within`), sin JavaScript extra. Se renderizan con clases `.atlas-nb-*` incluidas en el CSS del paquete.
 
 ---
 
@@ -247,14 +384,14 @@ const myTheme = defineTheme({
 
 ### Tokens disponibles
 
-| Grupo | Variables generadas |
-|---|---|
-| `color.*` | `--atlas-color-primary`, `--atlas-color-primaryFg`, `--atlas-color-bg`, `--atlas-color-fg`, `--atlas-color-muted`, `--atlas-color-accent`, `--atlas-color-danger` |
-| `fontSize.*` | `--atlas-fontSize-xs` … `--atlas-fontSize-3xl` |
-| `spacing.*` | `--atlas-spacing-0` … `--atlas-spacing-16` |
-| `radius.*` | `--atlas-radius-sm`, `md`, `lg`, `pill` |
-| `shadow.*` | `--atlas-shadow-sm`, `md`, `lg` |
-| `font.*` | `--atlas-font-sans`, `--atlas-font-serif`, `--atlas-font-mono` |
+| Grupo        | Variables generadas                                                                                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color.*`    | `--atlas-color-primary`, `--atlas-color-primaryFg`, `--atlas-color-bg`, `--atlas-color-fg`, `--atlas-color-muted`, `--atlas-color-accent`, `--atlas-color-danger` |
+| `fontSize.*` | `--atlas-fontSize-xs` … `--atlas-fontSize-3xl`                                                                                                                    |
+| `spacing.*`  | `--atlas-spacing-0` … `--atlas-spacing-16`                                                                                                                        |
+| `radius.*`   | `--atlas-radius-sm`, `md`, `lg`, `pill`                                                                                                                           |
+| `shadow.*`   | `--atlas-shadow-sm`, `md`, `lg`                                                                                                                                   |
+| `font.*`     | `--atlas-font-sans`, `--atlas-font-serif`, `--atlas-font-mono`                                                                                                    |
 
 ---
 
@@ -290,10 +427,10 @@ export function createSupabaseAssetSource(bucket = 'atlas-media') {
       const { data, error } = await supabase.storage.from(bucket).list('', { limit: 200 })
       if (error) throw error
       return data.map((file) => ({
-        id:   file.name,
+        id: file.name,
         name: file.name,
         kind: file.metadata?.mimetype?.startsWith('video') ? 'video' : 'image',
-        url:  supabase.storage.from(bucket).getPublicUrl(file.name).data.publicUrl,
+        url: supabase.storage.from(bucket).getPublicUrl(file.name).data.publicUrl,
       }))
     },
 
@@ -301,7 +438,9 @@ export function createSupabaseAssetSource(bucket = 'atlas-media') {
       const name = `${Date.now()}-${file.name}`
       const { error } = await supabase.storage.from(bucket).upload(name, file)
       if (error) throw error
-      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(name)
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(bucket).getPublicUrl(name)
       return { id: name, name, kind: 'image', url: publicUrl }
     },
 
@@ -332,10 +471,10 @@ Crea bloques propios de tu dominio (productos, formularios, tablas ERP, etc.).
 import { defineBlock } from '@racoondevs/atlas-web-builder'
 
 export const ProductCardBlock = defineBlock({
-  type: 'ProductCardBlock',       // único en el registro
+  type: 'ProductCardBlock', // único en el registro
   label: 'Tarjeta de producto',
   category: 'content',
-  icon: 'card',                   // uno de los iconos built-in
+  icon: 'card', // uno de los iconos built-in
 
   defaultProps: {
     productId: '',
@@ -345,17 +484,21 @@ export const ProductCardBlock = defineBlock({
   },
 
   fields: {
-    productId: { type: 'text',   label: 'ID del producto' },
+    productId: { type: 'text', label: 'ID del producto' },
     showPrice: { type: 'toggle', label: 'Mostrar precio' },
     showStock: { type: 'toggle', label: 'Mostrar stock' },
-    align:     { type: 'select', label: 'Alineación', options: [
-      { value: 'left',   label: 'Izquierda' },
-      { value: 'center', label: 'Centro' },
-    ]},
+    align: {
+      type: 'select',
+      label: 'Alineación',
+      options: [
+        { value: 'left', label: 'Izquierda' },
+        { value: 'center', label: 'Centro' },
+      ],
+    },
   },
 
   groups: [
-    { label: 'Datos',  fields: ['productId', 'showPrice', 'showStock'] },
+    { label: 'Datos', fields: ['productId', 'showPrice', 'showStock'] },
     { label: 'Estilo', fields: ['align'] },
   ],
 
@@ -393,8 +536,8 @@ export const ProductListBlock = defineBlock({
   category: 'content',
   defaultProps: { categoryId: '', limit: 12 },
   fields: {
-    categoryId: { type: 'text',   label: 'ID de categoría' },
-    limit:      { type: 'select', label: 'Máx. productos', options: ['6','12','24','48'] },
+    categoryId: { type: 'text', label: 'ID de categoría' },
+    limit: { type: 'select', label: 'Máx. productos', options: ['6', '12', '24', '48'] },
   },
 
   render: ({ categoryId, limit, ctx }) => {
@@ -403,7 +546,9 @@ export const ProductListBlock = defineBlock({
     if (loading) return <p>Cargando…</p>
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-        {(products || []).map((p) => <div key={p.id}>{p.name}</div>)}
+        {(products || []).map((p) => (
+          <div key={p.id}>{p.name}</div>
+        ))}
       </div>
     )
   },
@@ -450,7 +595,8 @@ export function ColorTokenField({ value, onChange, label }) {
             type="button"
             onClick={() => onChange(key)}
             style={{
-              width: 28, height: 28,
+              width: 28,
+              height: 28,
               borderRadius: 6,
               background: hex,
               border: value === key ? '3px solid #000' : '1px solid rgba(0,0,0,0.15)',
@@ -503,17 +649,20 @@ const heroCtaTemplate = defineTemplate({
       rootIds: ['section'],
       blocks: {
         section: {
-          id: 'section', type: 'SectionBlock',
+          id: 'section',
+          type: 'SectionBlock',
           props: { background: { kind: 'color', token: 'primary' }, paddingY: '16' },
           children: { children: ['heading', 'btn'] },
         },
         heading: {
-          id: 'heading', type: 'HeadingBlock',
+          id: 'heading',
+          type: 'HeadingBlock',
           props: { text: 'Tu titular aquí', align: 'center', color: 'primaryFg' },
           children: {},
         },
         btn: {
-          id: 'btn', type: 'ButtonBlock',
+          id: 'btn',
+          type: 'ButtonBlock',
           props: { label: 'Empezar', align: 'center', variant: 'outline' },
           children: {},
         },
@@ -524,11 +673,7 @@ const heroCtaTemplate = defineTemplate({
 ```
 
 ```jsx
-<AtlasWebBuilderEditor
-  blocks={blocks}
-  templates={[heroCtaTemplate]}
-  initialPage={page}
-/>
+<AtlasWebBuilderEditor blocks={blocks} templates={[heroCtaTemplate]} initialPage={page} />
 ```
 
 ---
@@ -537,65 +682,69 @@ const heroCtaTemplate = defineTemplate({
 
 ### `<AtlasWebBuilderEditor>`
 
-| Prop | Tipo | Requerido | Descripción |
-|---|---|---|---|
-| `blocks` | `BlockDefinition[]` | ✓ | Array de bloques registrados. Usa `baseBlocks` o combínalos |
-| `initialPage` | `Page` | | Página inicial. Si es `undefined` se crea una vacía |
-| `theme` | `Theme` | | Tema. Usa `defaultTheme` o créalo con `defineTheme()` |
-| `templates` | `TemplateDefinition[]` | | Plantillas para la pestaña Plantillas |
-| `layouts` | `LayoutDefinition[]` | | Layouts de regiones disponibles |
-| `assets` | `AssetSource` | | Fuente de medios. Sin esto, solo funciona la pestaña URL |
-| `resources` | `Record<string, Fetcher>` | | Fetchers de datos para bloques dinámicos |
-| `actions` | `Record<string, Function>` | | Acciones personalizadas (formularios, etc.) |
-| `onSaveDraft` | `(page: Page) => void` | | Callback al guardar borrador |
-| `onPublish` | `(page: Page) => void` | | Callback al publicar |
+| Prop          | Tipo                       | Requerido | Descripción                                                 |
+| ------------- | -------------------------- | --------- | ----------------------------------------------------------- |
+| `blocks`      | `BlockDefinition[]`        | ✓         | Array de bloques registrados. Usa `baseBlocks` o combínalos |
+| `initialPage` | `Page`                     |           | Página inicial. Si es `undefined` se crea una vacía         |
+| `theme`       | `Theme`                    |           | Tema. Usa `defaultTheme` o créalo con `defineTheme()`       |
+| `templates`   | `TemplateDefinition[]`     |           | Plantillas para la pestaña Plantillas                       |
+| `layouts`     | `LayoutDefinition[]`       |           | Layouts de regiones disponibles                             |
+| `assets`      | `AssetSource`              |           | Fuente de medios. Sin esto, solo funciona la pestaña URL    |
+| `resources`   | `Record<string, Fetcher>`  |           | Fetchers de datos para bloques dinámicos                    |
+| `actions`     | `Record<string, Function>` |           | Acciones personalizadas (formularios, etc.)                 |
+| `onSaveDraft` | `(page: Page) => void`     |           | Callback al guardar borrador                                |
+| `onPublish`   | `(page: Page) => void`     |           | Callback al publicar                                        |
 
 ### `<AtlasWebRenderer>`
 
-| Prop | Tipo | Requerido | Descripción |
-|---|---|---|---|
-| `page` | `Page` | ✓ | Objeto página (parseado con `parsePage()`) |
-| `mode` | `'public' \| 'preview'` | | `'public'` desactiva el editing inline |
+| Prop   | Tipo                    | Requerido | Descripción                                |
+| ------ | ----------------------- | --------- | ------------------------------------------ |
+| `page` | `Page`                  | ✓         | Objeto página (parseado con `parsePage()`) |
+| `mode` | `'public' \| 'preview'` |           | `'public'` desactiva el editing inline     |
 
 ### `<AtlasWebBuilderProvider>`
 
 Envuelve el renderer standalone cuando se usa fuera del editor.
 
-| Prop | Tipo | Descripción |
-|---|---|---|
-| `blocks` | `BlockDefinition[]` | Registro de bloques |
-| `theme` | `Theme` | Tema a aplicar |
-| `assets` | `AssetSource` | Fuente de medios |
-| `resources` | `object` | Fetchers de datos |
+| Prop        | Tipo                | Descripción         |
+| ----------- | ------------------- | ------------------- |
+| `blocks`    | `BlockDefinition[]` | Registro de bloques |
+| `theme`     | `Theme`             | Tema a aplicar      |
+| `assets`    | `AssetSource`       | Fuente de medios    |
+| `resources` | `object`            | Fetchers de datos   |
 
 ### `defineBlock(def)`
 
-| Campo | Tipo | Descripción |
-|---|---|---|
-| `type` | `string` | Identificador único (e.g. `'HeroBlock'`) |
-| `label` | `string` | Nombre visible en la paleta |
-| `category` | `string` | Categoría en la paleta |
-| `icon` | `string` | Icono (ver lista en `BlockIcon.jsx`) |
-| `defaultProps` | `object` | Valores por defecto de props |
-| `fields` | `Record<string, FieldSpec>` | Controles del panel de propiedades |
-| `groups` | `{label, fields[]}[]` | Agrupa campos en secciones colapsables |
-| `slots` | `Record<string, {}>` | Slots donde pueden anidarse otros bloques |
-| `render` | `(props, ctx) => JSX` | Función de renderizado |
+| Campo          | Tipo                        | Descripción                               |
+| -------------- | --------------------------- | ----------------------------------------- |
+| `type`         | `string`                    | Identificador único (e.g. `'HeroBlock'`)  |
+| `label`        | `string`                    | Nombre visible en la paleta               |
+| `category`     | `string`                    | Categoría en la paleta                    |
+| `icon`         | `string`                    | Icono (ver lista en `BlockIcon.jsx`)      |
+| `defaultProps` | `object`                    | Valores por defecto de props              |
+| `fields`       | `Record<string, FieldSpec>` | Controles del panel de propiedades        |
+| `groups`       | `{label, fields[]}[]`       | Agrupa campos en secciones colapsables    |
+| `slots`        | `Record<string, {}>`        | Slots donde pueden anidarse otros bloques |
+| `render`       | `(props, ctx) => JSX`       | Función de renderizado                    |
 
 ### Tipos de campo (`fields`)
 
-| `type` | Control | Notas |
-|---|---|---|
-| `text` | Input texto | — |
-| `textarea` | Textarea | — |
-| `select` | Select / dropdown | Requiere `options: string[] \| {value,label}[]` |
-| `toggle` | Checkbox switch | — |
-| `link` | Input URL con validación | — |
-| `image` | Picker de imagen | Abre el modal de medios |
-| `color` | Color picker nativo | — |
-| `background` | Editor de fondo | Sólido, gradiente o imagen |
-| `number` | Input numérico | — |
-| `richtext` | Editor rich text | — |
+| `type`       | Control                          | Notas                                            |
+| ------------ | -------------------------------- | ------------------------------------------------ |
+| `text`       | Input texto                      | —                                                |
+| `textarea`   | Textarea                         | —                                                |
+| `select`     | Select / dropdown                | Requiere `options: string[] \| {value,label}[]`  |
+| `toggle`     | Checkbox switch                  | —                                                |
+| `link`       | Input URL con validación         | —                                                |
+| `image`      | Picker de imagen                 | Abre el modal de medios                          |
+| `color`      | Color picker nativo              | —                                                |
+| `background` | Editor de fondo                  | Sólido, gradiente o imagen                       |
+| `number`     | Input numérico                   | —                                                |
+| `richtext`   | Editor rich text                 | —                                                |
+| `animation`  | Selector de animación de entrada | Preset, duración, delay, curva                   |
+| `filter`     | Controles de filtros CSS         | Blur, brillo, contraste, escala de grises, sepia |
+| `hover`      | Controles de efecto hover        | Escala, sombra, brillo, duración, curva          |
+| `transform`  | Sliders de transformación        | Rotación y distorsión (skewX / skewY)            |
 
 ### `serializePage(page, options?) → string`
 
@@ -608,6 +757,19 @@ Parsea y migra automáticamente páginas de versiones antiguas del esquema.
 ### `createInMemoryAssetSource(initial?)`
 
 Crea un AssetSource en memoria para desarrollo. Soporta `list()`, `upload()`, `remove()`, `subscribe()`.
+
+### Componentes y helpers de efectos
+
+| Export                | Tipo       | Descripción                                                                   |
+| --------------------- | ---------- | ----------------------------------------------------------------------------- |
+| `EffectsWrapper`      | Componente | Aplica todos los efectos universales. Usado internamente por `BlockRenderer`. |
+| `AnimationField`      | Componente | Control de campo para animaciones de entrada.                                 |
+| `FilterField`         | Componente | Control de campo para filtros CSS.                                            |
+| `HoverField`          | Componente | Control de campo para efectos hover.                                          |
+| `TransformField`      | Componente | Control de campo para transformaciones (rotate, skew).                        |
+| `resolveAnimation(v)` | Función    | Convierte `AnimationValue` a string CSS `animation`.                          |
+| `resolveFilter(v)`    | Función    | Convierte `FilterValue` a string CSS `filter`.                                |
+| `resolveTransform(v)` | Función    | Convierte `TransformValue` a string CSS `transform`.                          |
 
 ---
 
@@ -626,6 +788,7 @@ export default defineConfig({
 ```
 
 > Si usas **Next.js**, añade el paquete a `transpilePackages` en `next.config.js`:
+>
 > ```js
 > module.exports = { transpilePackages: ['@racoondevs/atlas-web-builder'] }
 > ```

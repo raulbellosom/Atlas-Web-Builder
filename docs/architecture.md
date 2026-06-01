@@ -47,6 +47,7 @@ The builder is **not** a free-form HTML/CSS editor. Developers register polished
 5. **Host owns data.** Dynamic blocks declare `resources`; the host registers accessors; the package never hardcodes APIs.
 6. **Stateless package.** No DB, no router, no auth. Save/publish are callbacks.
 7. **Versioned schema.** Every JSON document has `schemaVersion`; `migrate.js` upgrades older snapshots.
+8. **Universal effects layer.** Props prefixed with `_` (`_opacity`, `_animation`, `_filter`, `_hover`, `_transform`, `_cursor`, `_zIndex`, `_sticky`, `_scrollReveal`) are applied at the `BlockRenderer` level by `EffectsWrapper` — blocks do not need to declare them individually. Hover CSS is injected via a scoped `<style>` tag using `[data-eid]` attribute selectors; scroll-reveal uses IntersectionObserver (no-op in edit mode).
 
 ## Tech stack
 
@@ -90,6 +91,6 @@ Implementation follows the phased roadmap in the master plan:
 - Phase 8: Pages, routes, navigation.
 - Phase 9: Draft / publish.
 - Phase 10: Atlas ERP integration.
-- Phase 11: Advanced UX and polish.
+- Phase 11: Advanced UX and polish — universal effects (opacity, animation, scroll-reveal, hover, filter, transform, cursor, z-index, sticky), navbar dropdown menus.
 
 Each phase has explicit acceptance criteria and an explicit "do not do" list to prevent scope creep.

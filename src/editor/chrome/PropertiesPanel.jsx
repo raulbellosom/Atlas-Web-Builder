@@ -5,6 +5,10 @@ import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { defaultFields } from '../fields/index.js'
 import { BlockIcon } from './BlockIcon.jsx'
 import { es } from '../i18n/es.js'
+import { AnimationField } from '../fields/AnimationField.jsx'
+import { FilterField } from '../fields/FilterField.jsx'
+import { HoverField } from '../fields/HoverField.jsx'
+import { TransformField } from '../fields/TransformField.jsx'
 
 function FieldRow({ propName, spec, value, onChange }) {
   const Field = defaultFields[spec.type]
@@ -35,9 +39,7 @@ function partitionGroups(entries, groups) {
   const listed = new Set(groups.flatMap((g) => g.fields || []))
   const sections = groups.map((g) => ({
     label: g.label,
-    entries: (g.fields || [])
-      .map((name) => entries.find(([k]) => k === name))
-      .filter(Boolean),
+    entries: (g.fields || []).map((name) => entries.find(([k]) => k === name)).filter(Boolean),
   }))
   const rest = entries.filter(([k]) => !listed.has(k))
   if (rest.length) sections.push({ label: 'Otros', entries: rest })
@@ -55,7 +57,12 @@ function CollapseSection({ label, children, defaultOpen = true }) {
         aria-expanded={open}
       >
         <span className="atlas-wb-props__section-label">{label}</span>
-        <span className={clsx('atlas-wb-props__section-chevron', open && 'atlas-wb-props__section-chevron--open')}>
+        <span
+          className={clsx(
+            'atlas-wb-props__section-chevron',
+            open && 'atlas-wb-props__section-chevron--open',
+          )}
+        >
           ›
         </span>
       </button>
@@ -108,6 +115,13 @@ export function PropertiesPanel() {
   const sections = partitionGroups(entries, def.groups)
   const onChange = (propName) => (next) => updateBlockProps(selectedId, { [propName]: next })
 
+  const opacityVal = merged._opacity !== undefined ? merged._opacity : 1
+  const opacityPct = Math.round(opacityVal * 100)
+  const cursorVal = merged._cursor || 'auto'
+  const zIndexVal = merged._zIndex || ''
+  const stickyVal = !!merged._sticky
+  const scrollReveal = !!merged._scrollReveal
+
   return (
     <div className="atlas-wb-props">
       {/* Block header */}
@@ -147,6 +161,134 @@ export function PropertiesPanel() {
           </div>
         ),
       )}
+
+      {/* ── Universal effects ── */}
+      <div className="atlas-wb-props__effects">
+        <CollapseSection label="Efectos" defaultOpen={false}>
+          {/* Opacity */}
+          <div className="atlas-wb-field">
+            <span className="atlas-wb-field__label">Opacidad</span>
+            <div className="atlas-wb-props__opacity-row">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={opacityVal}
+                onChange={(e) => updateBlockProps(selectedId, { _opacity: Number(e.target.value) })}
+              />
+              <span className="atlas-wb-props__opacity-val">{opacityPct}%</span>
+            </div>
+          </div>
+
+          {/* Entrance animation */}
+          <AnimationField
+            label="Animación de entrada"
+            value={merged._animation}
+            onChange={(v) => updateBlockProps(selectedId, { _animation: v })}
+          />
+
+          {/* Scroll-reveal toggle */}
+          <div className="atlas-wb-field">
+            <span className="atlas-wb-field__label">Revelar al hacer scroll</span>
+            <label className="atlas-wb-effects-toggle">
+              <input
+                type="checkbox"
+                checked={scrollReveal}
+                onChange={(e) => updateBlockProps(selectedId, { _scrollReveal: e.target.checked })}
+              />
+              <span className="atlas-wb-effects-toggle__text">
+                {scrollReveal
+                  ? 'La animación se dispara cuando el bloque entra en pantalla'
+                  : 'La animación se reproduce al cargar la página'}
+              </span>
+            </label>
+          </div>
+
+          {/* Hover effects */}
+          <HoverField
+            label="Efecto al pasar el cursor"
+            value={merged._hover}
+            onChange={(v) => updateBlockProps(selectedId, { _hover: v })}
+          />
+
+          {/* CSS filters */}
+          <FilterField
+            label="Filtros CSS"
+            value={merged._filter}
+            onChange={(v) => updateBlockProps(selectedId, { _filter: v })}
+          />
+
+          {/* Transformations */}
+          <TransformField
+            label="Transformaciones"
+            value={merged._transform}
+            onChange={(v) => updateBlockProps(selectedId, { _transform: v })}
+          />
+
+          {/* Cursor */}
+          <div className="atlas-wb-field">
+            <span className="atlas-wb-field__label">Cursor</span>
+            <select
+              className="atlas-wb-field__select"
+              value={cursorVal}
+              onChange={(e) => updateBlockProps(selectedId, { _cursor: e.target.value })}
+            >
+              <option value="auto">Auto (por defecto)</option>
+              <option value="default">Flecha</option>
+              <option value="pointer">Mano (pointer)</option>
+              <option value="grab">Agarrar (grab)</option>
+              <option value="zoom-in">Zoom +</option>
+              <option value="zoom-out">Zoom −</option>
+              <option value="crosshair">Cruz</option>
+              <option value="not-allowed">No permitido</option>
+              <option value="text">Texto (I-beam)</option>
+            </select>
+          </div>
+
+          {/* Z-index */}
+          <div className="atlas-wb-field">
+            <span className="atlas-wb-field__label">Z-index (capa)</span>
+            <select
+              className="atlas-wb-field__select"
+              value={zIndexVal}
+              onChange={(e) =>
+                updateBlockProps(selectedId, {
+                  _zIndex: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+            >
+              <option value="">Auto</option>
+              <option value="1">1</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="1000">1000</option>
+            </select>
+          </div>
+
+          {/* Sticky */}
+          <div className="atlas-wb-field">
+            <span className="atlas-wb-field__label">Posición fija (sticky)</span>
+            <label className="atlas-wb-effects-toggle">
+              <input
+                type="checkbox"
+                checked={stickyVal}
+                onChange={(e) =>
+                  updateBlockProps(selectedId, { _sticky: e.target.checked || undefined })
+                }
+              />
+              <span className="atlas-wb-effects-toggle__text">
+                {stickyVal
+                  ? 'El bloque queda fijo al hacer scroll (sticky)'
+                  : 'Posición normal en el flujo del documento'}
+              </span>
+            </label>
+          </div>
+        </CollapseSection>
+      </div>
     </div>
   )
 }

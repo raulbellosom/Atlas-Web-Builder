@@ -19,6 +19,10 @@ import { ImageField } from './ImageField.jsx'
 import { LinkField } from './LinkField.jsx'
 import { RichTextField } from './RichTextField.jsx'
 import { BackgroundField } from './BackgroundField.jsx'
+import { AnimationField } from './AnimationField.jsx'
+import { FilterField } from './FilterField.jsx'
+import { HoverField } from './HoverField.jsx'
+import { TransformField } from './TransformField.jsx'
 
 /** @type {Object<string, React.ComponentType<{ value: any, onChange: (v:any)=>void, spec: any, label?: string }>>} */
 export const defaultFields = {
@@ -33,6 +37,10 @@ export const defaultFields = {
   link: LinkField,
   'rich-text': RichTextField,
   background: BackgroundField,
+  animation: AnimationField,
+  filter: FilterField,
+  hover: HoverField,
+  transform: TransformField,
 }
 
 /**

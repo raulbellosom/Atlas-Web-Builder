@@ -1,6 +1,6 @@
 {
   "name": "@raulbellosom/atlas-web-builder",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "React-first, controlled website composer for Atlas ERP and reusable React projects.",
   "license": "MIT",
   "author": "raulbellosom",
