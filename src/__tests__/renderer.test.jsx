@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { AtlasWebBuilderProvider } from '../provider/AtlasWebBuilderProvider.jsx'
 import { AtlasWebRenderer } from '../renderer/AtlasWebRenderer.jsx'
 import { defineBlock } from '../registry/createBlockRegistry.js'
@@ -86,5 +86,38 @@ describe('AtlasWebRenderer', () => {
     const themed = container.querySelector('[data-atlas-theme]')
     expect(themed).not.toBeNull()
     expect(themed.style.getPropertyValue('--atlas-color-primary')).toBe('#0F62FE')
+  })
+
+  it('wires ctx.resource() to the resources registered on the provider', async () => {
+    const ListDef = defineBlock({
+      type: 'ProductListBlock',
+      label: 'Lista',
+      render: ({ ctx }) => {
+        const { data, loading } = ctx.resource('products', {})
+        return <p data-testid="list">{loading ? 'loading' : JSON.stringify(data)}</p>
+      },
+    })
+    const listPage = {
+      schemaVersion: 1,
+      id: 'page_list',
+      slug: '/list',
+      title: 'Lista',
+      visibility: 'public',
+      layoutId: null,
+      regions: { main: { id: 'region_main', children: ['blk_list_1'] } },
+      blocks: {
+        blk_list_1: { id: 'blk_list_1', type: 'ProductListBlock', props: {}, children: {} },
+      },
+    }
+    render(
+      <AtlasWebBuilderProvider
+        blocks={[ListDef]}
+        resources={{ products: () => Promise.resolve([{ id: '1' }]) }}
+      >
+        <AtlasWebRenderer page={listPage} mode="public" />
+      </AtlasWebBuilderProvider>,
+    )
+    expect(screen.getByTestId('list').textContent).toBe('loading')
+    await waitFor(() => expect(screen.getByTestId('list').textContent).toBe('[{"id":"1"}]'))
   })
 })

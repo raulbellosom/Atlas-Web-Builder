@@ -4,6 +4,7 @@ import { useTheme } from '../theme/ThemeProvider.jsx'
 import { useEditorRender } from '../editor/dnd/EditorRenderContext.js'
 import { createInlineTextHelper } from '../editor/inline/InlineText.jsx'
 import { EffectsWrapper } from './EffectsWrapper.jsx'
+import { useResource } from './useResource.js'
 
 /**
  * Render a single block instance by id. The block must exist in the page
@@ -76,6 +77,7 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public' }) {
     blockId,
   }
   ctx.inlineText = createInlineTextHelper(ctx)
+  ctx.resource = (name, params) => useResource(ctx.resources, name, params)
 
   const Component = def.render
   const rendered = <Component {...props} ctx={ctx} />
