@@ -1,4 +1,4 @@
-# @racoondevs/atlas-web-builder
+# @raulbellosom/atlas-web-builder
 
 Editor visual de páginas web para React. Inspirado en Puck, Webstudio y Plasmic — completamente propio, MIT, sin dependencias de SaaS.
 
@@ -25,13 +25,13 @@ Editor visual de páginas web para React. Inspirado en Puck, Webstudio y Plasmic
 
 ```bash
 # pnpm
-pnpm add @racoondevs/atlas-web-builder
+pnpm add @raulbellosom/atlas-web-builder
 
 # npm
-npm install @racoondevs/atlas-web-builder
+npm install @raulbellosom/atlas-web-builder
 
 # yarn
-yarn add @racoondevs/atlas-web-builder
+yarn add @raulbellosom/atlas-web-builder
 ```
 
 **Peer dependencies requeridas** (ya deberían estar en tu proyecto):
@@ -46,8 +46,8 @@ pnpm add react react-dom
 
 ```jsx
 // src/pages/PageEditor.jsx
-import { AtlasWebBuilderEditor, baseBlocks } from '@racoondevs/atlas-web-builder'
-import '@racoondevs/atlas-web-builder/styles' // ← CSS obligatorio
+import { AtlasWebBuilderEditor, baseBlocks } from '@raulbellosom/atlas-web-builder'
+import '@raulbellosom/atlas-web-builder/styles' // ← CSS obligatorio
 
 export function PageEditor({ initialPage, onSave, onPublish }) {
   return (
@@ -79,8 +79,8 @@ import {
   AtlasWebRenderer,
   baseBlocks,
   defaultTheme,
-} from '@racoondevs/atlas-web-builder'
-import '@racoondevs/atlas-web-builder/styles'
+} from '@raulbellosom/atlas-web-builder'
+import '@raulbellosom/atlas-web-builder/styles'
 
 export function PublicPage({ page }) {
   return (
@@ -127,7 +127,7 @@ const page = {
 ### Guardar en base de datos
 
 ```jsx
-import { serializePage, parsePage } from '@racoondevs/atlas-web-builder'
+import { serializePage, parsePage } from '@raulbellosom/atlas-web-builder'
 
 // Serializar a JSON string (validado + limpio)
 const json = serializePage(page, { pretty: false })
@@ -311,7 +311,7 @@ const page = {
 ### Usar los helpers de resolución
 
 ```js
-import { resolveAnimation, resolveTransform, resolveFilter } from '@racoondevs/atlas-web-builder'
+import { resolveAnimation, resolveTransform, resolveFilter } from '@raulbellosom/atlas-web-builder'
 
 // resolveAnimation({ preset: 'fade-in', duration: 500, delay: 100, easing: 'ease-out' })
 // → 'atlas-anim-fade-in 500ms ease-out 100ms both'
@@ -351,7 +351,7 @@ import {
   baseBlocks,
   defineTheme,
   defaultTheme,
-} from '@racoondevs/atlas-web-builder'
+} from '@raulbellosom/atlas-web-builder'
 
 const myTheme = defineTheme({
   ...defaultTheme,
@@ -406,7 +406,7 @@ import {
   AtlasWebBuilderEditor,
   baseBlocks,
   createInMemoryAssetSource,
-} from '@racoondevs/atlas-web-builder'
+} from '@raulbellosom/atlas-web-builder'
 
 const assets = createInMemoryAssetSource([
   { id: 'img1', kind: 'image', url: 'https://picsum.photos/800/600', name: 'demo.jpg' },
@@ -468,7 +468,7 @@ Crea bloques propios de tu dominio (productos, formularios, tablas ERP, etc.).
 
 ```jsx
 // src/blocks/ProductCardBlock.jsx
-import { defineBlock } from '@racoondevs/atlas-web-builder'
+import { defineBlock } from '@raulbellosom/atlas-web-builder'
 
 export const ProductCardBlock = defineBlock({
   type: 'ProductCardBlock', // único en el registro
@@ -519,7 +519,7 @@ export const ProductCardBlock = defineBlock({
 
 ```jsx
 // src/pages/PageEditor.jsx
-import { AtlasWebBuilderEditor, baseBlocks } from '@racoondevs/atlas-web-builder'
+import { AtlasWebBuilderEditor, baseBlocks } from '@raulbellosom/atlas-web-builder'
 import { ProductCardBlock } from '@/blocks/ProductCardBlock'
 
 const blocks = [...baseBlocks, ProductCardBlock]
@@ -579,7 +579,7 @@ export const ProductListBlock = defineBlock({
 
 ```jsx
 // src/fields/ColorTokenField.jsx
-import { useEditorStore } from '@racoondevs/atlas-web-builder'
+import { useEditorStore } from '@raulbellosom/atlas-web-builder'
 
 export function ColorTokenField({ value, onChange, label }) {
   const theme = useEditorStore((s) => s.theme)
@@ -613,7 +613,7 @@ export function ColorTokenField({ value, onChange, label }) {
 
 ```jsx
 // Registrar el campo y pasarlo al editor
-import { defaultFields } from '@racoondevs/atlas-web-builder'
+import { defaultFields } from '@raulbellosom/atlas-web-builder'
 import { ColorTokenField } from '@/fields/ColorTokenField'
 
 const customFields = {
@@ -637,7 +637,7 @@ const customFields = {
 Fragmentos de página predefinidos que el editor puede insertar desde la pestaña Plantillas.
 
 ```js
-import { defineTemplate } from '@racoondevs/atlas-web-builder'
+import { defineTemplate } from '@raulbellosom/atlas-web-builder'
 
 const heroCtaTemplate = defineTemplate({
   id: 'hero-cta',
@@ -790,7 +790,7 @@ export default defineConfig({
 > Si usas **Next.js**, añade el paquete a `transpilePackages` en `next.config.js`:
 >
 > ```js
-> module.exports = { transpilePackages: ['@racoondevs/atlas-web-builder'] }
+> module.exports = { transpilePackages: ['@raulbellosom/atlas-web-builder'] }
 > ```
 
 ---
