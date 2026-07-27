@@ -77,6 +77,11 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public' }) {
     blockId,
   }
   ctx.inlineText = createInlineTextHelper(ctx)
+  // ctx.resource() is a real hook call, executed inside `Component`'s render
+  // body (Component is itself a function component, invoked via JSX below).
+  // eslint's static naming check doesn't see that — it only recognizes
+  // "use*"-prefixed call sites — so this specific call is exempted.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   ctx.resource = (name, params) => useResource(ctx.resources, name, params)
 
   const Component = def.render
