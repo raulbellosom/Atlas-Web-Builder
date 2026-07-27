@@ -820,6 +820,101 @@ Crea un AssetSource en memoria para desarrollo. Soporta `list()`, `upload()`, `r
 | `resolveFilter(v)`    | Función    | Convierte `FilterValue` a string CSS `filter`.                                |
 | `resolveTransform(v)` | Función    | Convierte `TransformValue` a string CSS `transform`.                          |
 
+### Contexto y estado del builder
+
+| Export             | Tipo             | Descripción                                                                          |
+| ------------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| `useBuilder()`      | Hook             | Lee el contexto del builder (`blocks`, `resources`, `theme`, `actions`, `permissions`). Debe usarse dentro de `<AtlasWebBuilderProvider>`. |
+| `BuilderContext`    | `React.Context`  | Contexto crudo, para casos avanzados que no puedan usar el hook.                     |
+| `getVersion()`      | Función          | Devuelve la versión instalada del paquete.                                           |
+| `version`           | `string`         | Constante con la versión instalada del paquete.                                      |
+| `createBlockRegistry(blocks)` | Función | Crea un registro de bloques a partir de un array de `defineBlock(...)`. `AtlasWebBuilderProvider`/`AtlasWebBuilderEditor` lo llaman automáticamente a partir de su prop `blocks`; expuesto para pasar un `blockRegistry` ya construido. |
+
+### Tema (avanzado)
+
+| Export                  | Tipo       | Descripción                                                              |
+| ------------------------ | ---------- | --------------------------------------------------------------------------- |
+| `ThemeProvider`          | Componente | Provee el tema activo. `AtlasWebBuilderProvider` ya lo envuelve internamente. |
+| `useTheme()`             | Hook       | Devuelve el `Theme` activo.                                                |
+| `useThemeTokens()`       | Hook       | Devuelve solo los `tokens` del tema activo.                                |
+| `applyThemeVars(theme)`  | Función    | Convierte un `Theme` en variables CSS (`--atlas-*`).                       |
+
+### Renderer (avanzado)
+
+| Export             | Tipo       | Descripción                                                                              |
+| ------------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| `BlockRenderer`     | Componente | Renderiza un bloque individual por id. Usado internamente por `AtlasWebRenderer`; expuesto para composición avanzada. |
+| `SafeRichText`      | Componente | Renderiza HTML sanitizado (usado por `RichTextBlock`).                                       |
+| `ResourceBoundary`  | Componente | Alternativa de render prop a `ctx.resource()`. Ver "Bloque con contenido dinámico" más arriba. |
+
+### Persistencia y schema (avanzado)
+
+| Export                                | Tipo    | Descripción                                                                    |
+| --------------------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| `migrateContent(raw)`                   | Función | Migra contenido crudo de página a la versión de esquema actual. Usado internamente por `AtlasWebRenderer` y `parsePage`. |
+| `CURRENT_SCHEMA_VERSION`                | `number`| Versión de esquema actual del paquete.                                             |
+| `validatePage(page)`                    | Función | Valida la forma de una `Page`. Lanza `PageValidationError` si es inválida.          |
+| `garbageCollect(page)`                  | Función | Elimina bloques huérfanos (no referenciados desde ninguna región/slot).             |
+| `regenerateIds(page)`                   | Función | Regenera todos los ids de bloques/regiones (útil al duplicar página o plantilla).   |
+| `listUnknownBlockTypes(page, blocks)`   | Función | Devuelve los tipos de bloque de la página que no están en el registro dado.         |
+| `PageValidationError`                   | Clase   | Error lanzado por `serializePage`/`validatePage` cuando el esquema es inválido.      |
+
+### Templates y layouts (funciones avanzadas)
+
+| Export                                  | Tipo    | Descripción                                                          |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------ |
+| `createTemplateRegistry(templates)`     | Función | Crea el registro de plantillas usado internamente por el editor.        |
+| `applyTemplate(page, template, opts?)`  | Función | Inserta el resultado de `template.build()` dentro de una página existente. |
+| `defineLayout(def)`                     | Función | Define un layout de regiones reutilizable.                              |
+| `createLayoutRegistry(layouts)`         | Función | Crea el registro de layouts usado internamente por el editor.           |
+| `applyLayoutToDraft(page, layout)`      | Función | Aplica un layout a una página en edición.                               |
+
+### Assets (avanzado)
+
+| Export        | Tipo       | Descripción                                                                                  |
+| -------------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| `AssetPicker`  | Componente | Modal de selección/subida de medios usado internamente por el editor. Expuesto para UI propia. |
+
+### Edición en línea y fondos
+
+| Export                        | Tipo       | Descripción                                                                |
+| ------------------------------- | ---------- | ------------------------------------------------------------------------------ |
+| `InlineText`                    | Componente | Envoltorio de edición de texto en línea, usado por bloques de texto en modo `edit`. |
+| `createInlineTextHelper(ctx)`   | Función    | Crea el helper `ctx.inlineText` — ya incluido en el `ctx` de cada bloque.       |
+| `resolveBackground(value)`      | Función    | Normaliza un valor de campo `background` (sólido, gradiente o imagen).         |
+| `resolveBackgroundCss(value)`   | Función    | Convierte un valor de `background` a propiedades CSS.                          |
+| `BackgroundField`               | Componente | Control de campo para el tipo `background`.                                    |
+
+### Notificaciones
+
+| Export                   | Tipo       | Descripción                                                                          |
+| -------------------------- | ---------- | ----------------------------------------------------------------------------------------- |
+| `NotificationsProvider`    | Componente | Provee el sistema de notificaciones del editor (toasts de guardado, errores, etc.).      |
+| `useNotifications()`       | Hook       | Dispara notificaciones (`notify`, `dismiss`, `clear`) desde código propio.                |
+| `NotificationCenter`       | Componente | Renderiza las notificaciones activas. Ya incluido dentro de `AtlasWebBuilderEditor`.     |
+
+### Editor: store y campos (avanzado)
+
+| Export                       | Tipo       | Descripción                                                                        |
+| ---------------------------- | ---------- | ---------------------------------------------------------------------------------------- |
+| `EditorStoreProvider`        | Componente | Provee el store de Zustand del editor. Ya incluido dentro de `AtlasWebBuilderEditor`.    |
+| `useEditorStore(selector)`   | Hook       | Lee el estado del editor (página en edición, selección, historial, etc.).                |
+| `useEditorStoreInstance()`   | Hook       | Devuelve la instancia cruda del store (uso avanzado fuera de un selector).               |
+| `useTemporal()`              | Hook       | Expone undo/redo (`zundo`) del store del editor.                                         |
+| `createEditorStore(opts)`    | Función    | Crea una instancia de store de editor fuera de React (uso avanzado/testing).             |
+| `DEVICE_WIDTHS`              | `object`   | Anchos predefinidos para la vista previa responsive del editor (`mobile`, `tablet`, `desktop`). |
+| `defaultFields`              | `object`   | Registro de tipos de campo incluidos de serie. Combínalo con tus campos propios para `fieldTypes`. |
+| `defineField(def)`           | Función    | Define un tipo de campo personalizado (alternativa explícita a un componente suelto).    |
+
+### Bloques base (componentes individuales)
+
+Cada bloque de `baseBlocks` también se exporta de forma individual, por si quieres
+registrar solo algunos: `SectionBlock`, `ContainerBlock`, `HeadingBlock`, `TextBlock`,
+`ImageBlock`, `ButtonBlock`, `SpacerBlock`, `DividerBlock`, `ColumnsBlock`, `GridBlock`,
+`HeroBlock`, `RichTextBlock`, `CardBlock`, `TestimonialBlock`, `PricingBlock`,
+`NavbarBlock`, `FooterBlock`, `VideoBlock`. `baseBlockCategories` describe las
+categorías usadas en la paleta del editor.
+
 ---
 
 ## Configuración de Vite (proyecto consumidor)
