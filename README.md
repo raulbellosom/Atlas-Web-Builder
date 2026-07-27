@@ -527,7 +527,11 @@ const blocks = [...baseBlocks, ProductCardBlock]
 <AtlasWebBuilderEditor blocks={blocks} initialPage={page} onSaveDraft={handleSave} onPublish={handlePublish} />
 ```
 
-### Bloque con contenido dinámico (resources)
+### Bloque con contenido dinámico (ctx.resource())
+
+`ctx.resource(name, params)` es un hook — debe llamarse de forma **incondicional** en el
+cuerpo de `render`, igual que cualquier hook de React (no dentro de un `if`, un loop, ni
+después de un `return` temprano).
 
 ```jsx
 export const ProductListBlock = defineBlock({
@@ -542,8 +546,9 @@ export const ProductListBlock = defineBlock({
 
   render: ({ categoryId, limit, ctx }) => {
     // ctx.resource() carga datos del host (inyectados via <AtlasWebBuilderEditor resources={...}>)
-    const { data: products, loading } = ctx.resource('products', { categoryId, limit })
+    const { data: products, loading, error } = ctx.resource('products', { categoryId, limit })
     if (loading) return <p>Cargando…</p>
+    if (error) return <p>No se pudieron cargar los productos.</p>
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
         {(products || []).map((p) => (
@@ -571,6 +576,50 @@ export const ProductListBlock = defineBlock({
   }}
   initialPage={page}
 />
+```
+
+> **Importante:** el objeto `resources` debe ser referencialmente estable entre renders
+> del host (envuélvelo en `useMemo`/`useCallback`, o defínelo fuera del componente). Si
+> pasas un objeto literal nuevo en cada render, `ctx.resource()` volverá a pedir los
+> datos en cada render de tu app anfitriona.
+
+`ctx.resource()` devuelve:
+
+| Campo     | Tipo          | Descripción                                                            |
+| --------- | ------------- | ------------------------------------------------------------------------- |
+| `data`    | `unknown`     | El valor resuelto por el fetcher. `undefined` mientras carga.             |
+| `loading` | `boolean`     | `true` mientras la promesa está pendiente.                                |
+| `error`   | `Error\|null` | Error del fetcher, o "resource no registrado" si el nombre no existe.     |
+| `empty`   | `boolean`     | `true` cuando ya resolvió y el valor es `null`/`undefined`/`[]`.          |
+
+Se vuelve a pedir el dato automáticamente cuando cambian `params` (comparados por
+`JSON.stringify`).
+
+### Alternativa: `<ResourceBoundary>` (render prop)
+
+Si prefieres no usar un hook directamente en `render`, `ResourceBoundary` expone el
+mismo estado como render prop. Debes pasarle el `ctx` del bloque para que resuelva
+contra el `resources` correcto (host en público/preview, `mockResources` en modo
+edición):
+
+```jsx
+import { ResourceBoundary } from '@raulbellosom/atlas-web-builder'
+
+render: ({ categoryId, limit, ctx }) => (
+  <ResourceBoundary ctx={ctx} resource="products" query={{ categoryId, limit }}>
+    {({ data: products, loading, error }) => {
+      if (loading) return <p>Cargando…</p>
+      if (error) return <p>No se pudieron cargar los productos.</p>
+      return (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+          {(products || []).map((p) => (
+            <div key={p.id}>{p.name}</div>
+          ))}
+        </div>
+      )
+    }}
+  </ResourceBoundary>
+),
 ```
 
 ---
