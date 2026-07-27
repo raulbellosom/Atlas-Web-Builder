@@ -55,6 +55,7 @@ export function EditableBlock({
       data-atlas-inline-editing={inlineEditingHere ? 'true' : undefined}
       className={clsx(
         'atlas-wb-block',
+        index === 0 && 'atlas-wb-block--first',
         isSelected && 'atlas-wb-block--selected',
         isDragging && 'atlas-wb-block--dragging',
         inlineEditingHere && 'atlas-wb-block--editing',

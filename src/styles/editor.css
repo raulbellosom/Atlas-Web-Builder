@@ -564,6 +564,13 @@
   overflow: hidden;
   pointer-events: auto;
 }
+/* The canvas frame clips overflow for its rounded corners, so a block with
+   nothing above it (the first in its region/slot) must flip its toolbar
+   below instead of above, or it renders clipped and invisible. */
+.atlas-wb-block--first > .atlas-wb-block__toolbar {
+  bottom: auto;
+  top: calc(100% + 2px);
+}
 .atlas-wb-block__toolbar-label {
   padding: 4px 10px;
   font-size: 11px;
