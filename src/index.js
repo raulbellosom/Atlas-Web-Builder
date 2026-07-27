@@ -1,15 +1,15 @@
 /**
- * @racoondevs/atlas-web-builder
+ * @raulbellosom/atlas-web-builder
  *
  * Phase 3 public API: provider, registry, theme, renderer, editor chrome.
  */
 
 // CSS side-effect import so Vite emits `dist/style.css` for the
-// `@racoondevs/atlas-web-builder/styles` sub-path export.
+// `@raulbellosom/atlas-web-builder/styles` sub-path export.
 import './styles/editor.css'
 
 /** Package version. Kept in lockstep with package.json. */
-export const version = '0.0.2'
+export const version = '0.1.0'
 
 /**
  * @returns {string}
