@@ -1,33 +1,27 @@
-/**
- * @file Phase-2 placeholder for the resource boundary. Real implementation
- * arrives in Phase 7 alongside the resources/actions providers.
- *
- * For now this component simply renders its children inside a wrapper so
- * blocks can already declare the API shape they expect later:
- *
- *   <ResourceBoundary resource="products" query={query}>
- *     {({ data, loading, error }) => ...}
- *   </ResourceBoundary>
- */
+import { useResource } from './useResource.js'
 
 /**
  * @typedef {Object} ResourceBoundaryRenderProps
- * @property {unknown}        data
- * @property {boolean}        loading
- * @property {Error|null}     error
- * @property {boolean}        empty
+ * @property {unknown}    data
+ * @property {boolean}    loading
+ * @property {Error|null} error
+ * @property {boolean}    empty
  */
 
 /**
+ * Render-prop alternative to `ctx.resource()`. Must be rendered inside a
+ * block's `render` function, passing that block's own `ctx` through, so it
+ * resolves against the correctly-scoped `ctx.resources` (host resources in
+ * public/preview mode, `mockResources` in edit mode).
+ *
  * @param {{
+ *   ctx: { resources?: Object<string, Function> },
  *   resource: string,
  *   query?: unknown,
  *   children: (state: ResourceBoundaryRenderProps) => React.ReactNode,
  * }} props
  */
-export function ResourceBoundary({ children }) {
-  // Phase 7 will replace this with real loading/error/empty state handling
-  // sourced from the host's registered resources or mockResources.
-  const state = { data: null, loading: false, error: null, empty: true }
+export function ResourceBoundary({ ctx, resource, query, children }) {
+  const state = useResource(ctx ? ctx.resources : undefined, resource, query)
   return typeof children === 'function' ? children(state) : null
 }
