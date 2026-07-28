@@ -57,6 +57,25 @@ function EditorShell({ onSaveDraft, onPublish, brandLogo, brandName }) {
   const [leftClosed, setLeftClosed] = useState(isMobile)
   const [rightClosed, setRightClosed] = useState(isMobile)
 
+  // Keep panel state in sync with the CSS mobile breakpoint (960px) as the
+  // window is resized after mount. Without this, resizing from desktop to
+  // mobile leaves both panels "open" in JS while CSS turns them into
+  // fixed-position overlays — the two overlays end up wider than the
+  // viewport and cover the canvas entirely.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    let wasMobile = window.innerWidth <= 960
+    function handleResize() {
+      const nowMobile = window.innerWidth <= 960
+      if (nowMobile === wasMobile) return
+      wasMobile = nowMobile
+      setLeftClosed(nowMobile)
+      setRightClosed(nowMobile)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // ----- Keyboard shortcuts ------------------------------------------------
   useEffect(() => {
     function onKey(e) {
