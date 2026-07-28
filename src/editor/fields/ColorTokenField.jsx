@@ -26,16 +26,8 @@ export function ColorTokenField({ value, onChange, label }) {
           >
             <span
               aria-hidden="true"
-              style={{
-                display: 'inline-block',
-                width: 10,
-                height: 10,
-                borderRadius: 2,
-                marginRight: 6,
-                verticalAlign: 'middle',
-                background: colorTokens[k],
-                border: '1px solid rgba(0,0,0,0.1)',
-              }}
+              className="atlas-wb-field__token-swatch"
+              style={{ background: colorTokens[k] }}
             />
             {k}
           </button>

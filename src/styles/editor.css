@@ -765,24 +765,45 @@
 .atlas-wb-field__token-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 .atlas-wb-field__token {
-  padding: 3px 8px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 999px;
   border: 1px solid var(--awb-border);
   background: var(--awb-bg);
+  color: var(--awb-panel-fg);
   cursor: pointer;
   font: inherit;
   font-size: 11.5px;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease;
 }
 .atlas-wb-field__token:hover {
-  border-color: var(--awb-accent);
+  border-color: var(--awb-muted);
+}
+.atlas-wb-field__token-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 }
 .atlas-wb-field__token--active {
-  background: var(--awb-accent);
-  color: var(--awb-accent-fg);
   border-color: var(--awb-accent);
+  background: color-mix(in srgb, var(--awb-accent) 10%, var(--awb-bg));
+  box-shadow: 0 0 0 1px var(--awb-accent);
+}
+.atlas-wb-field__token--active .atlas-wb-field__token-swatch {
+  box-shadow:
+    0 0 0 2px var(--awb-bg),
+    0 0 0 3px var(--awb-accent);
 }
 
 /* ── 13. Layers panel ───────────────────────────────────────────────────────── */
@@ -1348,8 +1369,30 @@
 .atlas-wb-bg-field__group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-top: 8px;
+}
+.atlas-wb-bg-field__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.atlas-wb-bg-field__row > span:first-child {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--awb-muted);
+  flex-shrink: 0;
+}
+.atlas-wb-bg-field__row .atlas-wb-field__select {
+  max-width: 160px;
+}
+.atlas-wb-bg-field__preview {
+  height: 40px;
+  border-radius: var(--awb-radius-sm);
+  border: 1px solid var(--awb-border);
+  background-size: cover;
+  background-position: center;
 }
 
 /* ── 22. Inline editing ─────────────────────────────────────────────────────── */
