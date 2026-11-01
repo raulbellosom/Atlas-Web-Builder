@@ -177,22 +177,25 @@ export const HeroBlock = defineBlock({
         </a>
       ) : null
 
-    const CtaSecond = ctaSecondLabel ? (
-      <a
-        href={safeCta2}
-        style={{
-          ...ctaStyle,
-          background: 'transparent',
-          color: colorVar('fg', 'inherit'),
-          border: `1px solid ${colorVar('muted', '#6b7280')}`,
-        }}
-      >
-        {ctaSecondLabel}
-      </a>
-    ) : null
-
-    const CtaGroup =
-      Cta || CtaSecond ? (
+    // image-bg forces white text over a dark background, so the secondary CTA
+    // must follow it instead of the theme's fg/muted tokens.
+    const renderCtaGroup = (onDark) => {
+      const CtaSecond = ctaSecondLabel ? (
+        <a
+          href={safeCta2}
+          style={{
+            ...ctaStyle,
+            background: 'transparent',
+            color: onDark ? '#fff' : colorVar('fg', 'inherit'),
+            border: onDark
+              ? '1px solid rgba(255,255,255,0.6)'
+              : `1px solid ${colorVar('muted', '#6b7280')}`,
+          }}
+        >
+          {ctaSecondLabel}
+        </a>
+      ) : null
+      return Cta || CtaSecond ? (
         <div
           style={{
             display: 'flex',
@@ -207,6 +210,8 @@ export const HeroBlock = defineBlock({
           {CtaSecond}
         </div>
       ) : null
+    }
+    const CtaGroup = renderCtaGroup(false)
 
     const Eyebrow =
       eyebrow || isEdit
@@ -366,7 +371,7 @@ export const HeroBlock = defineBlock({
                 },
               })
             : null}
-          {CtaGroup}
+          {renderCtaGroup(true)}
         </section>
       )
     }
