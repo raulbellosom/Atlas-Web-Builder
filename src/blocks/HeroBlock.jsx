@@ -271,7 +271,10 @@ export const HeroBlock = defineBlock({
 
     const sectionBase = {
       padding: `${spacingVar(paddingY)} ${spacingVar('6')}`,
-      ...(minHeight ? { minHeight } : null),
+      // With a min height, center the content vertically instead of leaving it at the top.
+      ...(minHeight
+        ? { minHeight, display: 'flex', flexDirection: 'column', justifyContent: 'center' }
+        : null),
       ...(shadow && shadow !== 'none' ? { boxShadow: shadowVar(shadow) } : null),
     }
 
