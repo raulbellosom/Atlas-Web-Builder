@@ -18,3 +18,27 @@ describe('SeoPanel site context', () => {
     expect(screen.getAllByText(/sitio\.example\.com/i).length).toBeGreaterThan(0)
   })
 })
+
+describe('SeoPanel social image picker', () => {
+  it('stores {url, assetId} from the asset library and can remove it', async () => {
+    const { createInMemoryAssetSource } = await import('../assets/createAssetSource.js')
+    const { AtlasWebBuilderProvider } = await import('../provider/AtlasWebBuilderProvider.jsx')
+    const { createBlockRegistry } = await import('../registry/createBlockRegistry.js')
+    const { fireEvent, waitFor } = await import('@testing-library/react')
+    const assets = createInMemoryAssetSource([{ id: 'a1', kind: 'image', url: 'https://x.test/og.png', name: 'og' }])
+    render(
+      <AtlasWebBuilderProvider blockRegistry={createBlockRegistry([])} assets={assets}>
+        <EditorStoreProvider initialPage={page}>
+          <SeoPanel />
+        </EditorStoreProvider>
+      </AtlasWebBuilderProvider>,
+    )
+    expect(screen.getByText(/1200x630/)).toBeTruthy()
+    fireEvent.click(screen.getByText('Elegir o subir imagen'))
+    fireEvent.click(await screen.findByText(/Biblioteca/i))
+    fireEvent.click(await screen.findByTitle('og').catch(() => screen.findByText('og')))
+    await waitFor(() => expect(screen.getByDisplayValue('https://x.test/og.png')).toBeTruthy())
+    fireEvent.click(screen.getByText('Quitar'))
+    await waitFor(() => expect(screen.queryByDisplayValue('https://x.test/og.png')).toBeNull())
+  })
+})

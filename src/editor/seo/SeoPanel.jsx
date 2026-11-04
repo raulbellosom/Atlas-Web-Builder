@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useSeoContext } from './SeoContext.js'
 import { buildSeoMeta, resolveOgImage, TITLE_MAX, DESCRIPTION_MAX } from '../../seo/buildSeoMeta.js'
 import { analyzeSeo } from '../../seo/analyzeSeo.js'
 import { STRUCTURED_DATA_TYPES } from '../../seo/jsonld.js'
+import { AssetPicker } from '../assets/AssetPicker.jsx'
 
 const OG_TYPES = ['website', 'article', 'product', 'profile']
 
@@ -103,6 +104,7 @@ export function SeoPanel(props) {
   const page = useEditorStore((s) => s.page)
   const setPage = useEditorStore((s) => s.setPage)
   const seo = page.seo || {}
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   function update(partial) {
     setPage({ ...page, seo: { ...seo, ...partial }, updatedAt: new Date().toISOString() })
@@ -118,7 +120,7 @@ export function SeoPanel(props) {
     : { index: seo.robots?.index !== false, follow: seo.robots?.follow !== false }
   const sd = Array.isArray(seo.structuredData) ? seo.structuredData : []
   const card = get('name', 'twitter:card')
-  const ogImageUrl = typeof seo.ogImage === 'string' ? seo.ogImage : (resolveOgImage(seo) || '')
+  const ogImageUrl = resolveOgImage(seo) || ''
 
   return (
     <div className="atlas-wb-seo">
@@ -153,7 +155,25 @@ export function SeoPanel(props) {
       </div>
       <Text label="Título al compartir" value={seo.ogTitle} onChange={(v) => update({ ogTitle: v })} placeholder={built.title} />
       <Text label="Descripción al compartir" multiline value={seo.ogDescription} onChange={(v) => update({ ogDescription: v })} placeholder={get('name', 'description')} />
-      <Text label="Imagen al compartir (URL)" value={ogImageUrl} onChange={(v) => update({ ogImage: v })} placeholder="https://ejemplo.com/imagen.jpg" />
+      <div className="atlas-wb-field">
+        <span className="atlas-wb-field__label">Imagen al compartir</span>
+        <div className="atlas-wb-field__row">
+          <button type="button" className="atlas-wb-field__button" onClick={() => setPickerOpen(true)}>Elegir o subir imagen</button>
+          {ogImageUrl ? <button type="button" className="atlas-wb-field__button" onClick={() => update({ ogImage: undefined, ogImageAssetId: null })}>Quitar</button> : null}
+        </div>
+        <span className="atlas-wb-field__hint">Recomendado: 1200x630 px.</span>
+      </div>
+      {pickerOpen ? (
+        <AssetPicker
+          accept="image/*"
+          onPick={(asset) => {
+            update({ ogImage: { url: asset.url, ...(asset.id && asset.id !== asset.url ? { assetId: asset.id } : {}) } })
+            setPickerOpen(false)
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      ) : null}
+      <Text label="Imagen al compartir (URL manual)" value={ogImageUrl} onChange={(v) => update({ ogImage: v ? { url: v } : undefined })} placeholder="https://ejemplo.com/imagen.jpg" />
       <Select label="Tipo de contenido" value={seo.ogType || 'website'} onChange={(v) => update({ ogType: v })} options={OG_TYPES.map((t) => [t, t])} />
       <Select
         label="Tarjeta de Twitter / X"
