@@ -9,7 +9,7 @@
 import './styles/editor.css'
 
 /** Package version. Kept in lockstep with package.json. */
-export const version = '0.3.0'
+export const version = '0.3.1'
 
 /**
  * @returns {string}
@@ -125,6 +125,7 @@ export {
   STRUCTURED_DATA_TYPES,
 } from './seo/index.js'
 export { SeoPanel } from './editor/seo/SeoPanel.jsx'
+export { SeoContext, useSeoContext } from './editor/seo/SeoContext.js'
 
 // Media, performance and branding
 export { AtlasImage, groupVariants, optimizeImageFile } from './media/index.js'

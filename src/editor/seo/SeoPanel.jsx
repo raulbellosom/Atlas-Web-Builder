@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
+import { useSeoContext } from './SeoContext.js'
 import { buildSeoMeta, resolveOgImage, TITLE_MAX, DESCRIPTION_MAX } from '../../seo/buildSeoMeta.js'
 import { analyzeSeo } from '../../seo/analyzeSeo.js'
 import { STRUCTURED_DATA_TYPES } from '../../seo/jsonld.js'
@@ -95,7 +96,10 @@ function StructuredEntry({ entry, onChange, onRemove }) {
  *
  * @param {{ site?: import('../../schema/site.js').Site, baseUrl?: string }} props
  */
-export function SeoPanel({ site, baseUrl = '' }) {
+export function SeoPanel(props) {
+  const context = useSeoContext()
+  const site = props.site ?? context.site
+  const baseUrl = props.baseUrl ?? context.baseUrl ?? ''
   const page = useEditorStore((s) => s.page)
   const setPage = useEditorStore((s) => s.setPage)
   const seo = page.seo || {}

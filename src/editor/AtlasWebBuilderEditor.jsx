@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { SeoContext } from './seo/SeoContext.js'
 import {
   DndContext,
   DragOverlay,
@@ -337,6 +338,7 @@ export function AtlasWebBuilderEditor({
   onPublish,
   brandLogo,
   brandName,
+  seo,
   useExistingProvider = false,
 }) {
   const providerProps = useMemo(
@@ -366,10 +368,14 @@ export function AtlasWebBuilderEditor({
     ],
   )
 
+  const seoValue = useMemo(() => ({ site: seo?.site, baseUrl: seo?.baseUrl ?? '' }), [seo?.site, seo?.baseUrl])
+
   const inner = (
     <EditorStoreProvider initialPage={initialPage} initialTheme={theme}>
       <NotificationsProvider>
-        <EditorShell onSaveDraft={onSaveDraft} onPublish={onPublish} brandLogo={brandLogo} brandName={brandName} />
+        <SeoContext.Provider value={seoValue}>
+          <EditorShell onSaveDraft={onSaveDraft} onPublish={onPublish} brandLogo={brandLogo} brandName={brandName} />
+        </SeoContext.Provider>
       </NotificationsProvider>
     </EditorStoreProvider>
   )
