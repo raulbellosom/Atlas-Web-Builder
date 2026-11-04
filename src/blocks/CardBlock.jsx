@@ -100,7 +100,7 @@ export const CardBlock = defineBlock({
           ...(variant === 'horizontal' ? { width: '200px', aspectRatio: '1' } : null),
         }}
       />
-    ) : (
+    ) : ctx.mode !== 'edit' ? null : (
       <div
         aria-hidden="true"
         style={{

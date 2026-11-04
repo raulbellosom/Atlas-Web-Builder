@@ -74,7 +74,8 @@ export const ImageBlock = defineBlock({
     { label: 'Presentación',  fields: ['aspectRatio', 'objectFit', 'width', 'align'] },
     { label: 'Estilo',        fields: ['radius', 'shadow'] },
   ],
-  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, variants, dominantColor, naturalWidth, naturalHeight }) => {
+  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, variants, dominantColor, naturalWidth, naturalHeight, ctx }) => {
+    if (!isSafeImageUrl(src) && ctx?.mode !== 'edit') return null
     const safeRatio = aspectRatio && aspectRatio !== 'auto' ? aspectRatio : undefined
     const safeLink  = isSafeHref(link) ? link : ''
     const radiusVal = radius && radius !== 'none' ? radiusVar(radius) : undefined
