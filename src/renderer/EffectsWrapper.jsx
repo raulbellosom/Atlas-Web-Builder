@@ -66,6 +66,9 @@ export function resolveTransform(t) {
   return parts.length ? parts.join(' ') : undefined
 }
 
+// CSS.escape does not exist in Node (SSR); escaping backslash and quote is enough inside a quoted attribute value.
+const escapeAttr = (v) => String(v).replace(/[\\"<\n\r]/g, (c) => (c === '<' ? '\\3c ' : c === '\n' || c === '\r' ? ' ' : `\\${c}`))
+
 // ── Hover style tag ───────────────────────────────────────────────────────────
 
 /**
@@ -81,7 +84,7 @@ function HoverStyleTag({ blockId, hover }) {
 
   if (!hasScale && !hasShadow && !hasBrightness) return null
 
-  const sel = `[data-eid="${CSS.escape(blockId)}"]`
+  const sel = `[data-eid="${escapeAttr(blockId)}"]`
   const hoverParts = []
   if (hasScale) hoverParts.push(`transform: scale(${scale})`)
   if (hasShadow) hoverParts.push(`box-shadow: var(--atlas-shadow-${shadow}, none)`)
@@ -94,7 +97,8 @@ function HoverStyleTag({ blockId, hover }) {
   const css =
     `${sel} { transition: ${transProps}; }\n` + `${sel}:hover { ${hoverParts.join('; ')}; }\n`
 
-  return <style>{css}</style>
+  // Raw HTML: React would entity-escape the quotes in SSR output, which <style> never decodes.
+  return <style dangerouslySetInnerHTML={{ __html: css }} />
 }
 
 // ── Scroll-reveal wrapper ─────────────────────────────────────────────────────
