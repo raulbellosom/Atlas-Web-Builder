@@ -111,6 +111,8 @@ export {
   NavbarBlock,
   FooterBlock,
   VideoBlock,
+  CounterBlock,
+  TypewriterBlock,
 } from './blocks/index.js'
 
 // Media, performance and branding
@@ -126,3 +128,12 @@ export {
   readableOn,
   mixColors,
 } from './theme/brand.js'
+
+// Motion and effects
+export {
+  EFFECT_PRESETS,
+  EFFECT_SHAPES,
+  sanitizeAnimation,
+  sanitizeHover,
+  useReducedMotion,
+} from './renderer/effects.js'

@@ -17,6 +17,13 @@ const PRESETS = [
   { value: 'slide-right', label: 'Entrar desde izquierda' },
   { value: 'zoom-in', label: 'Zoom — crecer' },
   { value: 'zoom-out', label: 'Zoom — encoger' },
+  { value: 'blur-in', label: 'Desenfoque a nítido' },
+  { value: 'rotate-in', label: 'Giro suave' },
+  { value: 'flip-up', label: 'Voltear hacia arriba' },
+  { value: 'slide-fade-up', label: 'Subir suave (fade)' },
+  { value: 'slide-fade-down', label: 'Bajar suave (fade)' },
+  { value: 'slide-fade-left', label: 'Entrar suave desde derecha' },
+  { value: 'slide-fade-right', label: 'Entrar suave desde izquierda' },
 ]
 
 const EASINGS = [

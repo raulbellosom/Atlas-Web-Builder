@@ -26,6 +26,8 @@ import { PricingBlock } from './PricingBlock.jsx'
 import { NavbarBlock } from './NavbarBlock.jsx'
 import { FooterBlock } from './FooterBlock.jsx'
 import { VideoBlock } from './VideoBlock.jsx'
+import { CounterBlock } from './CounterBlock.jsx'
+import { TypewriterBlock } from './TypewriterBlock.jsx'
 
 export {
   SectionBlock,
@@ -46,6 +48,8 @@ export {
   NavbarBlock,
   FooterBlock,
   VideoBlock,
+  CounterBlock,
+  TypewriterBlock,
 }
 
 /**
@@ -80,6 +84,8 @@ export const baseBlocks = [
   ButtonBlock,
   SpacerBlock,
   DividerBlock,
+  CounterBlock,
+  TypewriterBlock,
 ]
 
 /**

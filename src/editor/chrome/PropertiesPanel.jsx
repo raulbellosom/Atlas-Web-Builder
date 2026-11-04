@@ -212,6 +212,56 @@ export function PropertiesPanel() {
             onChange={(v) => updateBlockProps(selectedId, { _hover: v })}
           />
 
+          {/* Stagger children (blocks with slots only) */}
+          {def.slots && Object.keys(def.slots).length > 0 && (
+            <div className="atlas-wb-field">
+              <span className="atlas-wb-field__label">Cascada de hijos</span>
+              <div className="atlas-wb-props__opacity-row">
+                <input
+                  type="range"
+                  min="0"
+                  max="500"
+                  step="25"
+                  value={merged._stagger || 0}
+                  onChange={(e) =>
+                    updateBlockProps(selectedId, { _stagger: Number(e.target.value) || undefined })
+                  }
+                />
+                <span className="atlas-wb-props__opacity-val">
+                  {merged._stagger ? `${merged._stagger}ms` : 'Off'}
+                </span>
+              </div>
+              <span className="atlas-wb-effects-toggle__text">
+                Los hijos aparecen uno tras otro al hacer scroll (pausa entre cada uno)
+              </span>
+            </div>
+          )}
+
+          {/* Parallax */}
+          <div className="atlas-wb-field">
+            <span className="atlas-wb-field__label">Parallax</span>
+            <div className="atlas-wb-props__opacity-row">
+              <input
+                type="range"
+                min="-0.5"
+                max="0.5"
+                step="0.05"
+                value={merged._parallax?.speed || 0}
+                onChange={(e) => {
+                  const speed = Number(e.target.value)
+                  updateBlockProps(selectedId, { _parallax: speed ? { speed } : undefined })
+                }}
+              />
+              <span className="atlas-wb-props__opacity-val">
+                {merged._parallax?.speed ? merged._parallax.speed.toFixed(2) : 'Off'}
+              </span>
+            </div>
+            <span className="atlas-wb-effects-toggle__text">
+              El bloque se desplaza a distinta velocidad que el scroll (se desactiva con movimiento
+              reducido)
+            </span>
+          </div>
+
           {/* CSS filters */}
           <FilterField
             label="Filtros CSS"

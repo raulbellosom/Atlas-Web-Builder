@@ -4,6 +4,7 @@ import { useTheme } from '../theme/ThemeProvider.jsx'
 import { useEditorRender } from '../editor/dnd/EditorRenderContext.js'
 import { createInlineTextHelper } from '../editor/inline/InlineText.jsx'
 import { EffectsWrapper } from './EffectsWrapper.jsx'
+import { StaggerContext, sanitizeAnimation, sanitizeStagger } from './effects.js'
 import { useResource } from './useResource.js'
 import { LazyMount } from './LazyMount.jsx'
 
@@ -49,11 +50,26 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
    *
    * @param {string} slotName
    */
+  const staggerStep = mode === 'edit' ? 0 : sanitizeStagger(props._stagger)
+  const staggerAnim = sanitizeAnimation(props._animation) || {
+    preset: 'slide-fade-up',
+    duration: 600,
+    delay: 0,
+    easing: 'ease-out',
+  }
   const slot = (slotName) => {
     const ids = (instance.children && instance.children[slotName]) || []
-    const children = ids.map((childId) =>
+    const children = ids.map((childId, index) =>
       editor && mode === 'edit' ? (
         editor.renderBlock(childId, blocks, mode)
+      ) : staggerStep ? (
+        // The parent's own animation plays on the container; children reveal in sequence.
+        <StaggerContext.Provider
+          key={childId}
+          value={{ delay: index * staggerStep, animation: { ...staggerAnim, delay: 0 } }}
+        >
+          <BlockRenderer blockId={childId} blocks={blocks} mode={mode} eager={eager} />
+        </StaggerContext.Provider>
       ) : (
         <BlockRenderer key={childId} blockId={childId} blocks={blocks} mode={mode} eager={eager} />
       ),

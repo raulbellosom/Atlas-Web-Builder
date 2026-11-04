@@ -1834,3 +1834,122 @@
 .atlas-nb-dropdown-link:hover {
   background: var(--atlas-color-muted, #f1f5f9);
 }
+
+/* ── 28. Motion: extra entrance presets, typewriter caret, reduced motion ───── */
+@keyframes atlas-anim-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@keyframes atlas-anim-rotate-in {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+@keyframes atlas-anim-flip-up {
+  from {
+    opacity: 0;
+    transform: perspective(800px) rotateX(35deg) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) rotateX(0) translateY(0);
+  }
+}
+@keyframes atlas-anim-slide-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes atlas-anim-slide-fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes atlas-anim-slide-fade-left {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes atlas-anim-slide-fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.atlas-wb-typewriter__caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 1em;
+  margin-left: 0.06em;
+  vertical-align: text-bottom;
+  background: currentColor;
+  animation: atlas-wb-caret-blink 1s steps(1) infinite;
+}
+@keyframes atlas-wb-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-wb-effects-wrap,
+  .atlas-wb-effects-wrap > div {
+    animation: none !important;
+  }
+  .atlas-wb-typewriter__caret {
+    animation: none;
+  }
+}
+
+/* ── SEO panel ──────────────────────────────────────────────────────────────── */
+.atlas-wb-seo { display: flex; flex-direction: column; gap: 8px; }
+.atlas-wb-seo-counter { font-size: 11px; color: var(--awb-muted); }
+.atlas-wb-seo-counter--over { color: #b42318; }
+.atlas-wb-seo-check { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+.atlas-wb-seo-link { background: none; border: 0; padding: 0; color: var(--awb-accent, #2563eb); font-size: 12px; cursor: pointer; text-align: left; }
+.atlas-wb-seo-sd { border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.atlas-wb-seo-sd__head { display: flex; justify-content: space-between; font-size: 12px; }
+.atlas-wb-seo-sd__item { border-top: 1px dashed var(--awb-border); padding-top: 6px; display: flex; flex-direction: column; gap: 6px; }
+.atlas-wb-seo-card { border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); overflow: hidden; background: white; font-family: Arial, sans-serif; }
+.atlas-wb-seo-card__img { display: block; width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; background: #e5e7eb; }
+.atlas-wb-seo-card__img--empty { display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6b7280; }
+.atlas-wb-seo-card--small { display: flex; }
+.atlas-wb-seo-card--small .atlas-wb-seo-card__img { width: 96px; aspect-ratio: 1; flex: none; }
+.atlas-wb-seo-card__body { padding: 8px 10px; min-width: 0; }
+.atlas-wb-seo-card__domain { font-size: 10px; text-transform: uppercase; color: #6b7280; }
+.atlas-wb-seo-card__title { font-size: 14px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.atlas-wb-seo-card__desc { font-size: 12px; color: #4b5563; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.atlas-wb-seo-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.atlas-wb-seo-checks__item { font-size: 12px; padding: 4px 8px; border-radius: var(--awb-radius-sm); border-left: 3px solid; }
+.atlas-wb-seo-checks__item--ok { border-color: #16a34a; background: #f0fdf4; color: #14532d; }
+.atlas-wb-seo-checks__item--warn { border-color: #d97706; background: #fffbeb; color: #78350f; }
+.atlas-wb-seo-checks__item--error { border-color: #dc2626; background: #fef2f2; color: #7f1d1d; }

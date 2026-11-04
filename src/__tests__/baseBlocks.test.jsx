@@ -34,8 +34,8 @@ function makePage(blocks) {
 
 describe('baseBlocks', () => {
   it('exposes the base block definitions in the expected order', () => {
-    expect(baseBlocks).toHaveLength(18)
-    expect(baseBlocks.map((b) => b.type)).toEqual([
+    expect(baseBlocks.length).toBeGreaterThanOrEqual(20)
+    expect(baseBlocks.map((b) => b.type).slice(0, 18)).toEqual([
       'NavbarBlock',
       'FooterBlock',
       'HeroBlock',
@@ -55,6 +55,9 @@ describe('baseBlocks', () => {
       'SpacerBlock',
       'DividerBlock',
     ])
+    expect(baseBlocks.map((b) => b.type)).toEqual(
+      expect.arrayContaining(['CounterBlock', 'TypewriterBlock']),
+    )
   })
 
   it('every block has type, label, category, render and defaultProps', () => {

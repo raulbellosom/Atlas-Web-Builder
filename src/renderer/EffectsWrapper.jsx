@@ -22,8 +22,20 @@
  * in edit mode or unsupported environments).
  */
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useContext } from 'react'
 import { resolveFilter } from '../editor/fields/FilterField.jsx'
+import {
+  EFFECT_SHAPES,
+  StaggerContext,
+  clampNum,
+  parallaxOffset,
+  sanitizeAnimation,
+  sanitizeFilter,
+  sanitizeHover,
+  sanitizeParallax,
+  sanitizeTransform,
+  useReducedMotion,
+} from './effects.js'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -91,13 +103,13 @@ function HoverStyleTag({ blockId, hover }) {
  * Wraps children and triggers the entrance animation when the element enters
  * the viewport. In edit mode the block is always visible immediately.
  */
-function ScrollRevealWrapper({ animation, mode, children }) {
+function ScrollRevealWrapper({ animation, mode, reduced, children }) {
   const ref = useRef(null)
   // Edit mode → always visible; public/preview → hidden until intersecting
-  const [visible, setVisible] = useState(mode === 'edit')
+  const [visible, setVisible] = useState(mode === 'edit' || reduced)
 
   useEffect(() => {
-    if (mode === 'edit') {
+    if (mode === 'edit' || reduced) {
       setVisible(true)
       return
     }
@@ -117,13 +129,59 @@ function ScrollRevealWrapper({ animation, mode, children }) {
     )
     obs.observe(el)
     return () => obs.disconnect()
-  }, [mode])
+  }, [mode, reduced])
 
-  const animStr = resolveAnimation(animation)
+  const animStr = reduced ? undefined : resolveAnimation(animation)
   const style = visible && animStr ? { animation: animStr } : !visible ? { opacity: 0 } : {}
 
   return (
     <div ref={ref} style={style}>
+      {children}
+    </div>
+  )
+}
+
+// ── Parallax wrapper ──────────────────────────────────────────────────────────
+
+/**
+ * Translates its content vertically while in view. Scroll/resize listeners
+ * (passive, rAF-throttled) exist only while the IntersectionObserver reports
+ * the element on screen, and are removed on unmount.
+ */
+function ParallaxWrapper({ speed, children }) {
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    let raf = 0
+    let listening = false
+    const update = () => {
+      raf = 0
+      el.style.transform = `translate3d(0, ${parallaxOffset(el.getBoundingClientRect(), window.innerHeight, speed)}px, 0)`
+    }
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+    const listen = (on) => {
+      if (on === listening) return
+      listening = on
+      const fn = on ? 'addEventListener' : 'removeEventListener'
+      window[fn]('scroll', onScroll, { passive: true })
+      window[fn]('resize', onScroll, { passive: true })
+      if (on) update()
+    }
+    const obs = new IntersectionObserver(([entry]) => listen(entry.isIntersecting))
+    obs.observe(el)
+    return () => {
+      obs.disconnect()
+      listen(false)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [speed])
+
+  return (
+    <div ref={ref} style={{ willChange: 'transform' }}>
       {children}
     </div>
   )
@@ -142,47 +200,64 @@ function ScrollRevealWrapper({ animation, mode, children }) {
  * }} param0
  */
 export function EffectsWrapper({ blockId, props, mode, children }) {
-  const {
-    _opacity,
-    _animation,
-    _filter,
-    _hover,
-    _scrollReveal,
-    _cursor,
-    _zIndex,
-    _sticky,
-    _transform,
-  } = props
+  const stagger = useContext(StaggerContext)
+  const out = (
+    <EffectsInner blockId={blockId} props={props} mode={mode} stagger={stagger}>
+      {children}
+    </EffectsInner>
+  )
+  // Stagger applies to direct slot children only; reset it for deeper levels.
+  return stagger ? <StaggerContext.Provider value={null}>{out}</StaggerContext.Provider> : out
+}
 
-  const filterVal = resolveFilter(_filter)
-  const transformVal = resolveTransform(_transform)
+function EffectsInner({ blockId, props, mode, stagger, children }) {
+  const { _opacity, _cursor, _zIndex, _sticky } = props
+  const reduced = useReducedMotion()
+
+  const ownAnim = sanitizeAnimation(props._animation)
+  // A child of a `_stagger` parent without its own animation inherits the
+  // parent's, always scroll-revealed; with its own, only the delay is added.
+  const inherited = !ownAnim && stagger ? stagger.animation : undefined
+  const baseAnim = ownAnim || inherited
+  const anim =
+    baseAnim && stagger
+      ? { ...baseAnim, delay: Math.min(5000, baseAnim.delay + stagger.delay) }
+      : baseAnim
+  const scrollReveal = (!!props._scrollReveal && !!ownAnim) || !!inherited
+  const hover = sanitizeHover(props._hover)
+  const parallax = reduced || mode === 'edit' ? undefined : sanitizeParallax(props._parallax)
+
+  const filterVal = resolveFilter(sanitizeFilter(props._filter))
+  const transformVal = resolveTransform(sanitizeTransform(props._transform))
   // Animation fires immediately unless scroll-reveal takes over
-  const animVal = _scrollReveal ? undefined : resolveAnimation(_animation)
+  const animVal = scrollReveal || reduced ? undefined : resolveAnimation(anim)
 
   // Build the wrapper inline style
   const style = {}
-  if (_opacity !== undefined && _opacity !== null && _opacity !== 1) style.opacity = _opacity
+  const opacity = clampNum(_opacity, 0, 1, 1)
+  if (opacity !== 1) style.opacity = opacity
   if (filterVal) style.filter = filterVal
   if (animVal) style.animation = animVal
   if (transformVal) style.transform = transformVal
-  if (_cursor && _cursor !== 'auto') style.cursor = _cursor
+  if (EFFECT_SHAPES.cursor.includes(_cursor) && _cursor !== 'auto') style.cursor = _cursor
   if (_sticky) {
     style.position = 'sticky'
     style.top = 0
   }
-  if (_zIndex) style.zIndex = _zIndex
+  const z = clampNum(_zIndex, -1000, 1000, 0)
+  if (z) style.zIndex = Math.round(z)
 
-  const hasHover =
-    _hover && (_hover.scale || _hover.shadow || (_hover.brightness && _hover.brightness !== 100))
-  const hasScrollReveal = _scrollReveal && _animation && _animation.preset !== 'none'
-  const hasEffects = Object.keys(style).length > 0 || hasHover || hasScrollReveal
+  const hasHover = !!hover && !!(hover.scale || hover.shadow || hover.brightness !== 100)
+  const hasScrollReveal = scrollReveal && !!anim
+  const hasEffects = Object.keys(style).length > 0 || hasHover || hasScrollReveal || !!parallax
 
   if (!hasEffects) return children
 
   let content = children
+  if (parallax) content = <ParallaxWrapper speed={parallax.speed}>{content}</ParallaxWrapper>
   if (hasScrollReveal) {
     content = (
-      <ScrollRevealWrapper animation={_animation} mode={mode}>
+      <ScrollRevealWrapper animation={anim} mode={mode} reduced={reduced}>
         {content}
       </ScrollRevealWrapper>
     )
@@ -190,7 +265,7 @@ export function EffectsWrapper({ blockId, props, mode, children }) {
 
   return (
     <>
-      {hasHover && <HoverStyleTag blockId={blockId} hover={_hover} />}
+      {hasHover && <HoverStyleTag blockId={blockId} hover={hover} />}
       <div
         data-eid={hasHover ? blockId : undefined}
         className="atlas-wb-effects-wrap"
