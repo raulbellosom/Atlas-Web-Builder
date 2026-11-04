@@ -285,7 +285,7 @@ export const HeroBlock = defineBlock({
           style={{
             ...sectionBase,
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
             gap: spacingVar('8'),
             alignItems: 'center',
             ...resolveBackground(background, 'transparent'),

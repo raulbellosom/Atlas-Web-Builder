@@ -1,3 +1,4 @@
+import { useEffect, useId, useRef, useState } from 'react'
 import { defineBlock } from '../registry/createBlockRegistry.js'
 import { colorVar, fontSizeVar } from './_tokens.js'
 
@@ -7,6 +8,8 @@ const VARIANTS = [
   { value: 'primary', label: 'Primario' },
   { value: 'transparent', label: 'Transparente' },
 ]
+
+const BREAKPOINTS = ['640px', '768px', '1024px']
 
 function isSafeHref(u) {
   return typeof u === 'string' && u !== '' && /^(https?:|mailto:|tel:|\/|#)/i.test(u)
@@ -63,6 +66,7 @@ export const NavbarBlock = defineBlock({
     paddingX: '24px',
     sticky: false,
     showBrandName: true,
+    mobileBreakpoint: '768px',
   },
   fields: {
     variant: { type: 'select', label: 'Estilo', options: VARIANTS },
@@ -127,13 +131,25 @@ export const NavbarBlock = defineBlock({
       ],
     },
     sticky: { type: 'toggle', label: 'Pegajoso (sticky)' },
+    mobileBreakpoint: {
+      type: 'select',
+      label: 'Menú móvil por debajo de',
+      options: [
+        { value: '640px', label: '640px' },
+        { value: '768px', label: '768px (default)' },
+        { value: '1024px', label: '1024px' },
+      ],
+    },
   },
   groups: [
     { label: 'Marca', fields: ['brand', 'logoSrc', 'logoHeight', 'showBrandName'] },
     { label: 'Navegación', fields: ['links', 'ctaLabel', 'ctaHref', 'ctaVariant'] },
-    { label: 'Estilo', fields: ['variant', 'sticky', 'height', 'maxWidth', 'paddingX'] },
+    { label: 'Estilo', fields: ['variant', 'sticky', 'height', 'maxWidth', 'paddingX', 'mobileBreakpoint'] },
   ],
-  render: ({
+  render: (props) => <NavbarView {...props} />,
+})
+
+function NavbarView({
     variant,
     brand,
     logoSrc,
@@ -147,7 +163,31 @@ export const NavbarBlock = defineBlock({
     maxWidth,
     paddingX,
     sticky,
-  }) => {
+    mobileBreakpoint,
+  }) {
+    const bp = BREAKPOINTS.includes(mobileBreakpoint) ? mobileBreakpoint : '768px'
+    const [open, setOpen] = useState(false)
+    const menuId = useId()
+    const btnRef = useRef(null)
+    const menuRef = useRef(null)
+    const wasOpen = useRef(false)
+
+    // Move focus into the menu on open and back to the button when it closes.
+    useEffect(() => {
+      if (open) menuRef.current?.querySelector('a')?.focus()
+      else if (wasOpen.current) btnRef.current?.focus()
+      wasOpen.current = open
+    }, [open])
+
+    useEffect(() => {
+      if (!open) return undefined
+      const onKey = (e) => {
+        if (e.key === 'Escape') setOpen(false)
+      }
+      document.addEventListener('keydown', onKey)
+      return () => document.removeEventListener('keydown', onKey)
+    }, [open])
+
     const parsedLinks = parseLinks(links)
     const safeCta = isSafeHref(ctaHref) ? ctaHref : '#'
     const safeLogo =
@@ -187,7 +227,8 @@ export const NavbarBlock = defineBlock({
 
     return (
       <nav
-        className="atlas-nb-nav"
+        className={`atlas-nb-nav atlas-nb-bp-${parseInt(bp, 10)}`}
+        data-open={open ? 'true' : 'false'}
         style={{
           background: bg,
           borderBottom: `1px solid ${border}`,
@@ -243,7 +284,7 @@ export const NavbarBlock = defineBlock({
 
           {/* Nav links with optional dropdown support */}
           {parsedLinks.length > 0 ? (
-            <ul className="atlas-nb-list" style={{ flex: 1 }}>
+            <ul className="atlas-nb-list atlas-nb-desktop" style={{ flex: 1 }}>
               {parsedLinks.map((link, i) => {
                 const safeHref = isSafeHref(link.href) ? link.href : '#'
                 const hasChildren = link.children && link.children.length > 0
@@ -292,13 +333,14 @@ export const NavbarBlock = defineBlock({
               })}
             </ul>
           ) : (
-            <div style={{ flex: 1 }} />
+            <div className="atlas-nb-desktop" style={{ flex: 1 }} />
           )}
 
           {/* CTA button */}
           {ctaLabel ? (
             <a
               href={safeCta}
+              className="atlas-nb-desktop"
               style={{
                 background: ctaBgColor,
                 color: ctaFgColor,
@@ -315,8 +357,66 @@ export const NavbarBlock = defineBlock({
               {ctaLabel}
             </a>
           ) : null}
+
+          <button
+            ref={btnRef}
+            type="button"
+            className="atlas-nb-burger"
+            aria-expanded={open}
+            aria-controls={menuId}
+            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+            onClick={() => setOpen((v) => !v)}
+            style={{ color: fg }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
+
+        <div
+          id={menuId}
+          ref={menuRef}
+          className="atlas-nb-menu"
+          data-open={open ? 'true' : 'false'}
+          style={{ background: bg === 'transparent' ? dropdownBg : bg, borderBottom: `1px solid ${border}`, top: navH }}
+        >
+          <ul className="atlas-nb-menu-list">
+            {parsedLinks.map((link, i) => (
+              <li key={i}>
+                <a
+                  href={isSafeHref(link.href) ? link.href : '#'}
+                  className="atlas-nb-menu-link"
+                  style={{ color: fg }}
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </a>
+                {link.children.map((child, j) => (
+                  <a
+                    key={j}
+                    href={isSafeHref(child.href) ? child.href : '#'}
+                    className="atlas-nb-menu-link atlas-nb-menu-link--child"
+                    style={{ color: fgMuted }}
+                    onClick={() => setOpen(false)}
+                  >
+                    {child.label}
+                  </a>
+                ))}
+              </li>
+            ))}
+          </ul>
+          {ctaLabel ? (
+            <a
+              href={safeCta}
+              className="atlas-nb-menu-cta"
+              onClick={() => setOpen(false)}
+              style={{ background: ctaBgColor, color: ctaFgColor, border: ctaBorder }}
+            >
+              {ctaLabel}
+            </a>
+          ) : null}
         </div>
       </nav>
     )
-  },
-})
+}

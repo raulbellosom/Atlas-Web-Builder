@@ -74,7 +74,7 @@ export const FooterBlock = defineBlock({
           {/* Brand + columns row */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: showBrand && brand ? `1.5fr ${cols.map(() => '1fr').join(' ')}` : cols.map(() => '1fr').join(' '),
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(150px, 100%), 1fr))',
             gap: spacingVar('8'),
             marginBottom: spacingVar('12'),
           }}>

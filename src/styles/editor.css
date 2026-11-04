@@ -1779,6 +1779,89 @@
 /* These styles are scoped to .atlas-nb-* so they don't leak into the host app */
 .atlas-nb-nav {
   position: relative;
+  container-type: inline-size;
+}
+.atlas-nb-burger {
+  display: none;
+  margin-left: auto;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.atlas-nb-menu {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 80vh;
+  overflow-y: auto;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s linear 200ms;
+}
+.atlas-nb-menu[data-open='true'] {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition-delay: 0s;
+}
+.atlas-nb-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 0;
+}
+.atlas-nb-menu-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 24px;
+  text-decoration: none;
+  font-family: var(--atlas-font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+}
+.atlas-nb-menu-link--child {
+  padding-left: 40px;
+  font-size: 0.9375rem;
+}
+.atlas-nb-menu-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 8px 24px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: var(--atlas-font-sans);
+  font-weight: 700;
+}
+/* Collapse to the hamburger below the breakpoint (container width, not viewport) */
+@container (max-width: 639.98px) {
+  .atlas-nb-bp-640 .atlas-nb-desktop { display: none; }
+  .atlas-nb-bp-640 .atlas-nb-burger { display: inline-flex; }
+  .atlas-nb-bp-640 .atlas-nb-menu { display: block; }
+}
+@container (max-width: 767.98px) {
+  .atlas-nb-bp-768 .atlas-nb-desktop { display: none; }
+  .atlas-nb-bp-768 .atlas-nb-burger { display: inline-flex; }
+  .atlas-nb-bp-768 .atlas-nb-menu { display: block; }
+}
+@container (max-width: 1023.98px) {
+  .atlas-nb-bp-1024 .atlas-nb-desktop { display: none; }
+  .atlas-nb-bp-1024 .atlas-nb-burger { display: inline-flex; }
+  .atlas-nb-bp-1024 .atlas-nb-menu { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-nb-menu {
+    transition: none;
+  }
 }
 .atlas-nb-list {
   display: flex;
