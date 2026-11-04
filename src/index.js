@@ -148,3 +148,40 @@ export {
   sanitizeHover,
   useReducedMotion,
 } from './renderer/effects.js'
+
+// Data-driven blocks, resources contract and cart (forms / catalog / purchase)
+export {
+  formBlocks,
+  commerceBlocks,
+  FormBlock,
+  ProductGridBlock,
+  ProductDetailBlock,
+  CategoryListBlock,
+  AddToCartButtonBlock,
+  CartBlock,
+  CheckoutSummaryBlock,
+} from './blocks/index.js'
+export {
+  defineResources,
+  resolveHandler,
+  normalizeList,
+  RESOURCE_SHAPE,
+  useResources,
+  useResourceCall,
+  ResourceView,
+  ResourcesProvider,
+  followRedirect,
+  isSafeRedirect,
+  SAMPLE_PRODUCTS,
+  SAMPLE_CATEGORIES,
+  SAMPLE_CART,
+  sampleResources,
+} from './resources/index.js'
+export { FIELD_TYPES, parseFieldsDsl, normalizeFields, validateFields } from './forms/index.js'
+export {
+  formatPrice,
+  createCartStore,
+  getCartStore,
+  localStorageAdapter,
+  useCart,
+} from './commerce/index.js'

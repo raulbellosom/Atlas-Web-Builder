@@ -98,3 +98,35 @@ export const baseBlockCategories = {
   content: 'Contenido',
   media: 'Multimedia',
 }
+
+// Data-driven blocks (opt-in: hosts add them next to baseBlocks and supply `resources`).
+import { FormBlock } from './FormBlock.jsx'
+import { ProductGridBlock } from './ProductGridBlock.jsx'
+import { ProductDetailBlock } from './ProductDetailBlock.jsx'
+import { CategoryListBlock } from './CategoryListBlock.jsx'
+import { AddToCartButtonBlock } from './AddToCartButtonBlock.jsx'
+import { CartBlock } from './CartBlock.jsx'
+import { CheckoutSummaryBlock } from './CheckoutSummaryBlock.jsx'
+
+export {
+  FormBlock,
+  ProductGridBlock,
+  ProductDetailBlock,
+  CategoryListBlock,
+  AddToCartButtonBlock,
+  CartBlock,
+  CheckoutSummaryBlock,
+}
+
+/** @type {import('../registry/createBlockRegistry.js').BlockDefinition[]} */
+export const formBlocks = [FormBlock]
+
+/** @type {import('../registry/createBlockRegistry.js').BlockDefinition[]} */
+export const commerceBlocks = [
+  ProductGridBlock,
+  ProductDetailBlock,
+  CategoryListBlock,
+  AddToCartButtonBlock,
+  CartBlock,
+  CheckoutSummaryBlock,
+]
