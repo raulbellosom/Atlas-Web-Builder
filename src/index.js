@@ -9,7 +9,7 @@
 import './styles/editor.css'
 
 /** Package version. Kept in lockstep with package.json. */
-export const version = '0.2.4'
+export const version = '0.3.0'
 
 /**
  * @returns {string}

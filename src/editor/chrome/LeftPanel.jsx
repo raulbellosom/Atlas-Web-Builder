@@ -48,6 +48,8 @@ const CATEGORY_LABELS = {
   layout: 'Diseño',
   content: 'Contenido',
   media: 'Multimedia',
+  commerce: 'Comercio',
+  forms: 'Formularios',
   general: 'General',
 }
 
