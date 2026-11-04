@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
+import { optimizeImageFile } from '../../media/optimizeImage.js'
 
 function isSafeUrl(v) {
   if (typeof v !== 'string' || !v.trim()) return false
@@ -66,7 +67,15 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
   async function handleFile(file) {
     if (!file || !canUpload) return
     try { setUploading(true); setUpError(null)
-      const asset = await assets.upload(file)
+      let asset
+      if (typeof assets.uploadVariants === 'function') {
+        const optimized = await optimizeImageFile(file)
+        asset = optimized.variants.length
+          ? await assets.uploadVariants(file, optimized)
+          : await assets.upload(file)
+      } else {
+        asset = await assets.upload(file)
+      }
       if (asset) onPick(asset)
     } catch (err) { setUpError(err?.message || String(err))
     } finally { setUploading(false) }

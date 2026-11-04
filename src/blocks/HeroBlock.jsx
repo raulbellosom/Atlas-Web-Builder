@@ -1,4 +1,5 @@
 import { defineBlock } from '../registry/createBlockRegistry.js'
+import { AtlasImage } from '../media/AtlasImage.jsx'
 import {
   spacingVar,
   colorVar,
@@ -298,10 +299,10 @@ export const HeroBlock = defineBlock({
           </div>
           <div>
             {safeImage ? (
-              <img
+              <AtlasImage
                 src={safeImage}
                 alt=""
-                loading="lazy"
+                priority
                 style={{
                   width: '100%',
                   height: 'auto',

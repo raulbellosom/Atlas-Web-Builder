@@ -9,6 +9,11 @@
  *   remove?(id: string): Promise<void>
  *   getById?(id: string): Promise<Asset | null>
  *   subscribe?(listener: () => void): () => void  // optional change feed
+ *   uploadVariants?(file: File, optimized: OptimizedImage): Promise<Asset>
+ *     // Declaring this opts into client-side optimization: the picker runs
+ *     // optimizeImageFile() first and hands over the original plus resized
+ *     // webp variants. The returned Asset should carry `variants`, `width`,
+ *     // `height` and `dominantColor`. Without it, `upload(file)` is used as before.
  *
  * The editor degrades gracefully when a method is missing (e.g. read-only
  * sources omit `upload` and `remove`).
@@ -24,6 +29,7 @@ import { newId } from '../utils/id.js'
  *   remove?: (id: string) => Promise<void>,
  *   getById?: (id: string) => Promise<Asset | null>,
  *   subscribe?: (listener: () => void) => () => void,
+ *   uploadVariants?: (file: File, optimized: ReturnType<typeof import('../media/optimizeImage.js').optimizeImageFile> extends Promise<infer T> ? T : never) => Promise<Asset>,
  * }} AssetSource
  */
 

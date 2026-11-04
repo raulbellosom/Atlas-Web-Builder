@@ -112,3 +112,17 @@ export {
   FooterBlock,
   VideoBlock,
 } from './blocks/index.js'
+
+// Media, performance and branding
+export { AtlasImage, groupVariants, optimizeImageFile } from './media/index.js'
+export { LazyMount } from './renderer/LazyMount.jsx'
+export {
+  createBrandTheme,
+  fontLinks,
+  FONT_PAIRS,
+  BRAND_MOODS,
+  contrastRatio,
+  ensureContrast,
+  readableOn,
+  mixColors,
+} from './theme/brand.js'

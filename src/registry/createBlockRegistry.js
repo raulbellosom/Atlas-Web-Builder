@@ -23,6 +23,8 @@
  * @property {Object<string, BlockFieldSpec>} [fields]
  * @property {Object<string, { allow?: string[] }>} [slots]
  * @property {string[]} [resources]    - Resource ids the block can read.
+\ * @property {boolean} [lazy]         - Defer mounting until near the viewport (public/preview only).
+ * @property {number}  [lazyMinHeight] - Placeholder height in px while deferred (default 240).
  * @property {Function} render         - React component receiving (props, ctx).
  * @property {Function} [preview]      - Optional static preview component.
  */

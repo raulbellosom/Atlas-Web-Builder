@@ -1,4 +1,5 @@
 import { defineBlock } from '../registry/createBlockRegistry.js'
+import { AtlasImage } from '../media/AtlasImage.jsx'
 import {
   radiusVar,
   shadowVar,
@@ -19,6 +20,7 @@ const OBJECT_FIT_OPTIONS = [
 const LOADING_OPTIONS = [
   { value: 'lazy',  label: 'Diferida (recomendada)' },
   { value: 'eager', label: 'Inmediata' },
+  { value: 'priority', label: 'Prioritaria (imagen principal)' },
 ]
 
 function isSafeImageUrl(url) {
@@ -47,9 +49,14 @@ export const ImageBlock = defineBlock({
     link: '',
     loading: 'lazy',
     draggable: false,
+    // Filled by the asset picker when the asset carries responsive variants.
+    variants: undefined,
+    dominantColor: '',
+    naturalWidth: undefined,
+    naturalHeight: undefined,
   },
   fields: {
-    src:         { type: 'image',  label: 'Imagen' },
+    src:         { type: 'image',  label: 'Imagen', withAssetMeta: true },
     alt:         { type: 'text',   label: 'Texto alternativo (SEO / accesibilidad)' },
     caption:     { type: 'text',   label: 'Pie de foto (opcional)' },
     link:        { type: 'link',   label: 'Enlace al hacer clic (opcional)' },
@@ -67,7 +74,7 @@ export const ImageBlock = defineBlock({
     { label: 'Presentación',  fields: ['aspectRatio', 'objectFit', 'width', 'align'] },
     { label: 'Estilo',        fields: ['radius', 'shadow'] },
   ],
-  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable }) => {
+  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, variants, dominantColor, naturalWidth, naturalHeight }) => {
     const safeRatio = aspectRatio && aspectRatio !== 'auto' ? aspectRatio : undefined
     const safeLink  = isSafeHref(link) ? link : ''
     const radiusVal = radius && radius !== 'none' ? radiusVar(radius) : undefined
@@ -112,7 +119,20 @@ export const ImageBlock = defineBlock({
     )
 
     const img = isSafeImageUrl(src)
-      ? <img src={src} alt={alt || ''} loading={loading || 'lazy'} decoding="async" style={imgStyle} />
+      ? (
+        <AtlasImage
+          src={src}
+          alt={alt || ''}
+          loading={loading || 'lazy'}
+          priority={loading === 'priority'}
+          variants={variants}
+          dominantColor={dominantColor || undefined}
+          width={naturalWidth}
+          height={naturalHeight}
+          sizes={width && width !== '100%' ? width : '100vw'}
+          style={imgStyle}
+        />
+      )
       : placeholder
 
     const wrapped = safeLink

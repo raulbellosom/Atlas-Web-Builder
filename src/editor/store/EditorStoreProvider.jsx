@@ -73,3 +73,8 @@ export function useEditorActions() {
   }
   return useMemo(() => store.getState(), [store])
 }
+
+/** Like useEditorStoreInstance but returns null outside an editor (fields used standalone). */
+export function useOptionalEditorStore() {
+  return useContext(EditorStoreContext)
+}

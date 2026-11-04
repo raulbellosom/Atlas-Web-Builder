@@ -5,6 +5,7 @@ import { useEditorRender } from '../editor/dnd/EditorRenderContext.js'
 import { createInlineTextHelper } from '../editor/inline/InlineText.jsx'
 import { EffectsWrapper } from './EffectsWrapper.jsx'
 import { useResource } from './useResource.js'
+import { LazyMount } from './LazyMount.jsx'
 
 /**
  * Render a single block instance by id. The block must exist in the page
@@ -22,9 +23,10 @@ import { useResource } from './useResource.js'
  *   blockId: string,
  *   blocks: Object<string, import('../schema/block.js').BlockInstance>,
  *   mode?: 'edit'|'preview'|'public',
+ *   eager?: boolean,  // above-the-fold subtree: never lazy-mounted
  * }} props
  */
-function BlockRendererImpl({ blockId, blocks, mode = 'public' }) {
+function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) {
   const { blocks: registry, resources, mockResources, actions, permissions } = useBuilder()
   const theme = useTheme()
   const editor = useEditorRender()
@@ -53,7 +55,7 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public' }) {
       editor && mode === 'edit' ? (
         editor.renderBlock(childId, blocks, mode)
       ) : (
-        <BlockRenderer key={childId} blockId={childId} blocks={blocks} mode={mode} />
+        <BlockRenderer key={childId} blockId={childId} blocks={blocks} mode={mode} eager={eager} />
       ),
     )
     if (editor && mode === 'edit' && editor.renderSlot) {
@@ -85,7 +87,14 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public' }) {
   ctx.resource = (name, params) => useResource(ctx.resources, name, params)
 
   const Component = def.render
-  const rendered = <Component {...props} ctx={ctx} />
+  let rendered = <Component {...props} ctx={ctx} />
+
+  // Opt-in lazy mount (defineBlock `lazy` or per-instance `_lazy`); never in the editor.
+  if (mode !== 'edit' && !eager && (props._lazy ?? def.lazy)) {
+    rendered = (
+      <LazyMount minHeight={props._lazyMinHeight ?? def.lazyMinHeight}>{rendered}</LazyMount>
+    )
+  }
 
   return (
     <EffectsWrapper blockId={blockId} props={props} mode={mode}>

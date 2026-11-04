@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { AssetPicker } from '../assets/AssetPicker.jsx'
+import { useOptionalEditorStore } from '../store/EditorStoreProvider.jsx'
 
 function isSafeUrl(value) {
   if (typeof value !== 'string') return false
@@ -14,6 +15,22 @@ export function ImageField({ value, onChange, label, spec }) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [uploading, setUploading]   = useState(false)
   const dropRef = useRef(null)
+  const store = useOptionalEditorStore()
+
+  // With spec.withAssetMeta the block also keeps the asset's responsive data;
+  // any manual URL edit clears it so stale variants never outlive their src.
+  function setSrc(url, asset) {
+    onChange(url)
+    if (!spec?.withAssetMeta || !store) return
+    const { selectedId, updateBlockProps } = store.getState()
+    if (!selectedId) return
+    updateBlockProps(selectedId, {
+      variants: asset?.variants,
+      dominantColor: asset?.dominantColor || '',
+      naturalWidth: asset?.width,
+      naturalHeight: asset?.height,
+    })
+  }
 
   const safe      = isSafeUrl(value)
   const canUpload = !!(assets && typeof assets.upload === 'function')
@@ -24,7 +41,7 @@ export function ImageField({ value, onChange, label, spec }) {
       try {
         setUploading(true)
         const asset = await assets.upload(file)
-        if (asset?.url) onChange(asset.url)
+        if (asset?.url) setSrc(asset.url, asset)
       } catch { /* surface nothing — user can use URL tab instead */ }
       finally { setUploading(false) }
     } else {
@@ -61,7 +78,7 @@ export function ImageField({ value, onChange, label, spec }) {
             className="atlas-wb-field__input"
             value={value ?? ''}
             placeholder={spec?.placeholder || 'https://... o arrastra imagen aquí'}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => setSrc(e.target.value)}
             aria-invalid={!safe}
           />
           <button
@@ -86,7 +103,7 @@ export function ImageField({ value, onChange, label, spec }) {
             />
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={() => setSrc('')}
               style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.55)', color: 'white', border: 0, borderRadius: 4, padding: '1px 5px', fontSize: 11, cursor: 'pointer', lineHeight: 1.4 }}
               aria-label="Quitar imagen"
             >
@@ -109,7 +126,7 @@ export function ImageField({ value, onChange, label, spec }) {
       {pickerOpen ? (
         <AssetPicker
           accept="image/*"
-          onPick={(asset) => { onChange(asset.url); setPickerOpen(false) }}
+          onPick={(asset) => { setSrc(asset.url, asset); setPickerOpen(false) }}
           onClose={() => setPickerOpen(false)}
         />
       ) : null}
