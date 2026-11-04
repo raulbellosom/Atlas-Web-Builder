@@ -15,7 +15,15 @@ import './block.js' // for BlockInstance typedef
  * @property {string} [title]
  * @property {string} [description]
  * @property {string|null} [canonical]
- * @property {string|null} [ogImageAssetId]
+ * @property {string|null} [ogImageAssetId]   - Legacy; resolved through `resolveAsset`.
+ * @property {{index?: boolean, follow?: boolean}|string} [robots] - Object or "noindex,nofollow".
+ * @property {string} [ogTitle]
+ * @property {string} [ogDescription]
+ * @property {string|{url?: string, assetId?: string}} [ogImage]
+ * @property {'website'|'article'|'product'|'profile'} [ogType]
+ * @property {'summary'|'summary_large_image'} [twitterCard]
+ * @property {string|string[]} [keywords]
+ * @property {Array<{type: string, [field: string]: any}>} [structuredData] - Whitelisted JSON-LD presets (see src/seo/jsonld.js).
  */
 
 /**

@@ -4,6 +4,7 @@ import { es } from '../i18n/es.js'
 import { PropertiesPanel } from './PropertiesPanel.jsx'
 import { LayersPanel } from './LayersPanel.jsx'
 import { ThemeTab } from './ThemeTab.jsx'
+import { SeoPanel } from '../seo/SeoPanel.jsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 
 const VISIBILITY_OPTIONS = [
@@ -15,20 +16,11 @@ const VISIBILITY_OPTIONS = [
 function PageTab() {
   const page = useEditorStore((s) => s.page)
   const setPage = useEditorStore((s) => s.setPage)
-  const [seoOpen, setSeoOpen] = useState(true)
 
   function updateMeta(partial) {
     setPage({ ...page, ...partial, updatedAt: new Date().toISOString() })
   }
-  function updateSeo(partial) {
-    setPage({ ...page, seo: { ...(page.seo || {}), ...partial }, updatedAt: new Date().toISOString() })
-  }
 
-  const seo = page.seo || {}
-  const seoTitle = seo.title || page.title || ''
-  const seoDesc = seo.description || ''
-  const canonical = seo.canonical || ''
-  const previewUrl = page.slug ? page.slug : '/'
 
   return (
     <div className="atlas-wb-page-meta">
@@ -69,61 +61,8 @@ function PageTab() {
 
       {/* SEO */}
       <div className="atlas-wb-page-meta__section">
-        <button
-          type="button"
-          className="atlas-wb-props__section-header"
-          style={{ margin: '0 -12px', width: 'calc(100% + 24px)' }}
-          onClick={() => setSeoOpen((v) => !v)}
-          aria-expanded={seoOpen}
-        >
-          <span>SEO</span>
-          <span className={clsx('atlas-wb-props__section-chevron', seoOpen && 'atlas-wb-props__section-chevron--open')}>›</span>
-        </button>
-
-        {seoOpen ? (
-          <div style={{ paddingTop: 8 }}>
-            {/* SEO preview */}
-            <div className="atlas-wb-seo-preview" style={{ marginBottom: 12 }}>
-              <div className="atlas-wb-seo-preview__url">{previewUrl}</div>
-              <div className="atlas-wb-seo-preview__title">{seoTitle || 'Título de la página'}</div>
-              <div className="atlas-wb-seo-preview__desc">{seoDesc || 'Añade una descripción para que aparezca en los resultados de búsqueda.'}</div>
-            </div>
-
-            <div className="atlas-wb-field">
-              <span className="atlas-wb-field__label">Título SEO</span>
-              <input
-                className="atlas-wb-field__input"
-                value={seoTitle}
-                onChange={(e) => updateSeo({ title: e.target.value })}
-                placeholder={page.title || 'Título en buscadores'}
-                maxLength={60}
-              />
-              <span style={{ fontSize: 11, color: 'var(--awb-muted)' }}>{seoTitle.length}/60</span>
-            </div>
-            <div className="atlas-wb-field">
-              <span className="atlas-wb-field__label">Meta descripción</span>
-              <textarea
-                className="atlas-wb-field__textarea"
-                value={seoDesc}
-                onChange={(e) => updateSeo({ description: e.target.value })}
-                placeholder="Descripción breve de la página para buscadores…"
-                maxLength={160}
-                style={{ minHeight: 60 }}
-              />
-              <span style={{ fontSize: 11, color: 'var(--awb-muted)' }}>{seoDesc.length}/160</span>
-            </div>
-            <div className="atlas-wb-field">
-              <span className="atlas-wb-field__label">URL canónica (opcional)</span>
-              <input
-                className="atlas-wb-field__input"
-                value={canonical}
-                onChange={(e) => updateSeo({ canonical: e.target.value })}
-                placeholder="https://ejemplo.com/pagina"
-                type="url"
-              />
-            </div>
-          </div>
-        ) : null}
+        <p className="atlas-wb-page-meta__section-title">SEO</p>
+        <SeoPanel />
       </div>
 
       {/* Page ID (readonly info) */}

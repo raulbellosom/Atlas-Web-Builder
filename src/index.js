@@ -115,6 +115,17 @@ export {
   TypewriterBlock,
 } from './blocks/index.js'
 
+// SEO
+export {
+  buildSeoMeta,
+  analyzeSeo,
+  renderSeoHead,
+  serializeJsonLd,
+  buildStructuredData,
+  STRUCTURED_DATA_TYPES,
+} from './seo/index.js'
+export { SeoPanel } from './editor/seo/SeoPanel.jsx'
+
 // Media, performance and branding
 export { AtlasImage, groupVariants, optimizeImageFile } from './media/index.js'
 export { LazyMount } from './renderer/LazyMount.jsx'
