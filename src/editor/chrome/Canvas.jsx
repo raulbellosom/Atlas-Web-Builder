@@ -8,6 +8,7 @@ import { EditorRenderContext } from '../dnd/EditorRenderContext.js'
 import { EditableBlock } from './EditableBlock.jsx'
 import { EditorSlot } from './EditorSlot.jsx'
 import { es } from '../i18n/es.js'
+import { createLinkGuard } from '../linkGuard.js'
 
 /**
  * Walk the page once to locate a block's container. O(n) over the dictionary;
@@ -133,7 +134,7 @@ function RegionTabs({ regionNames, activeRegion, onSelect, layout }) {
   )
 }
 
-export function Canvas() {
+export function Canvas({ onLinkClick }) {
   const page = useEditorStore((s) => s.page)
   const device = useEditorStore((s) => s.device)
   const clearSelection = useEditorStore((s) => s.clearSelection)
@@ -142,6 +143,7 @@ export function Canvas() {
   const theme = useTheme()
   const { layouts } = useBuilder()
   const editorRenderValue = useEditorRenderValue(page)
+  const guardLinks = useMemo(() => createLinkGuard(onLinkClick), [onLinkClick])
 
   const regionNames = Object.keys(page.regions || {})
   const safeActive = page.regions[activeRegion] ? activeRegion : regionNames[0] || 'main'
@@ -172,6 +174,7 @@ export function Canvas() {
         )}
         data-atlas-theme={theme.id}
         data-active-region={safeActive}
+        onClickCapture={guardLinks}
       >
         <EditorRenderContext.Provider value={editorRenderValue}>
           <RegionTree page={page} regionName={safeActive} />

@@ -527,6 +527,16 @@ const blocks = [...baseBlocks, ProductCardBlock]
 <AtlasWebBuilderEditor blocks={blocks} initialPage={page} onSaveDraft={handleSave} onPublish={handlePublish} />
 ```
 
+### Bloque que cambia según dónde se coloca (ctx.nested)
+
+`ctx.nested` es `true` cuando el bloque está dentro del slot de otro bloque y `false` cuando está directo en una región de la página. `ctx.parent` da `{ id, type }` del bloque contenedor (o `null`). Sirve, por ejemplo, para que un formulario se encuadre como sección centrada cuando va suelto en la página y quede sin marco dentro de una banda de newsletter:
+
+```jsx
+render: ({ ctx }) => (
+  <div style={ctx.nested ? undefined : { maxWidth: 720, marginInline: 'auto', padding: '64px 24px' }}>…</div>
+)
+```
+
 ### Bloque con contenido dinámico (ctx.resource())
 
 `ctx.resource(name, params)` es un hook — debe llamarse de forma **incondicional** en el
@@ -743,6 +753,7 @@ const heroCtaTemplate = defineTemplate({
 | `actions`     | `Record<string, Function>` |           | Acciones personalizadas (formularios, etc.)                 |
 | `onSaveDraft` | `(page: Page) => void`     |           | Callback al guardar borrador                                |
 | `onPublish`   | `(page: Page) => void`     |           | Callback al publicar                                        |
+| `onLinkClick` | `(href: string) => void`   |           | Los enlaces del lienzo y la vista previa no navegan; avisa del clic (p. ej. para abrir esa página en el editor). Los enlaces con `target="_blank"` funcionan normal |
 
 ### `<AtlasWebRenderer>`
 

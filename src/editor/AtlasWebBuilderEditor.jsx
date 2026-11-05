@@ -27,11 +27,12 @@ import { AtlasWebRenderer } from '../renderer/AtlasWebRenderer.jsx'
 import { NotificationsProvider } from './notifications/NotificationsProvider.jsx'
 import { NotificationCenter } from './notifications/NotificationCenter.jsx'
 import { ThemeProvider } from '../theme/ThemeProvider.jsx'
+import { createLinkGuard } from './linkGuard.js'
 
 /**
  * Inner shell — assumes BuilderProvider + EditorStoreProvider are mounted above.
  */
-function EditorShell({ onSaveDraft, onPublish, brandLogo, brandName }) {
+function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName }) {
   const { blocks: registry, templates: templateRegistry } = useBuilder()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -50,6 +51,7 @@ function EditorShell({ onSaveDraft, onPublish, brandLogo, brandName }) {
   const undo = useTemporal((s) => s.undo)
   const redo = useTemporal((s) => s.redo)
 
+  const guardPreviewLinks = useMemo(() => createLinkGuard(onLinkClick), [onLinkClick])
   const [previewActive, setPreviewActive] = useState(false)
   const [dragLabel, setDragLabel] = useState(null)
   // leftClosed / rightClosed: false = panel visible, true = panel hidden.
@@ -239,7 +241,7 @@ function EditorShell({ onSaveDraft, onPublish, brandLogo, brandName }) {
           brandLogo={brandLogo}
           brandName={brandName}
         />
-        <div className="atlas-wb-preview">
+        <div className="atlas-wb-preview" onClickCapture={guardPreviewLinks}>
           <div className="atlas-wb-preview__themed">
             <AtlasWebRenderer page={page} mode="preview" />
           </div>
@@ -278,7 +280,7 @@ function EditorShell({ onSaveDraft, onPublish, brandLogo, brandName }) {
         <LeftPanel onClose={() => setLeftClosed(true)} />
         <main className="atlas-wb-editor__main">
           <Breadcrumb />
-          <Canvas />
+          <Canvas onLinkClick={onLinkClick} />
         </main>
         <RightPanel />
         <NotificationCenter />
@@ -319,6 +321,7 @@ function EditorShell({ onSaveDraft, onPublish, brandLogo, brandName }) {
  *   permissions?: any,
  *   onSaveDraft?: (page: import('../schema/page.js').Page) => void,
  *   onPublish?: (page: import('../schema/page.js').Page) => void,
+ *   onLinkClick?: (href: string) => void,  // links in the canvas/preview never navigate; this reports the click
  *   useExistingProvider?: boolean,
  * }} props
  */
@@ -336,6 +339,7 @@ export function AtlasWebBuilderEditor({
   permissions,
   onSaveDraft,
   onPublish,
+  onLinkClick,
   brandLogo,
   brandName,
   seo,
@@ -374,7 +378,7 @@ export function AtlasWebBuilderEditor({
     <EditorStoreProvider initialPage={initialPage} initialTheme={theme}>
       <NotificationsProvider>
         <SeoContext.Provider value={seoValue}>
-          <EditorShell onSaveDraft={onSaveDraft} onPublish={onPublish} brandLogo={brandLogo} brandName={brandName} />
+          <EditorShell onSaveDraft={onSaveDraft} onPublish={onPublish} onLinkClick={onLinkClick} brandLogo={brandLogo} brandName={brandName} />
         </SeoContext.Provider>
       </NotificationsProvider>
     </EditorStoreProvider>

@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useContext, useMemo } from 'react'
 import { useBuilder } from '../provider/BuilderContext.js'
 import { useTheme } from '../theme/ThemeProvider.jsx'
 import { useEditorRender } from '../editor/dnd/EditorRenderContext.js'
@@ -7,6 +7,7 @@ import { EffectsWrapper } from './EffectsWrapper.jsx'
 import { StaggerContext, sanitizeAnimation, sanitizeStagger } from './effects.js'
 import { useResource } from './useResource.js'
 import { LazyMount } from './LazyMount.jsx'
+import { ParentBlockContext } from './ParentBlockContext.js'
 
 /**
  * Render a single block instance by id. The block must exist in the page
@@ -31,8 +32,11 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
   const { blocks: registry, resources, mockResources, actions, permissions } = useBuilder()
   const theme = useTheme()
   const editor = useEditorRender()
+  const parent = useContext(ParentBlockContext)
 
   const instance = blocks?.[blockId]
+  const instanceType = instance?.type
+  const asParent = useMemo(() => ({ id: blockId, type: instanceType }), [blockId, instanceType])
   if (!instance) {
     return renderFallback(`Bloque no encontrado: "${blockId}"`)
   }
@@ -74,15 +78,11 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
         <BlockRenderer key={childId} blockId={childId} blocks={blocks} mode={mode} eager={eager} />
       ),
     )
-    if (editor && mode === 'edit' && editor.renderSlot) {
-      return editor.renderSlot({
-        parentId: blockId,
-        slotName,
-        childIds: ids,
-        children,
-      })
-    }
-    return children
+    const output =
+      editor && mode === 'edit' && editor.renderSlot
+        ? editor.renderSlot({ parentId: blockId, slotName, childIds: ids, children })
+        : children
+    return <ParentBlockContext.Provider value={asParent}>{output}</ParentBlockContext.Provider>
   }
 
   const ctx = {
@@ -93,6 +93,8 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
     permissions,
     slot,
     blockId,
+    parent,
+    nested: parent !== null,
   }
   ctx.inlineText = createInlineTextHelper(ctx)
   // ctx.resource() is a real hook call, executed inside `Component`'s render
