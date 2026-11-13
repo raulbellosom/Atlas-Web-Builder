@@ -2,7 +2,69 @@
 
 Fecha: 2026-11-13, America/Mexico_City. Continúa las evidencias aprobadas de [Fase 0.6](ATLAS_WEB_BUILDER_PHASE_06.md); no repite la auditoría ni inicia Fase 1.
 
-**NO APTO PARA INICIAR FASE 1.** Atlas y Hub están publicados en GitHub y npm 0.4.0 está verificado. La adopción ERP está validada y confirmada localmente, pero su integración/push permanece detenida por el gate obligatorio de privacidad: 72 hallazgos preexistentes, cero hallazgos nuevos en los archivos de esta tarea.
+## Cierre definitivo por decisión del propietario — 2026-11-13
+
+**APTO PARA COMENZAR LA FASE 1 DEL DESARROLLO DE ATLAS.** Su base y artefacto estable están verificados y son independientes del bloqueo ERP. Este cierre no comienza la implementación ni cambia interfaces.
+
+**NO APTO PARA DESPLEGAR LA INTEGRACIÓN ERP.** La adopción está en main local, pero su push/integración remota permanece detenido por la política obligatoria de privacidad, sin excepción de baseline documentada. Producción permanece intacta en los tres proyectos.
+
+### npm estable
+
+Se consultó de nuevo el registro: 0.4.0 conservaba la integridad aprobada y latest seguía en 0.3.5. Con la autorización expresa del propietario se ejecutó una sola vez:
+
+```powershell
+npm dist-tag add @raulbellosom/atlas-web-builder@0.4.0 latest --registry https://registry.npmjs.org/
+npm view @raulbellosom/atlas-web-builder dist-tags --json --registry https://registry.npmjs.org/
+npm view @raulbellosom/atlas-web-builder version --registry https://registry.npmjs.org/
+```
+
+Resultado final confirmado: **latest = 0.4.0; next = 0.4.0; versión predeterminada = 0.4.0**. Hubo un desfase inicial de caché tras aceptar el cambio; se verificó después sin repetir la mutación.
+
+Se descargaron nuevamente los bytes del registro, sin reconstruir ni volver a publicar: SHA-256 `988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2`, SHA-512 idéntico al aprobado. Se compararon directamente ESM/CJS, CSS y package.json del tarball con el paquete instalado y se ejecutaron sus imports: versión 0.4.0, `editorCapabilitiesVersion = 1`, 140 exports ESM/CJS coincidentes. Evidencia local: `.artifacts/releases/0.4.0/registry/stable-verified.tgz`.
+
+### Consolidación en main
+
+- **Atlas:** main incorpora por fast-forward el informe pendiente `22c04e961a358c318ad7aa42e991bf4b0bcbf0bb` y este cierre documental. El commit de fuentes del release y el tag remoto v0.4.0 permanecen inmutables en `62e9688eba083cb8c4f82f00ee8075cca41681f1`. No cambia ningún input empaquetado. El SHA final de main es el commit de este cierre, informado también en la entrega.
+- **Hub:** main local y remoto quedan en `bca9ca0b578abcf2c3bb7a459fea2c7a72522855`. El merge `b13d63ab5616036560924e9a8ef5bb7a2b539670` conserva el trabajo local previo y el commit de adopción publicado `6db2e8a`; el commit posterior registra únicamente la política main en AGENTS.md. El conflicto de package.json/lock se resolvió conservando tanto los overrides Radix existentes como el pin y override Atlas 0.4.0. Instalación frozen con pnpm 9.15.0 y once pruebas dirigidas aprobadas: siete de Website/capacidades/Chromium/catálogo y cuatro de Studio list. No se repitió el push anterior: se publicó únicamente el avance nuevo por push normal, con el remoto como ancestro. git cherry confirma que los commits de las ramas anteriores de capacidades y release ya son equivalentes a cambios integrados; no se duplicaron mediante otro cherry-pick.
+- **ERP:** main local avanzó por fast-forward hasta `34ca30fc4390dd40f7d22338c2529571134f4bdb`, conservando la adopción y los commits locales previos. Main remoto sigue en `d816415422232b5dd3223ac2934b11ff0a0cba3d`; no hubo push ERP. Se preservaron el archivo no rastreado ajeno y las referencias históricas con trabajo pendiente.
+
+No se crearon ramas nuevas, no se eliminaron referencias, no se reescribió historia y los tres checkouts quedan en main. Las ramas históricas se conservan como referencias; las que contienen trabajo ERP ajeno aún pendiente no se incorporaron automáticamente al remoto bloqueado. El desarrollo siguiente se hará directamente en main.
+
+### Comparación exacta de privacidad ERP
+
+Se ejecutó el mismo inspectFile sobre los archivos actuales y se reconstruyeron los resultados de ambas líneas base usando sus contenidos Git para todos los archivos cambiados. Los archivos sin cambios conservan sus contenidos; los archivos nuevos no rastreados también se comprobaron. No se compararon únicamente totales:
+
+| Línea base | Hallazgos base | Hallazgos actuales | Nuevos | Resueltos |
+| --- | --- | --- | --- | --- |
+| Pre-adopción local 645769f37d49e57d90a01bad373f0d104feef1bf | 72 | 72 | 0 | 0 |
+| Main remoto d816415422232b5dd3223ac2934b11ff0a0cba3d | 72 | 72 | 0 | 0 |
+
+El conjunto ordenado de archivo/línea/regla coincide exactamente en ambas bases y el estado actual: SHA-256 `f34e0ff68fad3fdc91a728cb29eee97609be3a19894d2b51a3e77c07da9e14ae`. Los siete archivos de preparación/adopción tienen cero hallazgos. Evidencia sin valores privados: `.artifacts/releases/0.4.0/erp-privacy-baseline.json` dentro de Atlas.
+
+Se volvió a ejecutar `corepack pnpm check:privacy`: **salida 1, 7.222 archivos, 72 hallazgos**. Log local con valores redactados: `.artifacts/atlas-0.4.0-privacy-final.log` dentro de ERP.
+
+El fundamento concreto del bloqueo de política es:
+
+- ERP AGENTS.md:35 exige ejecutar check:privacy antes de compartir cambios; el propietario mantiene ese gate obligatorio para esta integración.
+- docs/REPOSITORY_PRIVACY.md:17 describe el escaneo de todos los archivos versionados y nuevos no ignorados. No documenta aprobación por diferencial ni aceptación de deuda histórica.
+- scripts/check-repository-privacy.mjs:89 y :96 devuelve fallo ante cualquier hallazgo, no sólo los añadidos. Su modo staged también recorre todo el índice (línea 70), no únicamente los archivos de este commit.
+- .githooks/pre-commit:3 ejecuta el escaneo staged y secrets. La activación del hook es optativa y core.hooksPath no estaba configurado; no se cambió esa configuración. Gitleaks no está disponible en PATH, por lo que no se certifica el gate secrets.
+
+**Precisión respecto del informe previo:** no hay una protección técnica de main que haya rechazado un push ERP. La API de GitHub respondió Branch not protected y la lista de rulesets es vacía. Los workflows actuales no referencian check:privacy; no se afirma que un check remoto obligatorio observado lo haya bloqueado. Es un bloqueo de política e instrucciones de release, aplicado antes de intentar el push. No se usó la ausencia de protección del remoto para eludirlo.
+
+No se encontró un procedimiento legítimo documentado de aprobación sin regresiones que sustituya ese resultado global. El diferencial limpio demuestra ausencia de regresiones de privacidad, pero no convierte el gate en aprobado. No se cambiaron políticas, scripts, allowlists ni controles; no se ocultaron los hallazgos. Su resolución o una decisión formal de política queda fuera de este cierre, y no condiciona el desarrollo independiente de Atlas.
+
+### Alcance y restauración
+
+Los únicos cambios nuevos de este cierre son el dist-tag npm, la consolidación de historia existente en main y los registros documentales. La decisión de trabajar en main se conserva en AGENTS.md de Atlas/Hub; ERP ya contenía esa instrucción. No se reconstruyeron artefactos, no se incrementó versión, no se desplegaron servicios ni se modificaron servidores o datos.
+
+El rollback del pin de Hub/ERP descrito más abajo conserva su validez; mantener guards y restaurar lock y runtime/SSR como conjunto. La consolidación conserva todos los commits originales y tags, sin borrados destructivos. Si fuera necesario revertir la promoción estable, requiere autorización para `npm dist-tag add @raulbellosom/atlas-web-builder@0.3.5 latest`; no ejecutado. La promoción no modifica los pins exactos de los consumidores.
+
+Las secciones siguientes son el registro histórico de distribución anterior a este cierre; sus estados latest=0.3.5 y NO APTO global quedan sustituidos por las conclusiones independientes anteriores.
+
+## Registro histórico de la distribución inicial
+
+Estado en ese punto: Atlas y Hub publicados; adopción ERP validada localmente y pendiente de integración remota por privacidad.
 
 ## 1. Estado final de repositorios
 
@@ -179,4 +241,7 @@ corepack pnpm install --frozen-lockfile
 
 **Producción permanece intacta:** no hubo despliegues, conexiones para modificar datos, migraciones ni cambios en servidores. No comenzó el rediseño visual ni la Fase 1.
 
-**NO APTO PARA INICIAR FASE 1: falta resolver el gate obligatorio de privacidad ERP y completar su integración segura.**
+Conclusión histórica de la distribución inicial: faltaba completar la integración ERP. El cierre definitivo distingue los dos estados:
+
+1. **APTO PARA COMENZAR LA FASE 1 DEL DESARROLLO DE ATLAS.**
+2. **NO APTO PARA DESPLEGAR LA INTEGRACIÓN ERP:** política de privacidad pendiente e integración remota ERP detenida.
