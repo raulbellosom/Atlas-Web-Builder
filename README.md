@@ -735,6 +735,9 @@ const heroCtaTemplate = defineTemplate({
 | `blocks`      | `BlockDefinition[]`        | ✓         | Array de bloques registrados. Usa `baseBlocks` o combínalos |
 | `initialPage` | `Page`                     |           | Página inicial. Si es `undefined` se crea una vacía         |
 | `theme`       | `Theme`                    |           | Tema. Usa `defaultTheme` o créalo con `defineTheme()`       |
+| `appearance` | `'light' \| 'dark' \| 'system'` | | Apariencia controlada de la interfaz del editor; independiente del website |
+| `defaultAppearance` | `'light' \| 'dark' \| 'system'` | | Apariencia inicial no controlada; por defecto `system` |
+| `onAppearanceChange` | `(mode) => void` | | Solicitud de cambio de apariencia; no modifica Page, Theme ni historial |
 | `templates`   | `TemplateDefinition[]`     |           | Plantillas para la pestaña Plantillas                       |
 | `layouts`     | `LayoutDefinition[]`       |           | Layouts de regiones disponibles                             |
 | `assets`      | `AssetSource`              |           | Fuente de medios. Sin esto, solo funciona la pestaña URL    |
@@ -742,7 +745,9 @@ const heroCtaTemplate = defineTemplate({
 | `actions`     | `Record<string, Function>` |           | Acciones personalizadas (formularios, etc.)                 |
 | `onSaveDraft` | `(page: Page) => void`     |           | Callback al guardar borrador                                |
 | `onPublish`   | `(page: Page) => void`     |           | Callback al publicar                                        |
-| `onLinkClick` | `(href: string) => void`   |           | Los enlaces del lienzo y la vista previa no navegan; avisa del clic (p. ej. para abrir esa página en el editor). Los enlaces con `target="_blank"` funcionan normal |
+| `onLinkClick` | `(href: string) => void`   |           | En edición se interceptan todos los enlaces, incluidos los de nueva pestaña. En vista previa se conserva la apertura de `target="_blank"` |
+
+La UI en desarrollo incluye el hook `useEditorAppearance()` y los componentes reutilizables de `editorControls`. `theme` sigue siendo exclusivamente el tema del website: una página blanca permanece blanca con la interfaz oscura. Las nuevas props son opcionales; los perfiles `capabilities` v1 conservan sus restricciones. Esta UI todavía no se ha publicado; npm 0.4.0 y el tag v0.4.0 son el punto estable anterior. Véanse [API, controles, pruebas y capturas de Fase 1](docs/releases/ATLAS_PHASE_1_UI_UX.md).
 
 ### `<AtlasWebRenderer>`
 
@@ -969,6 +974,6 @@ MIT © RacoonDevs
 
 ## Capacidades de guardado (0.4.0)
 
-La versión 0.4.0 está preparada para release; su publicación requiere autorización. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Véanse [los cambios](CHANGELOG.md) y [la migración desde 0.3.5](docs/releases/0.4.0-migration.md).
+La versión 0.4.0 está publicada y estable. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Las mejoras de UI de Fase 1 sólo están en desarrollo local hasta autorizar otro release. Véanse [los cambios](CHANGELOG.md) y [la migración desde 0.3.5](docs/releases/0.4.0-migration.md).
 
 El perfil sólo restringe controles, preserva los valores existentes y no sustituye los validadores del backend. Véase [el contrato de capacidades](docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md) y [la procedencia de 0.3.5](docs/releases/0.3.5-provenance.md).
