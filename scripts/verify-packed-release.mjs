@@ -13,6 +13,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 // Extract the actual release bytes. Reuse each consumer's locked dependencies, never its Atlas installation.
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..')
 const erp=resolve(root,'../runly'),hub=resolve(root,'../runly-developer-hub')
+const {legacyAtlasPackage}=await import(pathToFileURL(join(hub,'tests/support/atlas-legacy-fixture.js')))
+const legacyRoot=await legacyAtlasPackage(),legacyRequire=createRequire(join(legacyRoot,'package.json')),legacyAtlas=legacyRequire('@raulbellosom/atlas-web-builder')
+assert.equal(legacyAtlas.version,'0.3.5')
 const tarball=resolve(process.argv[2]??'.artifacts/releases/0.4.0/raulbellosom-atlas-web-builder-0.4.0.tgz')
 const scratch=mkdtempSync(join(tmpdir(),'atlas-040-adoption-'))
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
@@ -42,6 +45,11 @@ function fixture(name,manifest){
 }
 
 const environments=[fixture('react18',join(root,'package.json')),fixture('hub',join(hub,'package.json')),fixture('erp',join(erp,'apps/desktop/package.json'))]
+// Exercise the baseline loader with 0.4.0 actually installed: post-publication verification must keep testing real 0.3.5 bytes.
+const copiedLegacyHelper=join(environments[1].dir,'tests/support/atlas-legacy-fixture.js')
+mkdirSync(dirname(copiedLegacyHelper),{recursive:true});cpSync(join(hub,'tests/support/atlas-legacy-fixture.js'),copiedLegacyHelper)
+const afterAdoption=await (await import(pathToFileURL(copiedLegacyHelper))).legacyAtlasPackage()
+assert.equal(JSON.parse(readFileSync(join(afterAdoption,'package.json'))).version,'0.3.5');report.legacyAfterAdoption=true
 const sourcemap=JSON.parse(readFileSync(join(environments[0].pkg,'dist/atlas-web-builder.js.map')))
 let sourceCount=0
 for(const [index,name] of sourcemap.sources.entries()){
@@ -60,12 +68,12 @@ for(const path of ['package.json','README.md','CHANGELOG.md','LICENSE','docs/con
 const page={schemaVersion:1,id:'packed',slug:'/',title:'Packed',visibility:'public',regions:{main:{children:['h']}},blocks:{h:{id:'h',type:'HeadingBlock',props:{text:'Packed release · ñ',_opacity:0.6,_hover:{scale:'1.05',shadow:'md'},customHistorical:'preserved'}}},seo:{title:'SEO preservado'}}
 for(const f of environments){
   const atlas=f.require('@raulbellosom/atlas-web-builder'),esm=await import(pathToFileURL(join(f.pkg,'dist/atlas-web-builder.js')))
-  const original=f.original('@raulbellosom/atlas-web-builder'),React=f.require('react'),server=f.require('react-dom/server')
+  const original=legacyAtlas,React=f.require('react'),server=f.require('react-dom/server')
   assert.equal(atlas.version,'0.4.0');assert.equal(atlas.getVersion(),'0.4.0');assert.equal(atlas.editorCapabilitiesVersion,1)
   assert.deepEqual(Object.keys(atlas).sort(),Object.keys(esm).sort());assert.equal(Object.keys(atlas).length,140)
   assert(Object.keys(original).every(key=>key in atlas));assert.equal(React,f.original('react'))
   assert.deepEqual(atlas.EFFECT_PRESETS,original.EFFECT_PRESETS);assert.deepEqual(atlas.EFFECT_SHAPES,original.EFFECT_SHAPES)
-  assert(readFileSync(f.require.resolve('@raulbellosom/atlas-web-builder/styles')).equals(readFileSync(f.original.resolve('@raulbellosom/atlas-web-builder/styles'))))
+  assert(readFileSync(f.require.resolve('@raulbellosom/atlas-web-builder/styles')).equals(readFileSync(legacyRequire.resolve('@raulbellosom/atlas-web-builder/styles'))))
   assert.equal(JSON.parse(readFileSync(f.require.resolve('@raulbellosom/atlas-web-builder/package.json'))).version,'0.4.0')
   const reopened=atlas.parsePage(atlas.serializePage(page));assert.deepEqual(reopened.blocks,page.blocks);assert.deepEqual(reopened.seo,page.seo)
   const head=atlas.renderSeoHead(reopened,{}, {baseUrl:'https://example.test'})
@@ -79,12 +87,12 @@ for(const f of environments){
 
 const hubFixture=environments[1]
 try{
-  const output=execFileSync(process.execPath,['--test','tests/website-capabilities.test.js','tests/website-capabilities-browser.test.js'],{cwd:hub,env:{...process.env,ATLAS_TEST_PACKAGE_ROOT:hubFixture.pkg},encoding:'utf8'})
+  const output=execFileSync(process.execPath,['--test','tests/website-capabilities.test.js','tests/website-capabilities-browser.test.js'],{cwd:hub,env:{...process.env,ATLAS_TEST_PACKAGE_ROOT:hubFixture.pkg,ATLAS_TEST_LEGACY_PACKAGE_ROOT:legacyRoot},encoding:'utf8'})
   console.log(output);report.hubTests='7 passed, including Chromium Frame roundtrip and legacy rejection'
 }catch(error){console.error(error.stdout?.toString());console.error(error.stderr?.toString());throw error}
 for(const f of [environments[0],environments[2]]){
   try{
-    console.log(execFileSync(process.execPath,['--test','tests/website-capabilities-browser.test.js'],{cwd:hub,env:{...process.env,ATLAS_TEST_PACKAGE_ROOT:f.pkg},encoding:'utf8'}))
+    console.log(execFileSync(process.execPath,['--test','tests/website-capabilities-browser.test.js'],{cwd:hub,env:{...process.env,ATLAS_TEST_PACKAGE_ROOT:f.pkg,ATLAS_TEST_LEGACY_PACKAGE_ROOT:legacyRoot},encoding:'utf8'}))
     report.fixtures.find(item=>item.consumer===basename(f.dir)).editorBrowser=true
   }catch(error){console.error(error.stdout?.toString());console.error(error.stderr?.toString());throw error}
 }
