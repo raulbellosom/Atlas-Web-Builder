@@ -181,6 +181,7 @@ export {
 } from './resources/index.js'
 export { FIELD_TYPES, parseFieldsDsl, normalizeFields, validateFields } from './forms/index.js'
 export { useEditorAppearance } from './editor/ui/EditorAppearance.jsx'
+export * as editorControls from './editor/ui/index.js'
 export {
   formatPrice,
   createCartStore,

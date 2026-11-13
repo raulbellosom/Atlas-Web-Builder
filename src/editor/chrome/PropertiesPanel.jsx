@@ -1,60 +1,16 @@
-import { useState } from 'react'
+import { UniversalEffects } from './UniversalEffects.jsx'
+import { useId, useState } from 'react'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
-import { defaultFields } from '../fields/index.js'
+import { PropertyField as FieldRow } from './PropertyField.jsx'
+import { partitionGroups } from './propertyGroups.js'
 import { BlockIcon } from './BlockIcon.jsx'
 import { es } from '../i18n/es.js'
-import { AnimationField } from '../fields/AnimationField.jsx'
-import { FilterField } from '../fields/FilterField.jsx'
-import { HoverField } from '../fields/HoverField.jsx'
-import { TransformField } from '../fields/TransformField.jsx'
-import { CapabilityBoundary } from '../capabilities.jsx'
-
-function FieldRow({ propName, spec, value, onChange }) {
-  const Field = defaultFields[spec.type]
-  if (!Field) {
-    return (
-      <div className="atlas-wb-field">
-        <span className="atlas-wb-field__label">{spec.label || propName}</span>
-        <span className="atlas-wb-empty">Tipo desconocido: {spec.type}</span>
-      </div>
-    )
-  }
-  if (spec.readOnly) return (
-    <fieldset disabled style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
-      <p role="note">Sólo lectura: este campo requiere un enlace del sistema al importar. Su valor se conserva.</p>
-      <Field value={value} onChange={onChange} label={spec.label || propName} spec={spec} />
-    </fieldset>
-  )
-  return <Field value={value} onChange={onChange} label={spec.label || propName} spec={spec} />
-}
-
-/**
- * Partition `allFields` entries into named sections based on `def.groups`.
- *
- * `def.groups` shape (optional):
- *   [ { label: 'Contenido', fields: ['title', 'description', 'ctaLabel'] },
- *     { label: 'Estilo',    fields: ['radius', 'shadow', 'background']   } ]
- *
- * Fields not listed in any group fall into an implicit "Otros" section at the end.
- */
-function partitionGroups(entries, groups) {
-  if (!Array.isArray(groups) || !groups.length) {
-    return [{ label: null, entries }]
-  }
-  const listed = new Set(groups.flatMap((g) => g.fields || []))
-  const sections = groups.map((g) => ({
-    label: g.label,
-    entries: (g.fields || []).map((name) => entries.find(([k]) => k === name)).filter(Boolean),
-  }))
-  const rest = entries.filter(([k]) => !listed.has(k))
-  if (rest.length) sections.push({ label: 'Otros', entries: rest })
-  return sections.filter((s) => s.entries.length)
-}
 
 function CollapseSection({ label, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen)
+  const id = useId()
   return (
     <div className="atlas-wb-props__section">
       <button
@@ -62,6 +18,7 @@ function CollapseSection({ label, children, defaultOpen = true }) {
         className="atlas-wb-props__section-header"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        aria-controls={id}
       >
         <span className="atlas-wb-props__section-label">{label}</span>
         <span
@@ -73,7 +30,7 @@ function CollapseSection({ label, children, defaultOpen = true }) {
           ›
         </span>
       </button>
-      {open ? <div className="atlas-wb-props__section-body">{children}</div> : null}
+      {open ? <div id={id} className="atlas-wb-props__section-body">{children}</div> : null}
     </div>
   )
 }
@@ -115,19 +72,11 @@ export function PropertiesPanel() {
   const allFields = { ...variantField, ...fields }
   const entries = Object.entries(allFields)
 
-  if (!entries.length) {
-    return <p className="atlas-wb-empty">Este bloque no expone propiedades editables.</p>
-  }
 
   const sections = partitionGroups(entries, def.groups)
   const onChange = (propName) => (next) => updateBlockProps(selectedId, { [propName]: next })
 
-  const opacityVal = merged._opacity !== undefined ? merged._opacity : 1
-  const opacityPct = Math.round(opacityVal * 100)
-  const cursorVal = merged._cursor || 'auto'
-  const zIndexVal = merged._zIndex || ''
-  const stickyVal = !!merged._sticky
-  const scrollReveal = !!merged._scrollReveal
+
 
   return (
     <div className="atlas-wb-props">
@@ -150,6 +99,8 @@ export function PropertiesPanel() {
                 propName={propName}
                 spec={spec}
                 value={merged[propName]}
+                defaultValue={def.defaultProps?.[propName]}
+                hasValue={Object.prototype.hasOwnProperty.call(block.props || {}, propName)}
                 onChange={onChange(propName)}
               />
             ))}
@@ -162,6 +113,8 @@ export function PropertiesPanel() {
                 propName={propName}
                 spec={spec}
                 value={merged[propName]}
+                defaultValue={def.defaultProps?.[propName]}
+                hasValue={Object.prototype.hasOwnProperty.call(block.props || {}, propName)}
                 onChange={onChange(propName)}
               />
             ))}
@@ -169,183 +122,15 @@ export function PropertiesPanel() {
         ),
       )}
 
+      {Object.keys(block.props || {}).some(key => !(key in allFields) && !key.startsWith('_')) && <CollapseSection label="Avanzado" defaultOpen={false}>
+        <p className="atlas-wb-field__hint">Datos adicionales de sólo lectura. Se conservan al guardar.</p>
+        <pre className="atlas-wb-property__raw">{JSON.stringify(Object.fromEntries(Object.entries(block.props || {}).filter(([key]) => !(key in allFields) && !key.startsWith('_'))), null, 2)}</pre>
+      </CollapseSection>}
+
       {/* ── Universal effects ── */}
       <div className="atlas-wb-props__effects">
         <CollapseSection label="Efectos" defaultOpen={false}>
-          <CapabilityBoundary name="effects">
-          {/* Opacity */}
-          <div className="atlas-wb-field">
-            <span className="atlas-wb-field__label">Opacidad</span>
-            <div className="atlas-wb-props__opacity-row">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={opacityVal}
-                onChange={(e) => updateBlockProps(selectedId, { _opacity: Number(e.target.value) })}
-              />
-              <span className="atlas-wb-props__opacity-val">{opacityPct}%</span>
-            </div>
-          </div>
-
-          {/* Entrance animation */}
-          <AnimationField
-            label="Animación de entrada"
-            value={merged._animation}
-            onChange={(v) => updateBlockProps(selectedId, { _animation: v })}
-          />
-
-          {/* Scroll-reveal toggle */}
-          <div className="atlas-wb-field">
-            <span className="atlas-wb-field__label">Revelar al hacer scroll</span>
-            <label className="atlas-wb-effects-toggle">
-              <input
-                type="checkbox"
-                checked={scrollReveal}
-                onChange={(e) => updateBlockProps(selectedId, { _scrollReveal: e.target.checked })}
-              />
-              <span className="atlas-wb-effects-toggle__text">
-                {scrollReveal
-                  ? 'La animación se dispara cuando el bloque entra en pantalla'
-                  : 'La animación se reproduce al cargar la página'}
-              </span>
-            </label>
-          </div>
-
-          {/* Hover effects */}
-          <HoverField
-            label="Efecto al pasar el cursor"
-            value={merged._hover}
-            onChange={(v) => updateBlockProps(selectedId, { _hover: v })}
-          />
-
-          {/* Stagger children (blocks with slots only) */}
-          {def.slots && Object.keys(def.slots).length > 0 && (
-            <div className="atlas-wb-field">
-              <span className="atlas-wb-field__label">Cascada de hijos</span>
-              <div className="atlas-wb-props__opacity-row">
-                <input
-                  type="range"
-                  min="0"
-                  max="500"
-                  step="25"
-                  value={merged._stagger || 0}
-                  onChange={(e) =>
-                    updateBlockProps(selectedId, { _stagger: Number(e.target.value) || undefined })
-                  }
-                />
-                <span className="atlas-wb-props__opacity-val">
-                  {merged._stagger ? `${merged._stagger}ms` : 'Off'}
-                </span>
-              </div>
-              <span className="atlas-wb-effects-toggle__text">
-                Los hijos aparecen uno tras otro al hacer scroll (pausa entre cada uno)
-              </span>
-            </div>
-          )}
-
-          {/* Parallax */}
-          <div className="atlas-wb-field">
-            <span className="atlas-wb-field__label">Parallax</span>
-            <div className="atlas-wb-props__opacity-row">
-              <input
-                type="range"
-                min="-0.5"
-                max="0.5"
-                step="0.05"
-                value={merged._parallax?.speed || 0}
-                onChange={(e) => {
-                  const speed = Number(e.target.value)
-                  updateBlockProps(selectedId, { _parallax: speed ? { speed } : undefined })
-                }}
-              />
-              <span className="atlas-wb-props__opacity-val">
-                {merged._parallax?.speed ? merged._parallax.speed.toFixed(2) : 'Off'}
-              </span>
-            </div>
-            <span className="atlas-wb-effects-toggle__text">
-              El bloque se desplaza a distinta velocidad que el scroll (se desactiva con movimiento
-              reducido)
-            </span>
-          </div>
-
-          {/* CSS filters */}
-          <FilterField
-            label="Filtros CSS"
-            value={merged._filter}
-            onChange={(v) => updateBlockProps(selectedId, { _filter: v })}
-          />
-
-          {/* Transformations */}
-          <TransformField
-            label="Transformaciones"
-            value={merged._transform}
-            onChange={(v) => updateBlockProps(selectedId, { _transform: v })}
-          />
-
-          {/* Cursor */}
-          <div className="atlas-wb-field">
-            <span className="atlas-wb-field__label">Cursor</span>
-            <select
-              className="atlas-wb-field__select"
-              value={cursorVal}
-              onChange={(e) => updateBlockProps(selectedId, { _cursor: e.target.value })}
-            >
-              <option value="auto">Auto (por defecto)</option>
-              <option value="default">Flecha</option>
-              <option value="pointer">Mano (pointer)</option>
-              <option value="grab">Agarrar (grab)</option>
-              <option value="zoom-in">Zoom +</option>
-              <option value="zoom-out">Zoom −</option>
-              <option value="crosshair">Cruz</option>
-              <option value="not-allowed">No permitido</option>
-              <option value="text">Texto (I-beam)</option>
-            </select>
-          </div>
-
-          {/* Z-index */}
-          <div className="atlas-wb-field">
-            <span className="atlas-wb-field__label">Z-index (capa)</span>
-            <select
-              className="atlas-wb-field__select"
-              value={zIndexVal}
-              onChange={(e) =>
-                updateBlockProps(selectedId, {
-                  _zIndex: e.target.value ? Number(e.target.value) : undefined,
-                })
-              }
-            >
-              <option value="">Auto</option>
-              <option value="1">1</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="200">200</option>
-              <option value="1000">1000</option>
-            </select>
-          </div>
-
-          {/* Sticky */}
-          <div className="atlas-wb-field">
-            <span className="atlas-wb-field__label">Posición fija (sticky)</span>
-            <label className="atlas-wb-effects-toggle">
-              <input
-                type="checkbox"
-                checked={stickyVal}
-                onChange={(e) =>
-                  updateBlockProps(selectedId, { _sticky: e.target.checked || undefined })
-                }
-              />
-              <span className="atlas-wb-effects-toggle__text">
-                {stickyVal
-                  ? 'El bloque queda fijo al hacer scroll (sticky)'
-                  : 'Posición normal en el flujo del documento'}
-              </span>
-            </label>
-          </div>
-          </CapabilityBoundary>
+          <UniversalEffects merged={merged} def={def} selectedId={selectedId} />
         </CollapseSection>
       </div>
     </div>

@@ -22,6 +22,7 @@ export function SpacingField({ value, onChange, label }) {
               value === k && 'atlas-wb-field__token--active',
             )}
             onClick={() => onChange(k)}
+            aria-pressed={value === k}
             title={`${k} (${spacing[k]})`}
           >
             {k}

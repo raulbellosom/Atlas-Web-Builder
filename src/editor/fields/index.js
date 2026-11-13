@@ -23,6 +23,7 @@ import { AnimationField } from './AnimationField.jsx'
 import { FilterField } from './FilterField.jsx'
 import { HoverField } from './HoverField.jsx'
 import { TransformField } from './TransformField.jsx'
+import { SliderField, UnitField, SegmentedField, ComboboxField, SwitchField, CheckboxField, ColorField } from './ControlFields.jsx'
 
 /** @type {Object<string, React.ComponentType<{ value: any, onChange: (v:any)=>void, spec: any, label?: string }>>} */
 export const defaultFields = {
@@ -41,6 +42,13 @@ export const defaultFields = {
   filter: FilterField,
   hover: HoverField,
   transform: TransformField,
+  slider: SliderField,
+  unit: UnitField,
+  segmented: SegmentedField,
+  combobox: ComboboxField,
+  switch: SwitchField,
+  checkbox: CheckboxField,
+  color: ColorField,
 }
 
 /**
