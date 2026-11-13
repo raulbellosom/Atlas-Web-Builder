@@ -50,7 +50,6 @@ export function EditableBlock({
       style={style}
       role="button"
       tabIndex={0}
-      aria-pressed={isSelected}
       data-block-id={blockId}
       data-atlas-inline-editing={inlineEditingHere ? 'true' : undefined}
       className={clsx(
@@ -82,6 +81,7 @@ export function EditableBlock({
       }}
       {...(inlineEditingHere ? {} : attributes)}
       {...(inlineEditingHere ? {} : listeners)}
+      aria-pressed={isSelected}
     >
       {/* Selection toolbar */}
       {isSelected ? (

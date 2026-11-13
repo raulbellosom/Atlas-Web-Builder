@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { EditorPortal, useDialogFocus } from '../ui/EditorAppearance.jsx'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
@@ -20,6 +20,8 @@ function isSafeUrl(v) {
  * @param {{ onPick: (asset: any) => void, onClose: () => void, accept?: string }} props
  */
 export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
+  const dialogRef = useRef(null)
+  useDialogFocus(dialogRef, onClose)
   const capabilities = useEditorCapabilities()
   const { assets } = useBuilder()
   const hasAssets  = !!assets
@@ -89,21 +91,14 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
     if (file) handleFile(file)
   }
 
-  // ── Close on Escape or backdrop click ──────────────────────────────────────
-  useEffect(() => {
-    function onKey(e) { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const TABS = [
     ...(capabilities.manualAssetUrls === false ? [] : [{ id: 'url', label: 'URL' }]),
     ...(hasAssets  ? [{ id: 'library', label: 'Biblioteca' }] : []),
     ...(canUpload  ? [{ id: 'upload',  label: 'Subir' }] : []),
   ]
 
-  return createPortal(
-    <>
+  return (
+    <EditorPortal>
       {/* Backdrop */}
       <div
         className="atlas-wb-media-backdrop"
@@ -114,6 +109,8 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
       {/* Modal */}
       <div
         className="atlas-wb-media-modal"
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={es.assets.pickerLabel}
@@ -252,7 +249,6 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
           )}
         </div>
       </div>
-    </>,
-    document.body,
+    </EditorPortal>
   )
 }

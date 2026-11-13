@@ -11,34 +11,18 @@
   box-sizing: border-box;
 }
 
-/* 2. Design tokens
-   Defined on :root so portals (media modal, toasts) rendered on document.body
-   still inherit the same variables. .atlas-wb-editor re-declares them so a
-   consumer can override per-editor without touching the global scope. */
-:root {
+/* Editor-only semantic tokens. Nothing is written on :root or the host. */
+.atlas-wb-editor-scope,
+.atlas-wb-overlay-scope {
   --awb-bg: #ffffff;
-  --awb-panel: #f8fafc;
-  --awb-panel-fg: #0f172a;
-  --awb-border: #e2e8f0;
-  --awb-muted: #64748b;
-  --awb-accent: #2563eb;
-  --awb-accent-fg: #ffffff;
-  --awb-danger: #dc2626;
-  --awb-radius: 8px;
-  --awb-radius-sm: 5px;
-  --awb-font: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --awb-hover: rgba(15, 23, 42, 0.05);
-  --awb-hover-md: rgba(15, 23, 42, 0.09);
-  --awb-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --awb-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  --awb-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.16);
-  --awb-left-w: 272px;
-  --awb-right-w: 312px;
-  --awb-topbar-h: 52px;
-}
-
-.atlas-wb-editor {
-  --awb-bg: #ffffff;
+  --awb-workspace: #edf0f5;
+  --awb-accent-hover: #1d4ed8;
+  --awb-accent-soft: #edf2ff;
+  --awb-focus: #315dec;
+  --awb-success: #147547;
+  --awb-warning: #9b5600;
+  --awb-backdrop: rgba(12, 18, 30, .5);
+  --awb-selection: #7c3aed;
   --awb-panel: #f8fafc;
   --awb-panel-fg: #0f172a;
   --awb-border: #e2e8f0;
@@ -210,8 +194,8 @@
   color: var(--awb-accent-fg);
 }
 .atlas-wb-btn--primary:hover:not(:disabled) {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
+  background: var(--awb-accent-hover);
+  border-color: var(--awb-accent-hover);
   color: var(--awb-accent-fg);
 }
 
@@ -234,8 +218,8 @@
   color: var(--awb-accent-fg);
 }
 .atlas-wb-btn.atlas-wb-btn--active:hover:not(:disabled) {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
+  background: var(--awb-accent-hover);
+  border-color: var(--awb-accent-hover);
   color: var(--awb-accent-fg);
 }
 
@@ -362,7 +346,7 @@
 }
 .atlas-wb-palette__item:hover {
   border-color: var(--awb-accent);
-  background: #eff6ff;
+  background: var(--awb-accent-soft);
 }
 .atlas-wb-palette__item:active {
   cursor: grabbing;
@@ -409,7 +393,7 @@
 .atlas-wb-canvas {
   flex: 1;
   min-height: 0; /* critical */
-  background: #f1f5f9;
+  background: var(--awb-workspace);
   padding: 20px;
   overflow: auto; /* the ONE element that actually scrolls */
   display: flex;
@@ -430,7 +414,7 @@
 .atlas-wb-region-tabs__tab {
   appearance: none;
   border: 1px solid var(--awb-border);
-  background: white;
+  background: var(--awb-bg);
   color: var(--awb-muted);
   padding: 4px 14px;
   font: inherit;
@@ -449,13 +433,13 @@
 }
 .atlas-wb-region-tabs__tab--active {
   background: var(--awb-accent);
-  color: white;
+  color: var(--awb-accent-fg);
   border-color: var(--awb-accent);
 }
 
 /* Canvas frame */
 .atlas-wb-canvas__frame {
-  background: white;
+  background: var(--awb-bg);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.06),
     0 0 0 1px rgba(0, 0, 0, 0.04);
@@ -544,7 +528,7 @@
   opacity: 0.35;
 }
 .atlas-wb-block--editing {
-  outline-color: #7c3aed;
+  outline-color: var(--awb-selection);
 }
 
 /* Selection toolbar */
@@ -872,11 +856,11 @@
   grid-area: canvas;
   overflow: auto;
   min-height: 0;
-  background: #f1f5f9;
+  background: var(--awb-workspace);
 }
 .atlas-wb-preview__themed {
   min-height: 100%;
-  background: white;
+  background: var(--awb-bg);
 }
 
 /* ── 17. Notifications ──────────────────────────────────────────────────────── */
@@ -909,10 +893,10 @@
   border-left-color: var(--awb-accent);
 }
 .atlas-wb-toast--success {
-  border-left-color: #16a34a;
+  border-left-color: var(--awb-success);
 }
 .atlas-wb-toast--warning {
-  border-left-color: #d97706;
+  border-left-color: var(--awb-warning);
 }
 .atlas-wb-toast--error {
   border-left-color: var(--awb-danger);
@@ -1094,7 +1078,7 @@
 }
 .atlas-wb-media-modal__asset-item:hover {
   border-color: var(--awb-accent);
-  background: #eff6ff;
+  background: var(--awb-accent-soft);
 }
 .atlas-wb-media-modal__asset-item img {
   width: 100%;
@@ -1146,7 +1130,7 @@
 .atlas-wb-media-modal__dropzone:hover,
 .atlas-wb-media-modal__dropzone--over {
   border-color: var(--awb-accent);
-  background: #eff6ff;
+  background: var(--awb-accent-soft);
   color: var(--awb-accent);
 }
 .atlas-wb-media-modal__dropzone-icon {
@@ -1216,7 +1200,7 @@
   border: 1px solid var(--awb-border);
   border-radius: var(--awb-radius-sm);
   padding: 0;
-  background: white;
+  background: var(--awb-bg);
   cursor: pointer;
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
@@ -1361,7 +1345,7 @@
   color: var(--awb-panel-fg);
 }
 .atlas-wb-bg-field__tab--active {
-  background: white;
+  background: var(--awb-bg);
   color: var(--awb-panel-fg);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -1397,7 +1381,7 @@
 
 /* ── 22. Inline editing ─────────────────────────────────────────────────────── */
 .atlas-wb-block--editing {
-  outline-color: #7c3aed;
+  outline-color: var(--awb-selection);
 }
 [data-atlas-inline-prop] {
   cursor: text;
@@ -1410,7 +1394,7 @@
 }
 [contenteditable='true'] {
   outline: none;
-  caret-color: #7c3aed;
+  caret-color: var(--awb-selection);
 }
 
 /* ── 23. Page manager (Pages tab) ───────────────────────────────────────────── */
@@ -1444,11 +1428,11 @@
 }
 .atlas-wb-page-item:hover {
   border-color: var(--awb-accent);
-  background: #eff6ff;
+  background: var(--awb-accent-soft);
 }
 .atlas-wb-page-item--active {
   border-color: var(--awb-accent);
-  background: #eff6ff;
+  background: var(--awb-accent-soft);
 }
 .atlas-wb-page-item__title {
   font-size: 13px;
@@ -1487,7 +1471,7 @@
   border: 1px solid var(--awb-border);
   border-radius: var(--awb-radius-sm);
   padding: 10px;
-  background: white;
+  background: var(--awb-bg);
   font-family: Arial, sans-serif;
 }
 .atlas-wb-seo-preview__url {
@@ -2022,7 +2006,7 @@
 .atlas-wb-seo-sd { border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); padding: 8px; display: flex; flex-direction: column; gap: 6px; }
 .atlas-wb-seo-sd__head { display: flex; justify-content: space-between; font-size: 12px; }
 .atlas-wb-seo-sd__item { border-top: 1px dashed var(--awb-border); padding-top: 6px; display: flex; flex-direction: column; gap: 6px; }
-.atlas-wb-seo-card { border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); overflow: hidden; background: white; font-family: Arial, sans-serif; }
+.atlas-wb-seo-card { border: 1px solid var(--awb-border); border-radius: var(--awb-radius-sm); overflow: hidden; background: var(--awb-bg); font-family: Arial, sans-serif; }
 .atlas-wb-seo-card__img { display: block; width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; background: #e5e7eb; }
 .atlas-wb-seo-card__img--empty { display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6b7280; }
 .atlas-wb-seo-card--small { display: flex; }
@@ -2036,3 +2020,54 @@
 .atlas-wb-seo-checks__item--ok { border-color: #16a34a; background: #f0fdf4; color: #14532d; }
 .atlas-wb-seo-checks__item--warn { border-color: #d97706; background: #fffbeb; color: #78350f; }
 .atlas-wb-seo-checks__item--error { border-color: #dc2626; background: #fef2f2; color: #7f1d1d; }
+
+/* Appearance is independent of the website's --atlas-* tokens. */
+.atlas-wb-editor-scope { height: 100%; min-height: 0; max-width: 100%; }
+.atlas-wb-editor-scope, .atlas-wb-overlay-scope { color-scheme: light; }
+.atlas-wb-editor-scope[data-appearance="dark"], .atlas-wb-overlay-scope[data-appearance="dark"] {
+  color-scheme: dark;
+  --awb-bg: #191f2b;
+  --awb-panel: #121824;
+  --awb-panel-fg: #e7edf7;
+  --awb-border: #374256;
+  --awb-muted: #a6b2c6;
+  --awb-accent: #4778ee;
+  --awb-accent-hover: #3566da;
+  --awb-accent-soft: #263a62;
+  --awb-focus: #9cbaff;
+  --awb-hover: rgba(210, 226, 255, .07);
+  --awb-hover-md: rgba(210, 226, 255, .13);
+  --awb-workspace: #0c111b;
+  --awb-danger: #ff8e94;
+  --awb-success: #7cdbac;
+  --awb-warning: #ffc477;
+  --awb-selection: #c0a2ff;
+  --awb-shadow-sm: 0 1px 4px rgba(0,0,0,.3);
+  --awb-shadow: 0 6px 24px rgba(0,0,0,.35);
+  --awb-shadow-lg: 0 18px 48px rgba(0,0,0,.5);
+}
+.atlas-wb-overlay-scope { color: var(--awb-panel-fg); font: 13px/1.5 var(--awb-font); }
+.atlas-wb-overlay-scope *, .atlas-wb-overlay-scope *::before, .atlas-wb-overlay-scope *::after { box-sizing: border-box; }
+.atlas-wb-canvas__frame, .atlas-wb-preview__themed {
+  color-scheme: light;
+  background: var(--atlas-color-bg, #fff);
+  color: var(--atlas-color-fg, #0b0b0f);
+}
+.atlas-wb-appearance-control select {
+  min-height: 34px; max-width: 96px; font: inherit; border-radius: var(--awb-radius-sm);
+  border: 1px solid var(--awb-border); background: var(--awb-bg); color: var(--awb-panel-fg); padding: 4px 7px;
+}
+.atlas-wb-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.atlas-wb-panel, .atlas-wb-overlay-scope, .atlas-wb-canvas { scrollbar-color: var(--awb-border) transparent; scrollbar-width: thin; }
+.atlas-wb-editor-scope :focus-visible, .atlas-wb-overlay-scope :focus-visible { outline: 2px solid var(--awb-focus); outline-offset: 3px; }
+.atlas-wb-media-backdrop, .atlas-wb-panel-backdrop { background: var(--awb-backdrop); }
+.atlas-wb-media-modal { max-height: min(720px, 90dvh); color: var(--awb-panel-fg); }
+.atlas-wb-seo-checks__item--ok { border-color: var(--awb-success); color: var(--awb-success); background: var(--awb-hover); }
+.atlas-wb-seo-checks__item--warn { border-color: var(--awb-warning); color: var(--awb-warning); background: var(--awb-hover); }
+.atlas-wb-seo-checks__item--error { border-color: var(--awb-danger); color: var(--awb-danger); background: var(--awb-hover); }
+.atlas-wb-seo-card__title { color: var(--awb-panel-fg); }
+.atlas-wb-seo-card__desc, .atlas-wb-seo-card__domain, .atlas-wb-seo-card__img--empty { color: var(--awb-muted); }
+.atlas-wb-seo-card__img { background: var(--awb-workspace); }
+@media (prefers-reduced-motion: reduce) {
+  .atlas-wb-editor-scope *, .atlas-wb-overlay-scope * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

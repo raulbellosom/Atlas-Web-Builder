@@ -29,6 +29,7 @@ import { NotificationCenter } from './notifications/NotificationCenter.jsx'
 import { ThemeProvider } from '../theme/ThemeProvider.jsx'
 import { createLinkGuard } from './linkGuard.js'
 import { assertEditorCapabilities, EditorCapabilitiesContext } from './capabilities.jsx'
+import { EditorAppearanceProvider } from './ui/EditorAppearance.jsx'
 
 const unrestrictedCapabilities = Object.freeze({})
 
@@ -348,6 +349,9 @@ export function AtlasWebBuilderEditor({
   brandName,
   seo,
   capabilities,
+  appearance,
+  defaultAppearance = 'system',
+  onAppearanceChange,
   useExistingProvider = false,
 }) {
   assertEditorCapabilities(capabilities)
@@ -381,6 +385,7 @@ export function AtlasWebBuilderEditor({
   const seoValue = useMemo(() => ({ site: seo?.site, baseUrl: seo?.baseUrl ?? '' }), [seo?.site, seo?.baseUrl])
 
   const inner = (
+    <EditorAppearanceProvider appearance={appearance} defaultAppearance={defaultAppearance} onAppearanceChange={onAppearanceChange}>
     <EditorCapabilitiesContext.Provider value={capabilities || unrestrictedCapabilities}>
     <EditorStoreProvider initialPage={initialPage} initialTheme={theme}>
       <NotificationsProvider>
@@ -390,6 +395,7 @@ export function AtlasWebBuilderEditor({
       </NotificationsProvider>
     </EditorStoreProvider>
     </EditorCapabilitiesContext.Provider>
+    </EditorAppearanceProvider>
   )
 
   if (useExistingProvider) return inner

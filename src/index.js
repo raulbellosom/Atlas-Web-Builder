@@ -180,6 +180,7 @@ export {
   sampleResources,
 } from './resources/index.js'
 export { FIELD_TYPES, parseFieldsDsl, normalizeFields, validateFields } from './forms/index.js'
+export { useEditorAppearance } from './editor/ui/EditorAppearance.jsx'
 export {
   formatPrice,
   createCartStore,

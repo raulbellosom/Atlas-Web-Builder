@@ -6,6 +6,7 @@ import { listUnknownBlockTypes } from '../../persistence/serializePage.js'
 import { es } from '../i18n/es.js'
 import clsx from 'clsx'
 import { useEditorCapabilities } from '../capabilities.jsx'
+import { useEditorAppearance } from '../ui/EditorAppearance.jsx'
 
 /** Default badge shown when no brandLogo prop is provided. */
 function DefaultBrandIcon() {
@@ -76,6 +77,7 @@ const ICON_PREVIEW = (
 )
 
 export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive, onToggleLeft, onToggleRight, leftClosed, rightClosed, brandLogo, brandName }) {
+  const appearance = useEditorAppearance()
   const capabilities = useEditorCapabilities()
   const page = useEditorStore((s) => s.page)
   const device = useEditorStore((s) => s.device)
@@ -192,6 +194,13 @@ export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive,
       </div>
 
       <div className="atlas-wb-topbar__spacer" />
+
+      {appearance && <label className="atlas-wb-appearance-control">
+        <span className="atlas-wb-sr-only">Apariencia del editor</span>
+        <select aria-label="Apariencia del editor" value={appearance.appearance} onChange={event => appearance.setAppearance(event.target.value)}>
+          <option value="light">Claro</option><option value="dark">Oscuro</option><option value="system">Sistema</option>
+        </select>
+      </label>}
 
       {/* Actions */}
       <div className="atlas-wb-topbar__group atlas-wb-topbar__actions">
