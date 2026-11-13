@@ -1,7 +1,7 @@
 import { useThemeTokens } from '../../theme/ThemeProvider.jsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { AssetPicker } from '../assets/AssetPicker.jsx'
 import { useEditorCapabilities } from '../capabilities.jsx'
 
@@ -49,6 +49,7 @@ function TokenSelect({ value, onChange, tokens, allowEmpty = true }) {
 }
 
 export function BackgroundField({ value, onChange, label }) {
+  const pickerTriggerRef = useRef(null)
   const capabilities = useEditorCapabilities()
   const tokens = useThemeTokens()
   const colorTokens = (tokens && tokens.color) || {}
@@ -172,6 +173,7 @@ export function BackgroundField({ value, onChange, label }) {
               <button
                 type="button"
                 className="atlas-wb-field__button"
+                ref={pickerTriggerRef}
                 onClick={() => setPickerOpen((s) => !s)}
               >
                 Examinar...
@@ -179,6 +181,7 @@ export function BackgroundField({ value, onChange, label }) {
             ) : null}
             {pickerOpen && assets ? (
               <AssetPicker
+                returnFocusRef={pickerTriggerRef}
                 source={assets}
                 onPick={(asset) => {
                   update({ url: asset.url })

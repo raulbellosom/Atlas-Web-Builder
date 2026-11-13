@@ -18,6 +18,7 @@ export function ImageField({ value, onChange, label, spec }) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [uploading, setUploading]   = useState(false)
   const dropRef = useRef(null)
+  const pickerTriggerRef = useRef(null)
   const store = useOptionalEditorStore()
 
   // With spec.withAssetMeta the block also keeps the asset's responsive data;
@@ -86,6 +87,7 @@ export function ImageField({ value, onChange, label, spec }) {
             aria-invalid={!safe}
           />
           <button
+            ref={pickerTriggerRef}
             type="button"
             className="atlas-wb-field__button"
             onClick={() => setPickerOpen(true)}
@@ -130,6 +132,7 @@ export function ImageField({ value, onChange, label, spec }) {
 
       {pickerOpen ? (
         <AssetPicker
+          returnFocusRef={pickerTriggerRef}
           accept="image/*"
           onPick={(asset) => { setSrc(asset.url, asset); setPickerOpen(false) }}
           onClose={() => setPickerOpen(false)}

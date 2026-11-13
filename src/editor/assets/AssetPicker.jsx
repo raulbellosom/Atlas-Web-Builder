@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { EditorPortal, useDialogFocus } from '../ui/EditorAppearance.jsx'
+import { EditorPortal, DialogSurface } from '../ui/EditorAppearance.jsx'
+import { onTabListKeyDown } from '../ui/keyboard.js'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
@@ -19,9 +20,7 @@ function isSafeUrl(v) {
  *
  * @param {{ onPick: (asset: any) => void, onClose: () => void, accept?: string }} props
  */
-export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
-  const dialogRef = useRef(null)
-  useDialogFocus(dialogRef, onClose)
+export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRef }) {
   const capabilities = useEditorCapabilities()
   const { assets } = useBuilder()
   const hasAssets  = !!assets
@@ -107,10 +106,10 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
       />
 
       {/* Modal */}
-      <div
+      <DialogSurface
         className="atlas-wb-media-modal"
-        ref={dialogRef}
-        tabIndex={-1}
+        onClose={onClose}
+        returnFocusRef={returnFocusRef}
         role="dialog"
         aria-modal="true"
         aria-label={es.assets.pickerLabel}
@@ -123,7 +122,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
 
         {/* Tabs */}
         {TABS.length > 1 && (
-          <div className="atlas-wb-media-modal__tabs" role="tablist">
+          <div className="atlas-wb-media-modal__tabs" role="tablist" onKeyDown={onTabListKeyDown} tabIndex={-1}>
             {TABS.map((t) => (
               <button
                 key={t.id}
@@ -248,7 +247,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
             </div>
           )}
         </div>
-      </div>
+      </DialogSurface>
     </EditorPortal>
   )
 }

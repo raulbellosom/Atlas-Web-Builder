@@ -1,8 +1,10 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 const AppearanceContext = createContext(null)
 const modes = ['light', 'dark', 'system']
+const focusStacks = new WeakMap()
+const useFocusEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /** Editor appearance is UI state; it never enters Page, Theme or undo history. */
 export function EditorAppearanceProvider({ appearance, defaultAppearance = 'system', onAppearanceChange, children }) {
@@ -53,24 +55,41 @@ export function EditorPortal({ children }) {
     return () => owner.removeEventListener('fullscreenchange', update)
   }, [owner])
   if (!owner) return null
-  const target = fullscreen && scope && (fullscreen.contains(scope) || scope.contains(fullscreen))
-    ? fullscreen : scope ?? owner.body
+  const normalTarget = scope?.querySelector('.atlas-wb-editor') ?? scope ?? owner.body
+  const target = fullscreen && scope?.contains(fullscreen) && !fullscreen.contains(normalTarget)
+    ? fullscreen : normalTarget
   return createPortal(<div className="atlas-wb-overlay-scope" data-appearance={appearance?.resolvedAppearance ?? 'light'}>{children}</div>, target)
 }
 
+export function DialogSurface({ onClose, returnFocusRef, children, ...props }) {
+  const ref = useRef(null)
+  useDialogFocus(ref, onClose, true, returnFocusRef)
+  return <div ref={ref} tabIndex={-1} {...props}>{children}</div>
+}
+
+/** React 18 treats inert as an unknown attribute; React 19 treats it as boolean.
+ * Set the native attribute before paint so both releases behave identically. */
+export function usePanelInert(ref, closed) {
+  useFocusEffect(() => { ref.current?.toggleAttribute('inert', !!closed) }, [ref, closed])
+}
+
 /** Focus containment, Escape and focus return, scoped to the modal's document. */
-export function useDialogFocus(ref, onClose) {
+export function useDialogFocus(ref, onClose, enabled = true, returnFocusRef) {
   const close = useRef(onClose)
-  close.current = onClose
-  useEffect(() => {
+  useFocusEffect(() => { close.current = onClose }, [onClose])
+  useFocusEffect(() => {
     const element = ref.current
-    if (!element) return
+    if (!element || !enabled) return
     const owner = element.ownerDocument
-    const previous = owner.activeElement
+    const previous = returnFocusRef?.current ?? owner.activeElement
+    const stack = focusStacks.get(owner) ?? []
+    focusStacks.set(owner, stack)
+    stack.push(element)
     const focusables = () => [...element.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')].filter(node => !node.closest('[hidden], [inert]') && node.getAttribute('type') !== 'hidden')
     const focus = () => (focusables()[0] ?? element).focus()
     focus()
     function onKey(event) {
+      if (stack.at(-1) !== element) return
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close.current?.(); return }
       if (event.key !== 'Tab') return
       const items = focusables(), index = items.indexOf(owner.activeElement)
@@ -78,13 +97,14 @@ export function useDialogFocus(ref, onClose) {
       else if (event.shiftKey && index <= 0) { event.preventDefault(); items.at(-1).focus() }
       else if (!event.shiftKey && (index === items.length - 1 || index < 0)) { event.preventDefault(); items[0].focus() }
     }
-    function onFocus(event) { if (!element.contains(event.target)) focus() }
+    function onFocus(event) { if (stack.at(-1) === element && !element.contains(event.target)) focus() }
     owner.addEventListener('keydown', onKey)
     owner.addEventListener('focusin', onFocus)
     return () => {
       owner.removeEventListener('keydown', onKey)
       owner.removeEventListener('focusin', onFocus)
+      stack.splice(stack.lastIndexOf(element), 1)
       if (previous?.isConnected) previous.focus()
     }
-  }, [ref])
+  }, [ref, enabled, returnFocusRef])
 }

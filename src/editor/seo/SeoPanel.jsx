@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useSeoContext } from './SeoContext.js'
@@ -105,6 +105,7 @@ export function SeoPanel(props) {
   const setPage = useEditorStore((s) => s.setPage)
   const seo = page.seo || {}
   const [pickerOpen, setPickerOpen] = useState(false)
+  const pickerTriggerRef = useRef(null)
 
   function update(partial) {
     setPage({ ...page, seo: { ...seo, ...partial }, updatedAt: new Date().toISOString() })
@@ -158,13 +159,14 @@ export function SeoPanel(props) {
       <div className="atlas-wb-field">
         <span className="atlas-wb-field__label">Imagen al compartir</span>
         <div className="atlas-wb-field__row">
-          <button type="button" className="atlas-wb-field__button" onClick={() => setPickerOpen(true)}>Elegir o subir imagen</button>
+          <button type="button" className="atlas-wb-field__button" ref={pickerTriggerRef} onClick={() => setPickerOpen(true)}>Elegir o subir imagen</button>
           {ogImageUrl ? <button type="button" className="atlas-wb-field__button" onClick={() => update({ ogImage: undefined, ogImageAssetId: null })}>Quitar</button> : null}
         </div>
         <span className="atlas-wb-field__hint">Recomendado: 1200x630 px.</span>
       </div>
       {pickerOpen ? (
         <AssetPicker
+          returnFocusRef={pickerTriggerRef}
           accept="image/*"
           onPick={(asset) => {
             update({ ogImage: { url: asset.url, ...(asset.id && asset.id !== asset.url ? { assetId: asset.id } : {}) } })

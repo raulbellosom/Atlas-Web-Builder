@@ -1,4 +1,7 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
+import { useDialogFocus, usePanelInert } from '../ui/EditorAppearance.jsx'
+import { LayersPanel } from './LayersPanel.jsx'
+import { onTabListKeyDown } from '../ui/keyboard.js'
 import { useDraggable } from '@dnd-kit/core'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
@@ -10,37 +13,18 @@ import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
 
 /** A single draggable palette item. On narrow screens a tap inserts directly. */
 function PaletteItem({ def, onInserted }) {
-  const insertBlock = useEditorStore((s) => s.insertBlock)
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `palette:${def.type}`,
-    data: { source: 'palette', blockType: def.type, defaultProps: def.defaultProps },
+  const insertBlock = useEditorStore(state => state.insertBlock)
+  const activeRegion = useEditorStore(state => state.activeRegion)
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
+    id: `palette:${def.type}`, data: { source: 'palette', blockType: def.type, label: def.label || def.type, defaultProps: def.defaultProps },
   })
-
-  function handleClick() {
-    // On desktop use drag; on narrow screens a tap inserts at end of 'main'.
-    if (typeof window !== 'undefined' && window.innerWidth > 960) return
-    insertBlock(def.type, def, { regionName: 'main' })
-    onInserted?.()
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={clsx('atlas-wb-palette__item', isDragging && 'atlas-wb-palette__item--dragging')}
-      role="button"
-      tabIndex={0}
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick() }
-      }}
-      {...attributes}
-      {...listeners}
-      aria-label={`Insertar ${def.label || def.type}`}
-    >
-      <BlockIcon def={def} />
-      <span>{def.label || def.type}</span>
-    </div>
-  )
+  return <div ref={setNodeRef} className={clsx('atlas-wb-palette__item', isDragging && 'atlas-wb-palette__item--dragging')}>
+    <button type="button" className="atlas-wb-palette__insert" aria-label={`Insertar ${def.label || def.type}`}
+      onClick={() => { insertBlock(def.type, def, { regionName: activeRegion || 'main' }); onInserted?.() }}>
+      <BlockIcon def={def} /><span>{def.label || def.type}</span>
+    </button>
+    <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...attributes} {...listeners} aria-label={`Arrastrar ${def.label || def.type}`}>⋮⋮</button>
+  </div>
 }
 
 const CATEGORY_LABELS = {
@@ -112,7 +96,7 @@ function BlocksTab({ onInserted }) {
 function TemplateItem({ tpl, onInsert }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `template:${tpl.id}`,
-    data: { source: 'template', templateId: tpl.id },
+    data: { source: 'template', templateId: tpl.id, label: tpl.label },
   })
   return (
     <div
@@ -147,7 +131,8 @@ function TemplateItem({ tpl, onInsert }) {
   )
 }
 
-function TemplatesTab() {
+function TemplatesTab({ onInserted }) {
+  const activeRegion = useEditorStore(state => state.activeRegion)
   const capabilities = useEditorCapabilities()
   const { templates } = useBuilder()
   const applyTemplate = useEditorStore((s) => s.applyTemplate)
@@ -173,7 +158,7 @@ function TemplatesTab() {
             <TemplateItem
               key={t.id}
               tpl={t}
-              onInsert={(tpl) => applyTemplate(tpl, { regionName: 'main' })}
+              onInsert={tpl => { applyTemplate(tpl, { regionName: activeRegion || 'main' }); onInserted?.() }}
             />
           ))}
         </div>
@@ -264,11 +249,14 @@ function PagesTab() {
   )
 }
 
-export function LeftPanel({ onClose }) {
-  const [tab, setTab] = useState('blocks')
+export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChange: setTab, returnFocusRef }) {
+  const panelRef = useRef(null)
+  usePanelInert(panelRef, closed)
+  useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
-    <aside className="atlas-wb-panel atlas-wb-panel--left" aria-label={es.leftPanel.blocks}>
-      <div className="atlas-wb-panel__tabs" role="tablist">
+    <aside ref={panelRef} tabIndex={-1} className="atlas-wb-panel atlas-wb-panel--left" aria-label={es.leftPanel.blocks}>
+      <div className="atlas-wb-panel__heading"><strong>Biblioteca</strong><button type="button" onClick={onClose} aria-label="Cerrar biblioteca">×</button></div>
+      <div className="atlas-wb-panel__tabs" role="tablist" aria-label="Biblioteca" onKeyDown={onTabListKeyDown} tabIndex={-1}>
         <button
           type="button"
           role="tab"
@@ -299,10 +287,12 @@ export function LeftPanel({ onClose }) {
         >
           {es.leftPanel.pages}
         </button>
+        <button type="button" role="tab" aria-selected={tab === 'layers'} className={clsx('atlas-wb-panel__tab', tab === 'layers' && 'atlas-wb-panel__tab--active')} onClick={() => setTab('layers')}>Capas</button>
       </div>
       <div className="atlas-wb-panel__body">
-        {tab === 'blocks'    && <BlocksTab onInserted={onClose} />}
-        {tab === 'templates' && <CapabilityBoundary name="templates"><TemplatesTab /></CapabilityBoundary>}
+        {tab === 'blocks'    && <BlocksTab onInserted={compact ? onClose : undefined} />}
+        {tab === 'templates' && <CapabilityBoundary name="templates"><TemplatesTab onInserted={compact ? onClose : undefined} /></CapabilityBoundary>}
+        {tab === 'layers' && <LayersPanel />}
         {tab === 'pages'     && <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>}
       </div>
     </aside>

@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SeoContext } from './seo/SeoContext.js'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
-  closestCenter,
 } from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 
 import { AtlasWebBuilderProvider } from '../provider/AtlasWebBuilderProvider.jsx'
 import { useBuilder } from '../provider/BuilderContext.js'
@@ -29,7 +30,11 @@ import { NotificationCenter } from './notifications/NotificationCenter.jsx'
 import { ThemeProvider } from '../theme/ThemeProvider.jsx'
 import { createLinkGuard } from './linkGuard.js'
 import { assertEditorCapabilities, EditorCapabilitiesContext } from './capabilities.jsx'
-import { EditorAppearanceProvider } from './ui/EditorAppearance.jsx'
+import { EditorAppearanceProvider, EditorPortal, useEditorAppearance } from './ui/EditorAppearance.jsx'
+import { useWorkspaceLayout } from './ui/useWorkspaceLayout.js'
+import { MobileTools } from './chrome/MobileTools.jsx'
+import { editorCollisionDetection } from './dnd/collision.js'
+import { editorDndAccessibility } from './dnd/accessibility.js'
 
 const unrestrictedCapabilities = Object.freeze({})
 
@@ -37,10 +42,13 @@ const unrestrictedCapabilities = Object.freeze({})
  * Inner shell — assumes BuilderProvider + EditorStoreProvider are mounted above.
  */
 function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName }) {
+  const { scopeRef } = useEditorAppearance()
+  const { compact, phone } = useWorkspaceLayout()
   const { blocks: registry, templates: templateRegistry } = useBuilder()
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor),
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates, scrollBehavior: 'auto' }),
   )
 
   const store = useEditorStoreInstance()
@@ -60,9 +68,12 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   const [dragLabel, setDragLabel] = useState(null)
   // leftClosed / rightClosed: false = panel visible, true = panel hidden.
   // On mobile (≤960px) panels default to closed; CSS turns them into overlays.
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 960
+  const isMobile = compact
   const [leftClosed, setLeftClosed] = useState(isMobile)
   const [rightClosed, setRightClosed] = useState(isMobile)
+  const [leftTab, setLeftTab] = useState('blocks')
+  const [rightTab, setRightTab] = useState('properties')
+  const panelInvoker = useRef(null)
 
   // Keep panel state in sync with the CSS mobile breakpoint (960px) as the
   // window is resized after mount. Without this, resizing from desktop to
@@ -70,22 +81,30 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   // fixed-position overlays — the two overlays end up wider than the
   // viewport and cover the canvas entirely.
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    let wasMobile = window.innerWidth <= 960
-    function handleResize() {
-      const nowMobile = window.innerWidth <= 960
-      if (nowMobile === wasMobile) return
-      wasMobile = nowMobile
-      setLeftClosed(nowMobile)
-      setRightClosed(nowMobile)
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    setLeftClosed(compact)
+    setRightClosed(compact)
+  }, [compact])
+
+  useEffect(() => {
+    if ((scopeRef.current?.getBoundingClientRect().width || window.innerWidth) <= 600) store.getState().setDevice('mobile')
+  }, [scopeRef, store])
+
+  function toggleLeft(tab, event) {
+    if (event?.currentTarget) panelInvoker.current = event.currentTarget
+    setLeftClosed(closed => !closed && leftTab === tab)
+    setLeftTab(tab)
+    if (compact) setRightClosed(true)
+  }
+  function toggleRight(event) {
+    if (event?.currentTarget) panelInvoker.current = event.currentTarget
+    setRightClosed(closed => !closed)
+    if (compact) setLeftClosed(true)
+  }
 
   // ----- Keyboard shortcuts ------------------------------------------------
   useEffect(() => {
     function onKey(e) {
+      if (e.defaultPrevented || e.target?.closest?.('[role="dialog"]')) return
       const target = e.target
       const tag = target && target.tagName
       const isFormField =
@@ -119,9 +138,10 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         duplicateBlock(currentId)
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [undo, redo, store, removeBlock, duplicateBlock])
+    const scope = scopeRef.current
+    scope?.addEventListener('keydown', onKey)
+    return () => scope?.removeEventListener('keydown', onKey)
+  }, [undo, redo, store, removeBlock, duplicateBlock, scopeRef])
 
   // ----- DnD handlers ------------------------------------------------------
   const handleDragStart = useCallback(
@@ -223,10 +243,13 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         if (active.id === over.id) return
         const target = resolveTarget(overData, over.id)
         if (!target) return
+        const sameContainer = target.regionName ? target.regionName === activeData.regionName : target.parentId === activeData.parentId && target.slotName === activeData.slotName
+        const siblings = activeData.regionName ? page.regions[activeData.regionName]?.children : page.blocks[activeData.parentId]?.children?.[activeData.slotName]
+        if (sameContainer && target.index > siblings?.indexOf(activeData.blockId)) target.index += 1
         moveBlockTo(activeData.blockId, target)
       }
     },
-    [registry, templateRegistry, insertBlock, moveBlockTo, applyTemplateAction, resolveTarget],
+    [registry, templateRegistry, insertBlock, moveBlockTo, applyTemplateAction, resolveTarget, page],
   )
 
   // ----- Preview mode bypasses chrome --------------------------------------
@@ -236,12 +259,15 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         theme={storeTheme}
         as="div"
         className="atlas-wb-editor atlas-wb-editor--preview"
+        data-compact={compact ? '' : undefined}
+        data-phone={phone ? '' : undefined}
       >
         <TopBar
           onSaveDraft={onSaveDraft}
           onPublish={onPublish}
           onTogglePreview={() => setPreviewActive(false)}
           previewActive={previewActive}
+          compact={compact}
           brandLogo={brandLogo}
           brandName={brandName}
         />
@@ -257,7 +283,8 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      accessibility={editorDndAccessibility}
+      collisionDetection={editorCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setDragLabel(null)}
@@ -266,6 +293,8 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         theme={storeTheme}
         as="div"
         className="atlas-wb-editor"
+        data-compact={compact ? '' : undefined}
+        data-phone={phone ? '' : undefined}
         data-left-closed={leftClosed ? '' : undefined}
         data-right-closed={rightClosed ? '' : undefined}
       >
@@ -274,33 +303,36 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
           onPublish={onPublish}
           onTogglePreview={() => setPreviewActive(true)}
           previewActive={previewActive}
-          onToggleLeft={() => setLeftClosed((v) => !v)}
-          onToggleRight={() => setRightClosed((v) => !v)}
+          compact={compact}
+          onToggleLeft={event => toggleLeft(leftTab, event)}
+          onToggleRight={toggleRight}
           leftClosed={leftClosed}
           rightClosed={rightClosed}
           brandLogo={brandLogo}
           brandName={brandName}
         />
-        <LeftPanel onClose={() => setLeftClosed(true)} />
+        <LeftPanel onClose={() => setLeftClosed(true)} closed={leftClosed} compact={compact} activeTab={leftTab} onTabChange={setLeftTab} returnFocusRef={panelInvoker} />
         <main className="atlas-wb-editor__main">
           <Breadcrumb />
           <Canvas onLinkClick={onLinkClick} />
         </main>
-        <RightPanel />
+        <RightPanel onClose={() => setRightClosed(true)} closed={rightClosed} compact={compact} activeTab={rightTab} onTabChange={setRightTab} returnFocusRef={panelInvoker} />
+        {compact && <MobileTools leftClosed={leftClosed} rightClosed={rightClosed} leftTab={leftTab}
+          onBlocks={event => toggleLeft('blocks', event)} onLayers={event => toggleLeft('layers', event)}
+          onProperties={event => { setRightTab('properties'); toggleRight(event) }} />}
         <NotificationCenter />
         {/* Backdrop: only appears on mobile when a panel is open (not closed) */}
-        {(!leftClosed || !rightClosed) ? (
+        {compact && (!leftClosed || !rightClosed) ? (
           <div
             className="atlas-wb-panel-backdrop"
-            style={{ display: window.innerWidth <= 960 ? undefined : 'none' }}
             role="presentation"
             onClick={() => { setLeftClosed(true); setRightClosed(true) }}
           />
         ) : null}
       </ThemeProvider>
-      <DragOverlay>
+      <EditorPortal><DragOverlay dropAnimation={null}>
         {dragLabel ? <div className="atlas-wb-drag-overlay">{dragLabel}</div> : null}
-      </DragOverlay>
+      </DragOverlay></EditorPortal>
     </DndContext>
   )
 }
@@ -324,6 +356,9 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
  *   actions?: any,
  *   permissions?: any,
  *   capabilities?: { schemaVersion: 1, id?: string, [key: string]: any },
+ *   appearance?: 'light' | 'dark' | 'system',
+ *   defaultAppearance?: 'light' | 'dark' | 'system',
+ *   onAppearanceChange?: (appearance: 'light' | 'dark' | 'system') => void,
  *   onSaveDraft?: (page: import('../schema/page.js').Page) => void,
  *   onPublish?: (page: import('../schema/page.js').Page) => void,
  *   onLinkClick?: (href: string) => void,  // links in the canvas/preview never navigate; this reports the click

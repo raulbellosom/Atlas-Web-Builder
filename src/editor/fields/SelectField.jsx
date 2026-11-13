@@ -14,6 +14,7 @@ export function SelectField({ value, onChange, label, spec }) {
       <span className="atlas-wb-select-wrap">
       {selectedColor && <span aria-hidden="true" className="atlas-wb-select-swatch" style={{ background: selectedColor }} />}
       <select
+        aria-label={label}
         className="atlas-wb-field__select"
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}

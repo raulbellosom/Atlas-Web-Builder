@@ -53,6 +53,7 @@ export function UniversalEffects({ merged, def, selectedId }) {
                   min="0"
                   max="500"
                   step="25"
+                  aria-label="Cascada de hijos"
                   value={merged._stagger || 0}
                   onChange={(e) =>
                     updateBlockProps(selectedId, { _stagger: Number(e.target.value) || undefined })
@@ -75,6 +76,7 @@ export function UniversalEffects({ merged, def, selectedId }) {
                 min="-0.5"
                 max="0.5"
                 step="0.05"
+                aria-label="Parallax"
                 value={merged._parallax?.speed || 0}
                 onChange={(e) => {
                   const speed = Number(e.target.value)
@@ -104,6 +106,7 @@ export function UniversalEffects({ merged, def, selectedId }) {
             <span className="atlas-wb-field__label">Cursor</span>
             <select
               className="atlas-wb-field__select"
+              aria-label="Cursor"
               value={cursorVal}
               onChange={(e) => updateBlockProps(selectedId, { _cursor: e.target.value })}
             >
@@ -122,6 +125,7 @@ export function UniversalEffects({ merged, def, selectedId }) {
             <span className="atlas-wb-field__label">Z-index (capa)</span>
             <select
               className="atlas-wb-field__select"
+              aria-label="Z-index"
               value={zIndexVal}
               onChange={(e) =>
                 updateBlockProps(selectedId, {

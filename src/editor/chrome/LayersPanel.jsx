@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { es } from '../i18n/es.js'
@@ -7,30 +8,32 @@ import { es } from '../i18n/es.js'
  * authors can see and select nested children.
  */
 function LayerNode({ block, blocks, depth, selectedId, select }) {
+  const [expanded, setExpanded] = useState(true)
   if (!block) return null
   const slots = block.children ? Object.entries(block.children) : []
+  const hasChildren = slots.some(([, ids]) => ids.length)
   return (
-    <li role="treeitem" aria-selected={selectedId === block.id}>
+    <li role="treeitem" aria-selected={selectedId === block.id} aria-expanded={hasChildren ? expanded : undefined}>
       <div
         className={clsx('atlas-wb-layer', selectedId === block.id && 'atlas-wb-layer--selected')}
         style={{ paddingLeft: 8 + depth * 12 }}
-        onClick={(e) => {
-          e.stopPropagation()
-          select(block.id)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            select(block.id)
-          }
-        }}
-        role="button"
-        tabIndex={0}
       >
-        <span aria-hidden="true">▦</span>
-        <span>{block.type}</span>
+        {hasChildren && <button type="button" className="atlas-wb-layer__fold" tabIndex={-1} aria-label={`${expanded ? 'Contraer' : 'Expandir'} ${block.type}`} onClick={() => setExpanded(value => !value)}>{expanded ? '▾' : '▸'}</button>}
+        <button type="button" className="atlas-wb-layer__select" data-layer-id={block.id}
+          onClick={() => select(block.id)}
+          onKeyDown={event => {
+            const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
+            if (!keys.includes(event.key)) return
+            event.preventDefault(); event.stopPropagation()
+            if (event.key === 'ArrowLeft') { setExpanded(false); return }
+            if (event.key === 'ArrowRight') { setExpanded(true); return }
+            const nodes = [...event.currentTarget.closest('[role="tree"]').querySelectorAll('[data-layer-id]')]
+            const index = nodes.indexOf(event.currentTarget)
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))
+            nodes[next]?.focus()
+          }}><span aria-hidden="true">▦</span><span>{block.type}</span></button>
       </div>
-      {slots.map(([slotName, ids]) => {
+      {expanded && slots.map(([slotName, ids]) => {
         if (!ids || !ids.length) return null
         return (
           <ul key={slotName} className="atlas-wb-layers atlas-wb-layers--nested">

@@ -6,7 +6,7 @@ import { listUnknownBlockTypes } from '../../persistence/serializePage.js'
 import { es } from '../i18n/es.js'
 import clsx from 'clsx'
 import { useEditorCapabilities } from '../capabilities.jsx'
-import { useEditorAppearance } from '../ui/EditorAppearance.jsx'
+import { AppearanceSelect, ToolbarCommands } from './ToolbarCommands.jsx'
 
 /** Default badge shown when no brandLogo prop is provided. */
 function DefaultBrandIcon() {
@@ -76,8 +76,7 @@ const ICON_PREVIEW = (
   </svg>
 )
 
-export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive, onToggleLeft, onToggleRight, leftClosed, rightClosed, brandLogo, brandName }) {
-  const appearance = useEditorAppearance()
+export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive, onToggleLeft, onToggleRight, leftClosed, rightClosed, brandLogo, brandName, compact = false }) {
   const capabilities = useEditorCapabilities()
   const page = useEditorStore((s) => s.page)
   const device = useEditorStore((s) => s.device)
@@ -195,12 +194,7 @@ export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive,
 
       <div className="atlas-wb-topbar__spacer" />
 
-      {appearance && <label className="atlas-wb-appearance-control">
-        <span className="atlas-wb-sr-only">Apariencia del editor</span>
-        <select aria-label="Apariencia del editor" value={appearance.appearance} onChange={event => appearance.setAppearance(event.target.value)}>
-          <option value="light">Claro</option><option value="dark">Oscuro</option><option value="system">Sistema</option>
-        </select>
-      </label>}
+      {!compact && <AppearanceSelect />}
 
       {/* Actions */}
       <div className="atlas-wb-topbar__group atlas-wb-topbar__actions">
@@ -214,39 +208,9 @@ export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive,
           {ICON_PREVIEW}
           <span className="atlas-wb-topbar__btn-text">{es.topbar.preview}</span>
         </button>
-        <button
-          type="button"
-          className="atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__text-btn"
-          onClick={handleImportClick}
-          disabled={capabilities.jsonImport === false}
-          title={es.topbar.importPage}
-        >
-          {es.topbar.importPage}
-        </button>
-        <button
-          type="button"
-          className="atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__text-btn"
-          onClick={handleExport}
-          title={es.topbar.exportPage}
-        >
-          {es.topbar.exportPage}
-        </button>
-        <button
-          type="button"
-          className="atlas-wb-btn atlas-wb-topbar__text-btn"
-          onClick={() => onSaveDraft && onSaveDraft(page)}
-          disabled={!onSaveDraft}
-        >
-          {es.topbar.saveDraft}
-        </button>
-        <button
-          type="button"
-          className="atlas-wb-btn atlas-wb-btn--primary"
-          onClick={() => onPublish && onPublish(page)}
-          disabled={!onPublish}
-        >
-          {es.topbar.publish}
-        </button>
+        <ToolbarCommands compact={compact} device={device} setDevice={setDevice}
+          onImport={handleImportClick} onExport={handleExport} allowImport={capabilities.jsonImport !== false}
+          onSave={onSaveDraft ? () => onSaveDraft(page) : undefined} onPublish={onPublish ? () => onPublish(page) : undefined} />
         <input
           ref={fileInputRef}
           type="file"

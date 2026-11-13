@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useRef } from 'react'
+import { useDialogFocus, usePanelInert } from '../ui/EditorAppearance.jsx'
+import { onTabListKeyDown } from '../ui/keyboard.js'
 import clsx from 'clsx'
 import { es } from '../i18n/es.js'
 import { PropertiesPanel } from './PropertiesPanel.jsx'
@@ -89,11 +91,14 @@ function PageTab() {
   )
 }
 
-export function RightPanel() {
-  const [tab, setTab] = useState('properties')
+export function RightPanel({ onClose, closed, compact, activeTab: tab, onTabChange: setTab, returnFocusRef }) {
+  const panelRef = useRef(null)
+  usePanelInert(panelRef, closed)
+  useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
-    <aside className="atlas-wb-panel atlas-wb-panel--right" aria-label={es.rightPanel.properties}>
-      <div className="atlas-wb-panel__tabs" role="tablist">
+    <aside ref={panelRef} tabIndex={-1} className="atlas-wb-panel atlas-wb-panel--right" aria-label={es.rightPanel.properties}>
+      <div className="atlas-wb-panel__heading"><strong>Inspector</strong><button type="button" onClick={onClose} aria-label="Cerrar inspector">×</button></div>
+      <div className="atlas-wb-panel__tabs" role="tablist" aria-label="Inspector" onKeyDown={onTabListKeyDown} tabIndex={-1}>
         {[
           ['properties', es.rightPanel.properties],
           ['layers', 'Capas'],

@@ -9,6 +9,7 @@ import { EditableBlock } from './EditableBlock.jsx'
 import { EditorSlot } from './EditorSlot.jsx'
 import { es } from '../i18n/es.js'
 import { createLinkGuard } from '../linkGuard.js'
+import { CanvasViewport } from './CanvasViewport.jsx'
 
 /**
  * Walk the page once to locate a block's container. O(n) over the dictionary;
@@ -143,7 +144,7 @@ export function Canvas({ onLinkClick }) {
   const theme = useTheme()
   const { layouts } = useBuilder()
   const editorRenderValue = useEditorRenderValue(page)
-  const guardLinks = useMemo(() => createLinkGuard(onLinkClick), [onLinkClick])
+  const guardLinks = useMemo(() => createLinkGuard(onLinkClick, { blockNewTabs: true }), [onLinkClick])
 
   const regionNames = Object.keys(page.regions || {})
   const safeActive = page.regions[activeRegion] ? activeRegion : regionNames[0] || 'main'
@@ -153,9 +154,9 @@ export function Canvas({ onLinkClick }) {
     <div
       className="atlas-wb-canvas"
       role="presentation"
-      onClick={clearSelection}
+      onClick={event => { if (!event.target.closest('.atlas-wb-canvas-tools, [data-block-id]')) clearSelection() }}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') clearSelection()
+        if (e.key === 'Escape' && !e.target.closest('.atlas-wb-canvas-tools')) clearSelection()
       }}
       data-device={device}
       data-device-width={DEVICE_WIDTHS[device]}
@@ -166,20 +167,11 @@ export function Canvas({ onLinkClick }) {
         onSelect={setActiveRegion}
         layout={layout}
       />
-      <div
-        className={clsx(
-          'atlas-wb-canvas__frame',
-          device === 'tablet' && 'atlas-wb-canvas__frame--tablet',
-          device === 'mobile' && 'atlas-wb-canvas__frame--mobile',
-        )}
-        data-atlas-theme={theme.id}
-        data-active-region={safeActive}
-        onClickCapture={guardLinks}
-      >
+      <CanvasViewport device={device} frameProps={{ 'data-atlas-theme': theme.id, 'data-active-region': safeActive, onClickCapture: guardLinks }}>
         <EditorRenderContext.Provider value={editorRenderValue}>
           <RegionTree page={page} regionName={safeActive} />
         </EditorRenderContext.Provider>
-      </div>
+      </CanvasViewport>
     </div>
   )
 }

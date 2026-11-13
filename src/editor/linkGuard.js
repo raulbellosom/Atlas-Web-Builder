@@ -5,10 +5,10 @@
  *
  * @param {(href: string) => void} [onLinkClick] host callback, e.g. to open the linked page in the editor
  */
-export function createLinkGuard(onLinkClick) {
+export function createLinkGuard(onLinkClick, { blockNewTabs = false } = {}) {
   return (event) => {
     const anchor = event.target?.closest?.('a[href]')
-    if (!anchor || anchor.target === '_blank') return
+    if (!anchor || (anchor.target === '_blank' && !blockNewTabs)) return
     event.preventDefault()
     const href = anchor.getAttribute('href')
     if (href && !href.startsWith('#') && onLinkClick) onLinkClick(href)

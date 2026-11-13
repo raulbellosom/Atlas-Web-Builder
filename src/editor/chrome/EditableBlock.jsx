@@ -5,6 +5,8 @@ import { BlockRenderer } from '../../renderer/BlockRenderer.jsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
+import { useCallback, useRef } from 'react'
+import { BlockToolbar } from './BlockToolbar.jsx'
 
 /**
  * Wraps a single block instance with editor chrome: selection outline,
@@ -30,26 +32,28 @@ export function EditableBlock({
   const inlineEditId = useEditorStore((s) => s.inlineEditId)
   const inlineEditingHere = inlineEditId === blockId
   const { blocks: registry } = useBuilder()
-
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: blockId,
-    data: { source: 'block', blockId, parentId, slotName, regionName },
-  })
-  const style = { transform: CSS.Transform.toString(transform), transition }
-
-  const isSelected = selectedId === blockId
-  const index = siblings.indexOf(blockId)
-  const lastIndex = siblings.length - 1
   const block = blocks[blockId]
   const def = block && registry ? registry.get(block.type) : null
   const blockLabel = def ? (def.label || def.type) : (block ? block.type : blockId)
 
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: blockId,
+    data: { source: 'block', blockId, parentId, slotName, regionName, label: blockLabel },
+  })
+  const style = { transform: CSS.Transform.toString(transform), transition }
+  const elementRef = useRef(null)
+  const setElement = useCallback(node => { elementRef.current = node; setNodeRef(node) }, [setNodeRef])
+
+  const isSelected = selectedId === blockId
+  const index = siblings.indexOf(blockId)
+  const lastIndex = siblings.length - 1
+
   return (
     <div
-      ref={setNodeRef}
+      ref={setElement}
       style={style}
-      role="button"
-      tabIndex={0}
+      role="group"
+      aria-label={`Bloque: ${blockLabel}`}
       data-block-id={blockId}
       data-atlas-inline-editing={inlineEditingHere ? 'true' : undefined}
       className={clsx(
@@ -59,8 +63,8 @@ export function EditableBlock({
         isDragging && 'atlas-wb-block--dragging',
         inlineEditingHere && 'atlas-wb-block--editing',
       )}
-      onClick={(e) => {
-        e.stopPropagation()
+      onClickCapture={(e) => {
+        if (e.target.closest('[data-block-id]') !== e.currentTarget) return
         if (inlineEditingHere) return
         select(blockId)
       }}
@@ -72,27 +76,20 @@ export function EditableBlock({
           startInlineEdit(blockId, target.dataset.atlasInlineProp)
         }
       }}
-      onKeyDown={(e) => {
+      onKeyDownCapture={(e) => {
         if (inlineEditingHere) {
           if (e.key === 'Escape') { e.stopPropagation(); stopInlineEdit() }
           return
         }
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(blockId) }
       }}
-      {...(inlineEditingHere ? {} : attributes)}
-      {...(inlineEditingHere ? {} : listeners)}
-      aria-pressed={isSelected}
+      data-selected={isSelected ? 'true' : undefined}
     >
+      <button type="button" className="atlas-wb-block__select" aria-label={`Seleccionar ${blockLabel}`} aria-pressed={isSelected} onClick={() => select(blockId)}>Seleccionar {blockLabel}</button>
       {/* Selection toolbar */}
       {isSelected ? (
-        <div
-          className="atlas-wb-block__toolbar"
-          role="toolbar"
-          aria-label="Acciones del bloque"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
+        <BlockToolbar anchorRef={elementRef} positionKey={index}>
           <span className="atlas-wb-block__toolbar-label">{blockLabel}</span>
+          <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...(inlineEditingHere ? {} : attributes)} {...(inlineEditingHere ? {} : listeners)} aria-label={`Arrastrar ${blockLabel}`} title="Arrastrar bloque">⋮⋮</button>
           <div className="atlas-wb-block__toolbar-sep" />
           <button
             type="button"
@@ -129,7 +126,7 @@ export function EditableBlock({
           >
             ✕
           </button>
-        </div>
+        </BlockToolbar>
       ) : null}
 
       <BlockRenderer blockId={blockId} blocks={blocks} mode={mode} />

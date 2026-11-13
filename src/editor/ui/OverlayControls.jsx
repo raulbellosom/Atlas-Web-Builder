@@ -1,21 +1,19 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { EditorPortal, useDialogFocus } from './EditorAppearance.jsx'
+import { EditorPortal, DialogSurface } from './EditorAppearance.jsx'
 
 function PopoverContent({ children, label, onClose, anchor }) {
-  const ref = useRef(null)
-  useDialogFocus(ref, onClose)
   const rect = anchor.current.getBoundingClientRect(), view = anchor.current.ownerDocument.defaultView
   return <EditorPortal><div className="atlas-wb-popover-backdrop" role="presentation" onClick={onClose} />
-    <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-label={label} className="atlas-wb-popover"
+    <DialogSurface onClose={onClose} returnFocusRef={anchor} role="dialog" aria-modal="true" aria-label={label} className="atlas-wb-popover"
       style={{ left: Math.max(8, Math.min(rect.left, view.innerWidth - 296)), top: Math.min(rect.bottom + 8, Math.max(8, view.innerHeight - 300)) }}>
       <header><strong>{label}</strong><button type="button" className="atlas-wb-btn" onClick={onClose} aria-label={`Cerrar ${label}`}>×</button></header>
       {children}
-    </div></EditorPortal>
+    </DialogSurface></EditorPortal>
 }
 
-export function Popover({ label, children }) {
+export function Popover({ label, trigger, children }) {
   const [open, setOpen] = useState(false), anchor = useRef(null)
-  return <><button ref={anchor} type="button" className="atlas-wb-btn" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(value => !value)}>{label}</button>
+  return <><button ref={anchor} type="button" className="atlas-wb-btn" aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(value => !value)}>{trigger ?? label}</button>
     {open && <PopoverContent label={label} anchor={anchor} onClose={() => setOpen(false)}>{children}</PopoverContent>}</>
 }
 
