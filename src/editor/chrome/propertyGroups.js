@@ -10,7 +10,7 @@ function category(name, spec) {
 
 export function partitionGroups(entries, groups) {
   const sections = [], listed = new Set()
-  for (const group of groups ?? []) {
+  for (const group of Array.isArray(groups) ? groups : []) {
     const fields = (group.fields ?? []).map(name => entries.find(([key]) => key === name)).filter(Boolean)
     fields.forEach(([key]) => listed.add(key))
     if (fields.length) sections.push({ label: group.label === 'Disposición' ? 'Layout' : group.label, entries: fields })

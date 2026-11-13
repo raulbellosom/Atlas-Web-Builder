@@ -7,6 +7,8 @@ import { UnitInput, NumberInput } from '../editor/ui/NumericControls.jsx'
 import { Combobox, SegmentedControl } from '../editor/ui/ChoiceControls.jsx'
 import { Popover } from '../editor/ui/OverlayControls.jsx'
 import { serializePage, parsePage } from '../persistence/serializePage.js'
+import { PropertyField } from '../editor/chrome/PropertyField.jsx'
+import { partitionGroups } from '../editor/chrome/propertyGroups.js'
 
 let store
 function Probe() { store = useEditorStoreInstance(); return null }
@@ -14,6 +16,15 @@ const block = defineBlock({ type: 'Controls', label: 'Controles', defaultProps: 
   fields: { title: { type: 'text', label: 'Título' }, amount: { type: 'number', label: 'Cantidad', min: 0, max: 10 }, locked: { type: 'text', label: 'Protegido', readOnly: true }, gap: { type: 'unit', label: 'Separación', group: 'Layout' } }, render: ({ title }) => <h1>{title}</h1> })
 
 describe('coherent controls preserve the existing value contract', () => {
+  it('keeps unsupported field controls read-only, including reset, and tolerates legacy group metadata', () => {
+    const change = vi.fn()
+    const view = render(<PropertyField propName="legacy" spec={{ type: 'legacy-plugin', label: 'Histórico' }} value="Conservado" defaultValue="Base" hasValue onChange={change} />)
+    expect(view.container.querySelector('[data-property="legacy"]')).toHaveAttribute('data-value-state', 'readonly')
+    expect(screen.queryByRole('button', { name: /Restablecer/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/El valor se conserva/)).toBeInTheDocument()
+    expect(change).not.toHaveBeenCalled()
+    expect(partitionGroups([['title', { type: 'text' }]], { legacy: true })[0].entries).toEqual([['title', { type: 'text' }]])
+  })
   it('marks inherited/modified/read-only, resets known defaults and retains unknown data', () => {
     const page = { schemaVersion: 1, id: 'p', title: 'p', slug: '/', visibility: 'public', regions: { main: { children: ['b'] } }, blocks: { b: { id: 'b', type: 'Controls', props: { title: 'Cambio', locked: 'Histórico', custom: { untouched: true }, _opacity: .4 } } } }
     const view = render(<AtlasWebBuilderEditor blocks={[block]} initialPage={page} brandLogo={<Probe />} />)
