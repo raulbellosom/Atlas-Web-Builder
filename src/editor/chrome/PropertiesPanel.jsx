@@ -9,6 +9,7 @@ import { AnimationField } from '../fields/AnimationField.jsx'
 import { FilterField } from '../fields/FilterField.jsx'
 import { HoverField } from '../fields/HoverField.jsx'
 import { TransformField } from '../fields/TransformField.jsx'
+import { CapabilityBoundary } from '../capabilities.jsx'
 
 function FieldRow({ propName, spec, value, onChange }) {
   const Field = defaultFields[spec.type]
@@ -20,6 +21,12 @@ function FieldRow({ propName, spec, value, onChange }) {
       </div>
     )
   }
+  if (spec.readOnly) return (
+    <fieldset disabled style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+      <p role="note">Sólo lectura: este campo requiere un enlace del sistema al importar. Su valor se conserva.</p>
+      <Field value={value} onChange={onChange} label={spec.label || propName} spec={spec} />
+    </fieldset>
+  )
   return <Field value={value} onChange={onChange} label={spec.label || propName} spec={spec} />
 }
 
@@ -165,6 +172,7 @@ export function PropertiesPanel() {
       {/* ── Universal effects ── */}
       <div className="atlas-wb-props__effects">
         <CollapseSection label="Efectos" defaultOpen={false}>
+          <CapabilityBoundary name="effects">
           {/* Opacity */}
           <div className="atlas-wb-field">
             <span className="atlas-wb-field__label">Opacidad</span>
@@ -337,6 +345,7 @@ export function PropertiesPanel() {
               </span>
             </label>
           </div>
+          </CapabilityBoundary>
         </CollapseSection>
       </div>
     </div>

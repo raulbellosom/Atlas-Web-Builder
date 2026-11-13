@@ -6,6 +6,7 @@ import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { es } from '../i18n/es.js'
 import { BlockIcon } from './BlockIcon.jsx'
 import { newId } from '../../utils/id.js'
+import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
 
 /** A single draggable palette item. On narrow screens a tap inserts directly. */
 function PaletteItem({ def, onInserted }) {
@@ -147,9 +148,10 @@ function TemplateItem({ tpl, onInsert }) {
 }
 
 function TemplatesTab() {
+  const capabilities = useEditorCapabilities()
   const { templates } = useBuilder()
   const applyTemplate = useEditorStore((s) => s.applyTemplate)
-  const list = templates ? templates.list() : []
+  const list = templates && capabilities.templates !== false ? templates.list() : []
   if (!list.length) {
     return <p className="atlas-wb-empty">{es.leftPanel.emptyTemplates}</p>
   }
@@ -196,7 +198,7 @@ function PagesTab() {
       id: newId('page'),
       slug,
       title: newTitle.trim(),
-      visibility: 'draft',
+      visibility: 'public',
       layoutId: null,
       regions: { main: { id: newId('region'), children: [] } },
       blocks: {},
@@ -300,8 +302,8 @@ export function LeftPanel({ onClose }) {
       </div>
       <div className="atlas-wb-panel__body">
         {tab === 'blocks'    && <BlocksTab onInserted={onClose} />}
-        {tab === 'templates' && <TemplatesTab />}
-        {tab === 'pages'     && <PagesTab />}
+        {tab === 'templates' && <CapabilityBoundary name="templates"><TemplatesTab /></CapabilityBoundary>}
+        {tab === 'pages'     && <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>}
       </div>
     </aside>
   )

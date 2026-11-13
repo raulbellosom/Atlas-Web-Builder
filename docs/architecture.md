@@ -1,6 +1,6 @@
 # Atlas Web Builder — Architecture Overview
 
-This document is the canonical reference for the architecture of `@racoondevs/atlas-web-builder`. It summarizes the master plan and links to the Architecture Decision Records (ADRs).
+This document is the canonical reference for the architecture of `@raulbellosom/atlas-web-builder`. It summarizes the master plan and links to the Architecture Decision Records (ADRs).
 
 ## Vision
 

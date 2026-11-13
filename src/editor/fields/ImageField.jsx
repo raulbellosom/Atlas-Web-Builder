@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { AssetPicker } from '../assets/AssetPicker.jsx'
 import { useOptionalEditorStore } from '../store/EditorStoreProvider.jsx'
+import { useEditorCapabilities } from '../capabilities.jsx'
 
 function isSafeUrl(value) {
   if (typeof value !== 'string') return false
@@ -10,6 +11,8 @@ function isSafeUrl(value) {
 }
 
 export function ImageField({ value, onChange, label, spec }) {
+  const capabilities = useEditorCapabilities()
+  const manualUrls = capabilities.manualAssetUrls !== false
   const { assets } = useBuilder()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -44,7 +47,7 @@ export function ImageField({ value, onChange, label, spec }) {
         if (asset?.url) setSrc(asset.url, asset)
       } catch { /* surface nothing — user can use URL tab instead */ }
       finally { setUploading(false) }
-    } else {
+    } else if (manualUrls) {
       // No upload backend: read as data URL (temporary, works for preview)
       const reader = new FileReader()
       reader.onload = (e) => onChange(String(e.target?.result ?? ''))
@@ -77,6 +80,7 @@ export function ImageField({ value, onChange, label, spec }) {
             type="url"
             className="atlas-wb-field__input"
             value={value ?? ''}
+            readOnly={!manualUrls}
             placeholder={spec?.placeholder || 'https://... o arrastra imagen aquí'}
             onChange={(e) => setSrc(e.target.value)}
             aria-invalid={!safe}
@@ -118,6 +122,7 @@ export function ImageField({ value, onChange, label, spec }) {
           </p>
         ) : null}
       </div>
+      {!manualUrls && <span role="note">Usa una imagen de la biblioteca; las URLs externas y archivos sin registrar no se pueden guardar.</span>}
 
       {!safe && value ? (
         <span style={{ color: 'var(--awb-danger)', fontSize: 11 }}>URL no permitida (usa https://).</span>

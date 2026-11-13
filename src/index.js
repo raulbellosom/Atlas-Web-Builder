@@ -80,6 +80,7 @@ export { NotificationCenter } from './editor/notifications/NotificationCenter.js
 
 // Editor (Phase 3)
 export { AtlasWebBuilderEditor } from './editor/AtlasWebBuilderEditor.jsx'
+export { editorCapabilitiesVersion } from './editor/capabilities.jsx'
 export {
   EditorStoreProvider,
   useEditorStore,

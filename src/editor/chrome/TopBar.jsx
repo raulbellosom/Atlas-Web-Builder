@@ -5,6 +5,7 @@ import { useNotifications } from '../notifications/NotificationsProvider.jsx'
 import { listUnknownBlockTypes } from '../../persistence/serializePage.js'
 import { es } from '../i18n/es.js'
 import clsx from 'clsx'
+import { useEditorCapabilities } from '../capabilities.jsx'
 
 /** Default badge shown when no brandLogo prop is provided. */
 function DefaultBrandIcon() {
@@ -75,6 +76,7 @@ const ICON_PREVIEW = (
 )
 
 export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive, onToggleLeft, onToggleRight, leftClosed, rightClosed, brandLogo, brandName }) {
+  const capabilities = useEditorCapabilities()
   const page = useEditorStore((s) => s.page)
   const device = useEditorStore((s) => s.device)
   const setDevice = useEditorStore((s) => s.setDevice)
@@ -207,6 +209,7 @@ export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive,
           type="button"
           className="atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__text-btn"
           onClick={handleImportClick}
+          disabled={capabilities.jsonImport === false}
           title={es.topbar.importPage}
         >
           {es.topbar.importPage}

@@ -28,6 +28,9 @@ import { NotificationsProvider } from './notifications/NotificationsProvider.jsx
 import { NotificationCenter } from './notifications/NotificationCenter.jsx'
 import { ThemeProvider } from '../theme/ThemeProvider.jsx'
 import { createLinkGuard } from './linkGuard.js'
+import { assertEditorCapabilities, EditorCapabilitiesContext } from './capabilities.jsx'
+
+const unrestrictedCapabilities = Object.freeze({})
 
 /**
  * Inner shell — assumes BuilderProvider + EditorStoreProvider are mounted above.
@@ -319,6 +322,7 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
  *   mockResources?: any,
  *   actions?: any,
  *   permissions?: any,
+ *   capabilities?: { schemaVersion: 1, id?: string, [key: string]: any },
  *   onSaveDraft?: (page: import('../schema/page.js').Page) => void,
  *   onPublish?: (page: import('../schema/page.js').Page) => void,
  *   onLinkClick?: (href: string) => void,  // links in the canvas/preview never navigate; this reports the click
@@ -343,8 +347,10 @@ export function AtlasWebBuilderEditor({
   brandLogo,
   brandName,
   seo,
+  capabilities,
   useExistingProvider = false,
 }) {
+  assertEditorCapabilities(capabilities)
   const providerProps = useMemo(
     () => ({
       blocks,
@@ -375,6 +381,7 @@ export function AtlasWebBuilderEditor({
   const seoValue = useMemo(() => ({ site: seo?.site, baseUrl: seo?.baseUrl ?? '' }), [seo?.site, seo?.baseUrl])
 
   const inner = (
+    <EditorCapabilitiesContext.Provider value={capabilities || unrestrictedCapabilities}>
     <EditorStoreProvider initialPage={initialPage} initialTheme={theme}>
       <NotificationsProvider>
         <SeoContext.Provider value={seoValue}>
@@ -382,6 +389,7 @@ export function AtlasWebBuilderEditor({
         </SeoContext.Provider>
       </NotificationsProvider>
     </EditorStoreProvider>
+    </EditorCapabilitiesContext.Provider>
   )
 
   if (useExistingProvider) return inner

@@ -1,5 +1,6 @@
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useState } from 'react'
+import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
 import { es } from '../i18n/es.js'
 import { brandEs, BRAND_PRESETS } from '../i18n/brand.es.js'
 import { createBrandTheme, FONT_PAIRS, contrastRatio, readableOn } from '../../theme/brand.js'
@@ -12,20 +13,33 @@ function isHexColor(v) {
   return typeof v === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)
 }
 
-function TokenRow({ category, name, value, onChange }) {
+function TokenRow({ category, name, value, onChange, pattern }) {
+  const [invalidDraft, setInvalidDraft] = useState(null)
+  const draft = invalidDraft && invalidDraft.original === value ? invalidDraft.value : value ?? ''
+  const invalid = pattern && !new RegExp(pattern).test(draft)
   const color = isHexColor(value)
   return (
     <div className="atlas-wb-theme__row">
-      <label className="atlas-wb-theme__name">
+      <span className="atlas-wb-theme__name">
         {category}.{name}
-      </label>
+      </span>
       <input
         type="text"
         className="atlas-wb-field__input"
-        value={value ?? ''}
-        onChange={(e) => onChange(e.target.value)}
+        value={draft}
+        aria-label={`${category}.${name}`}
+        pattern={pattern}
+        aria-invalid={invalid || undefined}
+        onChange={(e) => {
+          const next = e.target.value
+          if (!pattern || new RegExp(pattern).test(next)) {
+            setInvalidDraft(null)
+            onChange(next)
+          } else setInvalidDraft({ original: value, value: next })
+        }}
         spellCheck={false}
       />
+      {invalid && <span role="alert">Color no válido: usa #rrggbb o #rrggbbaa antes de guardar.</span>}
       {color ? (
         <input
           type="color"
@@ -84,6 +98,8 @@ function BrandSection({ onApply }) {
 }
 
 export function ThemeTab() {
+  const capabilities = useEditorCapabilities()
+  const allowedGroups = capabilities.themeTokenGroups && new Set(capabilities.themeTokenGroups)
   const theme = useEditorStore((s) => s.theme)
   const setThemeToken = useEditorStore((s) => s.setThemeToken)
   const resetTheme = useEditorStore((s) => s.resetTheme)
@@ -102,23 +118,27 @@ export function ThemeTab() {
     <div className="atlas-wb-theme">
       <div className="atlas-wb-theme__toolbar">
         <strong>{theme && theme.name ? theme.name : es.theme.untitled}</strong>
-        <button type="button" className="atlas-wb-field__button" onClick={resetTheme}>
+        <button type="button" className="atlas-wb-field__button" onClick={resetTheme} disabled={capabilities.themeReset === false}>
           {es.theme.reset}
         </button>
       </div>
-      <BrandSection onApply={setTheme} />
+      <CapabilityBoundary name="themeBrand"><BrandSection onApply={setTheme} /></CapabilityBoundary>
       {categories.length === 0 ? (
         <p className="atlas-wb-empty">{es.theme.empty}</p>
       ) : (
         categories.map(([category, group]) => (
-          <fieldset key={category} className="atlas-wb-theme__group">
+          <fieldset key={category} className="atlas-wb-theme__group"
+            disabled={allowedGroups && !allowedGroups.has(category)}>
             <legend>{es.theme.categories[category] || category}</legend>
+            {allowedGroups && !allowedGroups.has(category) &&
+              <p role="note">Sólo lectura: este grupo no es editable en el contrato de guardado. Sus valores se conservan.</p>}
             {Object.entries(group).map(([k, v]) => (
               <TokenRow
                 key={k}
                 category={category}
                 name={k}
                 value={v}
+                pattern={capabilities.themeTokenPatterns?.[category]}
                 onChange={(next) => setThemeToken(category, k, next)}
               />
             ))}

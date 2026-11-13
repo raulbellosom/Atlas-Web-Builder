@@ -29,7 +29,7 @@ cd examples/playground && pnpm dev
 
 ## Architecture
 
-This is a **React library** (`@racoondevs/atlas-web-builder`) built with Vite in library mode. It ships as `dist/atlas-web-builder.{js,cjs}` + `dist/style.css`. All runtime dependencies (`zustand`, `immer`, `zundo`, `@dnd-kit/*`, `clsx`, etc.) are externalized — they're peer deps of the consuming app.
+This is a **React library** (`@raulbellosom/atlas-web-builder`) built with Vite in library mode. It ships as `dist/atlas-web-builder.{js,cjs}` + `dist/style.css`. All runtime dependencies (`zustand`, `immer`, `zundo`, `@dnd-kit/*`, `clsx`, etc.) are externalized — they're peer deps of the consuming app.
 
 ### Data model
 

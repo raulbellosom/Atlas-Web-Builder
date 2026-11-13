@@ -3,6 +3,7 @@ import { useBuilder } from '../../provider/BuilderContext.js'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { AssetPicker } from '../assets/AssetPicker.jsx'
+import { useEditorCapabilities } from '../capabilities.jsx'
 
 const KINDS = [
   { value: 'color', label: 'Color' },
@@ -48,6 +49,7 @@ function TokenSelect({ value, onChange, tokens, allowEmpty = true }) {
 }
 
 export function BackgroundField({ value, onChange, label }) {
+  const capabilities = useEditorCapabilities()
   const tokens = useThemeTokens()
   const colorTokens = (tokens && tokens.color) || {}
   const { assets } = useBuilder()
@@ -162,6 +164,7 @@ export function BackgroundField({ value, onChange, label }) {
               type="url"
               className="atlas-wb-field__input"
               value={v.url || ''}
+              readOnly={capabilities.manualAssetUrls === false}
               onChange={(e) => update({ url: e.target.value })}
               placeholder="https://..."
             />

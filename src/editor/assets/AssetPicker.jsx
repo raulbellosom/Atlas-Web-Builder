@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
 import { optimizeImageFile } from '../../media/optimizeImage.js'
+import { useEditorCapabilities } from '../capabilities.jsx'
 
 function isSafeUrl(v) {
   if (typeof v !== 'string' || !v.trim()) return false
@@ -19,11 +20,12 @@ function isSafeUrl(v) {
  * @param {{ onPick: (asset: any) => void, onClose: () => void, accept?: string }} props
  */
 export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
+  const capabilities = useEditorCapabilities()
   const { assets } = useBuilder()
   const hasAssets  = !!assets
   const canUpload  = !!(assets && typeof assets.upload === 'function')
 
-  const defaultTab = 'url'
+  const defaultTab = capabilities.manualAssetUrls === false ? 'library' : 'url'
   const [tab, setTab] = useState(defaultTab)
 
   // ── URL tab ────────────────────────────────────────────────────────────────
@@ -31,7 +33,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
   const urlValid = isSafeUrl(urlInput)
 
   function confirmUrl() {
-    if (!urlValid) return
+    if (!urlValid || capabilities.manualAssetUrls === false) return
     onPick({ id: urlInput, url: urlInput, kind: 'image', name: urlInput.split('/').pop() || 'imagen' })
   }
 
@@ -95,7 +97,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*' }) {
   }, [onClose])
 
   const TABS = [
-    { id: 'url',     label: 'URL' },
+    ...(capabilities.manualAssetUrls === false ? [] : [{ id: 'url', label: 'URL' }]),
     ...(hasAssets  ? [{ id: 'library', label: 'Biblioteca' }] : []),
     ...(canUpload  ? [{ id: 'upload',  label: 'Subir' }] : []),
   ]

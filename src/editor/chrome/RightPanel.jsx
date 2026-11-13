@@ -6,10 +6,10 @@ import { LayersPanel } from './LayersPanel.jsx'
 import { ThemeTab } from './ThemeTab.jsx'
 import { SeoPanel } from '../seo/SeoPanel.jsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
+import { CapabilityBoundary } from '../capabilities.jsx'
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Pública' },
-  { value: 'draft', label: 'Borrador' },
   { value: 'private', label: 'Privada' },
 ]
 
@@ -25,6 +25,7 @@ function PageTab() {
   return (
     <div className="atlas-wb-page-meta">
       {/* Basic info */}
+      <CapabilityBoundary name="pageMetadata">
       <div className="atlas-wb-page-meta__section">
         <p className="atlas-wb-page-meta__section-title">Información</p>
         <div className="atlas-wb-field">
@@ -58,12 +59,15 @@ function PageTab() {
           </select>
         </div>
       </div>
+      </CapabilityBoundary>
 
       {/* SEO */}
+      <CapabilityBoundary name="seo">
       <div className="atlas-wb-page-meta__section">
         <p className="atlas-wb-page-meta__section-title">SEO</p>
         <SeoPanel />
       </div>
+      </CapabilityBoundary>
 
       {/* Page ID (readonly info) */}
       <div className="atlas-wb-page-meta__section">
