@@ -9,3 +9,4 @@ coverage/
 .env.local
 examples/*/dist/
 examples/*/node_modules/
+.artifacts/

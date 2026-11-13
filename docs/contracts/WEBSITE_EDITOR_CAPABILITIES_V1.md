@@ -16,7 +16,7 @@ Son identidades independientes:
 | ZIP Website | `formatVersion: 2`, `minReaderVersion: 2` |
 | Catálogo compartido | 148 tipos, SHA-256 `0e6f77787d7351448f05dc87af8b1f2bb701170a1077eacc76633d548216d248` |
 
-El npm 0.3.5 original **no implementa** la API nueva. Los cambios locales de esta fase mantienen el número npm por instrucción del propietario, pero no son un reemplazo publicable con el mismo número. El Hub comprueba el marcador antes de montar un editor restringido. Si falta o es distinto, informa el bloqueo, no envía loaded y no monta controles editables. El host mantiene deshabilitado el guardado. Preview puede seguir usando el renderer sin editar.
+El npm 0.3.5 original **no implementa** la API nueva. En Fase 0.5 las correcciones conservaron temporalmente ese número; Fase 0.6 prepara su distribución como 0.4.0, sin republicar 0.3.5. El Hub comprueba el marcador antes de montar un editor restringido. Si falta o es distinto, informa el bloqueo, no envía loaded y no monta controles editables. El host mantiene deshabilitado el guardado. Preview puede seguir usando el renderer sin editar.
 
 Para adoptar los cambios fuera de las pruebas de fuente se necesita distribuir una revisión nueva autorizada y fijarla en los consumidores. No modificar node_modules, sustituir tarballs ni cambiar la interpretación de un lock existente. Esa distribución no está autorizada en esta fase.
 

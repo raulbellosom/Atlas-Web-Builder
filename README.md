@@ -672,7 +672,7 @@ export function ColorTokenField({ value, onChange, label }) {
 
 ```jsx
 // defaultFields y defineField se exportan para construir un inspector propio.
-// AtlasWebBuilderEditor 0.3.5 aún no admite la prop fieldTypes.
+// AtlasWebBuilderEditor aún no admite la prop fieldTypes.
 // Sus campos integrados se resuelven mediante defaultFields.
 ```
 
@@ -967,8 +967,8 @@ cd examples/playground && pnpm dev
 
 MIT © RacoonDevs
 
-## Capacidades de guardado (consolidación local)
+## Capacidades de guardado (0.4.0)
 
-La versión npm permanece en 0.3.5. Los cambios locales posteriores al commit de procedencia no se han publicado. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa.
+La versión 0.4.0 está preparada para release; su publicación requiere autorización. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Véanse [los cambios](CHANGELOG.md) y [la migración desde 0.3.5](docs/releases/0.4.0-migration.md).
 
 El perfil sólo restringe controles, preserva los valores existentes y no sustituye los validadores del backend. Véase [el contrato de capacidades](docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md) y [la procedencia de 0.3.5](docs/releases/0.3.5-provenance.md).
