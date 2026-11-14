@@ -1,24 +1,36 @@
 # Atlas Web Builder 0.5.0 — preparación del release
 
-Fecha: 2026-11-13, actualizado tras la corrección final de columnas. **APTO PARA COMENZAR LAS PRUEBAS FÍSICAS Y PARA AUTORIZAR LA PUBLICACIÓN** cuando esas pruebas se aprueben.
+Fecha: 2026-11-13. **PUBLICADO: `@raulbellosom/atlas-web-builder@0.5.0` es `latest` en npm.** El tag `v0.5.0` apunta a `d928669d8a6950abff6865176a2a983f6cd87ae8`.
 
-> **Artefactos reemplazados.** Los tarballs anteriores `a23227ab…` (fuentes `b71383e`) y `09303a7c…` (fuentes `869fca3`, Fase 1.2, sin la corrección de columnas) quedaron obsoletos y **no deben publicarse**. El primero quedó obsoleto con el rediseño de la [Fase 1.2](ATLAS_PHASE_1_UI_UX.md#fase-12--rediseño-visual-con-lucide-y-radix) y se conserva en `.artifacts/releases/0.5.0/superseded-a23227ab/`. El segundo fue reemplazado en el mismo nombre de archivo por el empaquetado final. No se reutiliza la integridad de ninguno: los datos de abajo corresponden al artefacto vigente.
+## Publicación
 
-No implica autorización de publicación. Las pruebas físicas de Safari/iPhone y Chrome/Android siguen pendientes. No se ejecutaron `npm publish`, cambios de dist-tags, creación del tag v0.5.0 ni despliegues.
+| Paso | Resultado |
+| --- | --- |
+| Identidad npm | `raulbellosom`, único mantenedor del paquete |
+| 0.5.0 antes de publicar | Ausente (`No match found for version 0.5.0`); `latest` y `next` apuntaban a 0.4.0 |
+| Publicación | `npm publish <tarball> --access public --tag next` del archivo verificado, sin reempaquetar |
+| Descarga desde el registro | SHA-256 idéntico al archivo local; `verify-050-package.mjs` aprobado sobre el archivo descargado con consumidores React 18.3.1 y 19.3.0 |
+| Promoción | `npm dist-tag add …@0.5.0 latest`, sin republicar; ahora `latest` y `next` apuntan a 0.5.0 |
+| Tag Git | `v0.5.0` anotado sobre `d928669`, la fuente exacta del tarball; `v0.4.0` sigue en `62e9688` |
+| Seguridad | `pnpm audit --prod`: sin vulnerabilidades conocidas; `npm audit` de ambos consumidores con lockfile generado: 0 |
+
+**Riesgo aceptado por el propietario.** 0.5.0 se publica **sin certificación en iPhone/Safari ni Android/Chrome físicos**. La compatibilidad móvil se validó sólo con emulación automatizada (CDP en Chromium y TouchEvents sintéticos en WebKit). Esas pruebas **no se declaran aprobadas** y siguen recomendadas antes de cualquier despliegue que dependa del uso móvil. El [checklist de aceptación](ATLAS_0_5_0_MOBILE_ACCEPTANCE.md) sigue vigente. El riesgo también figura en el CHANGELOG, el README y la guía de migración publicados.
+
+**Artefactos anteriores.** `a23227ab…`, `09303a7c…` y `05874a77…` nunca se publicaron. El último, el aprobado tras la corrección de columnas, se reemplazó sólo porque el README, el CHANGELOG y la guía de migración empaquetados seguían diciendo «sin publicar». El README es lo que muestra npmjs.com. Antes de empaquetar se comprobó que los cinco archivos de `dist/` y `package.json` eran idénticos byte a byte a los de `05874a77`; sólo cambiaron esos tres documentos. Por eso no se repitieron los recorridos de navegador, que se hicieron con el mismo JS y CSS. Sí se repitió la verificación de paquete en consumidores limpios y sobre el archivo descargado del registro.
 
 ## Fuentes y artefacto
 
 | Dato | Valor |
 | --- | --- |
 | Base de la Fase 1.2 | `797dee25eda293e9acf6ca53bd36c5753c0c9c06` |
-| Commit de fuentes del artefacto | `a9c927a45b383b7dda917de1b00328aab35c90f5` |
+| Commit de fuentes del artefacto | `d928669d8a6950abff6865176a2a983f6cd87ae8` (tag `v0.5.0`) |
 | Rama | `main`, sin ramas ni worktrees nuevos |
 | Versión preparada | `@raulbellosom/atlas-web-builder@0.5.0` |
 | Tarball local | `.artifacts/releases/0.5.0/raulbellosom-atlas-web-builder-0.5.0.tgz` |
-| SHA-256 | `05874a77ef7627533d1ad2d0b8e992229308639114af2ee926ced9403fb8bc10` |
-| npm shasum (SHA-1) | `22014ab9e65b9358d5c9ce57749fb46bd165d158` |
-| npm integrity | `sha512-wkwLOc5VWgrUKidY4TUtuHk+C+MtziCWSXTzsKHezmLAvzEIDx9+yk2eyEp8oypZ5dHyoubuqBd+H1egQqmDsQ==` |
-| Tamaño | 620001 bytes comprimidos, 2366509 bytes descomprimidos |
+| SHA-256 | `54908f1cd631c4ca4f70d106a3558405ceb6f35764bec88eba402fb2d35d46ea` |
+| npm shasum (SHA-1) | `e463c1f96c298965f3b9ecb58b504f626dafa0f6` |
+| npm integrity | `sha512-/30OyRBbC/xi9POLPNa3FCygxqqryeL+82lY9s4luyp+u340iBL+SUhXIAO+3+QVY9m9b6o1jsi6ITwuE0ApOA==` |
+| Tamaño | 620027 bytes comprimidos, 2366921 bytes descomprimidos |
 
 El commit documental que contiene este informe sólo agrega informe y evidencia; no altera los archivos del paquete verificado. El tarball permanece local e ignorado por Git. Publicar ese archivo exacto después de autorizar, sin volver a empaquetar silenciosamente. Si se pierde, reproducirlo y comparar hashes antes de considerarlo aprobado.
 
@@ -163,13 +175,13 @@ Después de verificar se detuvo el servidor temporal; está preparado para inici
 
 Checklist obligatorio: [ATLAS_0_5_0_MOBILE_ACCEPTANCE.md](ATLAS_0_5_0_MOBILE_ACCEPTANCE.md). Cubre ambos teléfonos, orientaciones, teclado real, barras del navegador, scroll, drag, hojas, menús nativos, zoom, guardado y recuperación. Los casos no soportados deben registrarse como tales; no se promete fullscreen de elementos en iPhone ni un pinch propio del canvas.
 
-## Publicación futura — sólo tras autorización
+## Procedimiento de publicación (ejecutado el 2026-11-13)
 
 Primero completar aceptación física, resolver defectos bloqueantes y obtener autorización expresa. Conservar el tarball verificado. No crear todavía v0.5.0; su creación y push requieren la autorización de distribución. Mantener v0.4.0 intacto.
 
 ```powershell
 $Artifact = (Resolve-Path .artifacts/releases/0.5.0/raulbellosom-atlas-web-builder-0.5.0.tgz).Path
-$Expected = '05874a77ef7627533d1ad2d0b8e992229308639114af2ee926ced9403fb8bc10'
+$Expected = '54908f1cd631c4ca4f70d106a3558405ceb6f35764bec88eba402fb2d35d46ea'
 if ((Get-FileHash $Artifact -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw 'Artefacto distinto: detener' }
 npm whoami --registry https://registry.npmjs.org/
 npm access list packages raulbellosom --json --registry https://registry.npmjs.org/
@@ -203,8 +215,8 @@ La adopción exacta 0.5.0 y lockfiles de ERP/Hub constituye otro corte autorizad
 
 ## Rollback y estados independientes
 
-- **Atlas/GitHub:** preparación y documentación en `main`, push normal de los cortes validados, sin force. El SHA de fuentes y paquete es `a9c927a…`; el commit documental de la corrección final registra la entrega. La respuesta de cierre confirma el SHA remoto final después del push.
-- **Atlas/npm:** consulta del registro: `latest = 0.4.0`, `next = 0.4.0`, 0.5.0 ausente. No hubo operaciones de distribución. El paquete/tag estable 0.4.0 permanece intacto; su tarball conserva SHA-256 `988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2` y el tag apunta a `62e9688eba083cb8c4f82f00ee8075cca41681f1`.
+- **Atlas/GitHub:** `main` con commits normales, sin force. La fuente del paquete es `d928669`, con el tag `v0.5.0`. Los commits documentales posteriores no alteran los archivos distribuidos.
+- **Atlas/npm:** `latest = 0.5.0` y `next = 0.5.0`, con integrity `sha512-/30OyRBb…E0ApOA==`. La versión 0.4.0 sigue publicada e intacta: su tarball conserva SHA-256 `988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2` y el tag `v0.4.0` apunta a `62e9688`.
 - **ERP:** sin cambios de esta tarea. Pin desktop 0.4.0; HEAD local observado `34ca30fc4390dd40f7d22338c2529571134f4bdb`. Se preservó el archivo ajeno no rastreado `packages/module-compiler/src/__tests__/entity-list-integration.test.js`. El bloqueo de privacidad documentado anteriormente sigue fuera de esta preparación; no se reejecutó ni alteró el gate.
 - **Hub:** sin cambios de esta tarea. Pin 0.4.0; HEAD observado `ff6f7a5f74ef76c928e0d22f7e763fb7b8b9a051`, árbol limpio. Se usaron únicamente sus herramientas de navegador en modo lectura.
 - **Producción:** intacta; sin servidores, despliegues, publicaciones de sitios o migraciones de datos.
@@ -219,10 +231,8 @@ El paquete 0.5.0 publicado y los tags de versión no se sobrescriben ni eliminan
 
 ## Pendientes reales
 
-1. Pruebas físicas de iPhone/Safari y Android/Chrome, incluido teclado virtual real y conectividad desde el teléfono. Los recorridos emulados no las completan.
-2. Revisión de esos resultados y autorización independiente para publicar npm y crear el tag definitivo.
-3. Verificación posterior del paquete del registro y futura adopción de consumidores bajo sus controles, antes de considerar despliegues.
+1. Pruebas en iPhone/Safari y Android/Chrome físicos. No son un bloqueo de la publicación, por decisión del propietario, y no se declaran aprobadas. Se recomiendan antes de desplegar flujos móviles críticos.
+2. El `GridBlock` del canvas de edición se muestra en una sola columna. Es un problema previo, documentado y no bloqueante.
+3. Adopción en los consumidores bajo sus propios controles. El estado del Developer Hub y del ERP se registra en sus informes de adopción.
 
-No se encontró ningún bloqueo técnico para empezar las pruebas físicas. Hay un hallazgo previo no bloqueante, documentado en la Fase 1.2: en el canvas de edición, `GridBlock` se ve en una sola columna. No se inició la Fase 2.
-
-**APTO PARA COMENZAR LAS PRUEBAS FÍSICAS Y PARA AUTORIZAR LA PUBLICACIÓN** cuando esas pruebas se aprueben. La estética de la Fase 1.2 ya está aprobada.
+**ATLAS 0.5.0 PUBLICADO.**

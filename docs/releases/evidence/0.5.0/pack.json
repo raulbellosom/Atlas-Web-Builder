@@ -3,15 +3,15 @@
     "id": "@raulbellosom/atlas-web-builder@0.5.0",
     "name": "@raulbellosom/atlas-web-builder",
     "version": "0.5.0",
-    "size": 620001,
-    "unpackedSize": 2366509,
-    "shasum": "22014ab9e65b9358d5c9ce57749fb46bd165d158",
-    "integrity": "sha512-wkwLOc5VWgrUKidY4TUtuHk+C+MtziCWSXTzsKHezmLAvzEIDx9+yk2eyEp8oypZ5dHyoubuqBd+H1egQqmDsQ==",
+    "size": 620027,
+    "unpackedSize": 2366921,
+    "shasum": "e463c1f96c298965f3b9ecb58b504f626dafa0f6",
+    "integrity": "sha512-/30OyRBbC/xi9POLPNa3FCygxqqryeL+82lY9s4luyp+u340iBL+SUhXIAO+3+QVY9m9b6o1jsi6ITwuE0ApOA==",
     "filename": "raulbellosom-atlas-web-builder-0.5.0.tgz",
     "files": [
       {
         "path": "CHANGELOG.md",
-        "size": 3749,
+        "size": 3863,
         "mode": 420
       },
       {
@@ -21,7 +21,7 @@
       },
       {
         "path": "README.md",
-        "size": 45178,
+        "size": 45308,
         "mode": 420
       },
       {
@@ -66,7 +66,7 @@
       },
       {
         "path": "docs/releases/0.5.0-migration.md",
-        "size": 4401,
+        "size": 4569,
         "mode": 420
       },
       {
