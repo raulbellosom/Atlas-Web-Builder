@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react'
+import { Minus, Plus } from 'lucide-react'
 
 export function NumberInput({ value, onChange, label, id, min, max, step = 1, disabled }) {
   const generatedId = useId(), inputId = id ?? generatedId
@@ -11,7 +12,7 @@ export function NumberInput({ value, onChange, label, id, min, max, step = 1, di
   }
   return <div className="atlas-wb-number">
     <div className="atlas-wb-number__row">
-      <button type="button" aria-label={`Disminuir ${label}`} disabled={disabled || (min !== undefined && value <= min)} onClick={() => increment(-1)}>−</button>
+      <button type="button" aria-label={`Disminuir ${label}`} disabled={disabled || (min !== undefined && value <= min)} onClick={() => increment(-1)}><Minus /></button>
       <input id={inputId} aria-label={label} type="number" inputMode="decimal" className="atlas-wb-field__input" value={draft} min={min} max={max} step={step} disabled={disabled}
         aria-invalid={invalid || undefined} aria-describedby={invalid ? `${inputId}-error` : undefined}
         onChange={event => {
@@ -21,7 +22,7 @@ export function NumberInput({ value, onChange, label, id, min, max, step = 1, di
           setInvalid(!valid)
           if (valid) onChange(raw === '' ? undefined : Number(raw))
         }} />
-      <button type="button" aria-label={`Aumentar ${label}`} disabled={disabled || (max !== undefined && value >= max)} onClick={() => increment(1)}>+</button>
+      <button type="button" aria-label={`Aumentar ${label}`} disabled={disabled || (max !== undefined && value >= max)} onClick={() => increment(1)}><Plus /></button>
     </div>
     {invalid && <span id={`${inputId}-error`} className="atlas-wb-field__error" role="alert">Valor fuera del rango o incremento permitido. No se ha aplicado.</span>}
   </div>

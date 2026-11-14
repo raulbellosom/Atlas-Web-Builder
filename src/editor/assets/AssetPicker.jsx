@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { EditorPortal, DialogSurface } from '../ui/EditorAppearance.jsx'
+import * as Dialog from '@radix-ui/react-dialog'
+import { Film, Upload, X } from 'lucide-react'
+import { OverlayPortal } from '../ui/EditorAppearance.jsx'
 import { onTabListKeyDown } from '../ui/keyboard.js'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
@@ -97,27 +99,19 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
   ]
 
   return (
-    <EditorPortal>
-      {/* Backdrop */}
-      <div
-        className="atlas-wb-media-backdrop"
-        role="presentation"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <DialogSurface
-        className="atlas-wb-media-modal"
-        onClose={onClose}
-        returnFocusRef={returnFocusRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={es.assets.pickerLabel}
-      >
+    <Dialog.Root open onOpenChange={open => { if (!open) onClose() }}>
+      <OverlayPortal portal={Dialog.Portal}>
+        <Dialog.Overlay className="atlas-wb-media-backdrop" />
+        <Dialog.Content
+          className="atlas-wb-media-modal"
+          aria-describedby={undefined}
+          // The picker is opened programmatically, not by a Dialog.Trigger: return focus to the invoker.
+          onCloseAutoFocus={event => { event.preventDefault(); returnFocusRef?.current?.focus() }}
+        >
         {/* Header */}
         <div className="atlas-wb-media-modal__header">
-          <strong className="atlas-wb-media-modal__title">{es.assets.pickerLabel}</strong>
-          <button type="button" className="atlas-wb-media-modal__close" onClick={onClose} aria-label={es.assets.close}>✕</button>
+          <Dialog.Title className="atlas-wb-media-modal__title">{es.assets.pickerLabel}</Dialog.Title>
+          <Dialog.Close className="atlas-wb-icon-btn atlas-wb-media-modal__close" aria-label={es.assets.close}><X /></Dialog.Close>
         </div>
 
         {/* Tabs */}
@@ -207,7 +201,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
                         {a.kind === 'image' || !a.kind ? (
                           <img src={a.url} alt={a.alt || a.name} loading="lazy" />
                         ) : (
-                          <div className="atlas-wb-media-modal__asset-icon">🎬</div>
+                          <div className="atlas-wb-media-modal__asset-icon"><Film /></div>
                         )}
                         <span className="atlas-wb-media-modal__asset-name">{a.name}</span>
                       </button>
@@ -232,7 +226,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
                 onClick={() => fileRef.current?.click()}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click() }}
               >
-                <div className="atlas-wb-media-modal__dropzone-icon">⬆</div>
+                <div className="atlas-wb-media-modal__dropzone-icon"><Upload /></div>
                 <p>{uploading ? es.assets.uploading : 'Arrastra un archivo aquí o haz clic para seleccionar'}</p>
                 <p style={{ fontSize: 11, opacity: 0.6 }}>PNG, JPG, GIF, WebP, SVG, MP4…</p>
               </div>
@@ -247,7 +241,8 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
             </div>
           )}
         </div>
-      </DialogSurface>
-    </EditorPortal>
+        </Dialog.Content>
+      </OverlayPortal>
+    </Dialog.Root>
   )
 }

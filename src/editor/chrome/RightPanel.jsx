@@ -1,4 +1,6 @@
 import { useRef } from 'react'
+import { X } from 'lucide-react'
+import { IconButton } from '../ui/OverlayControls.jsx'
 import { useDialogFocus, usePanelInert } from '../ui/EditorAppearance.jsx'
 import { onTabListKeyDown } from '../ui/keyboard.js'
 import clsx from 'clsx'
@@ -97,7 +99,7 @@ export function RightPanel({ onClose, closed, compact, activeTab: tab, onTabChan
   useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
     <aside ref={panelRef} tabIndex={-1} className="atlas-wb-panel atlas-wb-panel--right" aria-label={es.rightPanel.properties}>
-      <div className="atlas-wb-panel__heading"><strong>Inspector</strong><button type="button" onClick={onClose} aria-label="Cerrar inspector">×</button></div>
+      <div className="atlas-wb-panel__heading"><strong>Inspector</strong><IconButton icon={X} onClick={onClose} label="Cerrar inspector" tooltip={false} /></div>
       <div className="atlas-wb-panel__tabs" role="tablist" aria-label="Inspector" onKeyDown={onTabListKeyDown} tabIndex={-1}>
         {[
           ['properties', es.rightPanel.properties],

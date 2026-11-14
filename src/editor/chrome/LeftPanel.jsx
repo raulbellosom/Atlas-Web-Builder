@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
+import { Globe, GripVertical, LayoutTemplate, Lock, Pencil, X } from 'lucide-react'
+import { IconButton } from '../ui/OverlayControls.jsx'
 import { useDialogFocus, usePanelInert } from '../ui/EditorAppearance.jsx'
 import { LayersPanel } from './LayersPanel.jsx'
 import { onTabListKeyDown } from '../ui/keyboard.js'
@@ -21,9 +23,9 @@ function PaletteItem({ def, onInserted }) {
   return <div ref={setNodeRef} className={clsx('atlas-wb-palette__item', isDragging && 'atlas-wb-palette__item--dragging')}>
     <button type="button" className="atlas-wb-palette__insert" aria-label={`Insertar ${def.label || def.type}`}
       onClick={() => { insertBlock(def.type, def, { regionName: activeRegion || 'main' }); onInserted?.() }}>
-      <BlockIcon def={def} /><span>{def.label || def.type}</span>
+      <BlockIcon def={def} /><span className="atlas-wb-palette__name">{def.label || def.type}</span>
     </button>
-    <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...attributes} {...listeners} aria-label={`Arrastrar ${def.label || def.type}`}>⋮⋮</button>
+    <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...attributes} {...listeners} aria-label={`Arrastrar ${def.label || def.type}`}><GripVertical /></button>
   </div>
 }
 
@@ -82,9 +84,11 @@ function BlocksTab({ onInserted }) {
             <div className="atlas-wb-palette__group-title">
               {CATEGORY_LABELS[cat] || cat}
             </div>
-            {list.map((d) => (
-              <PaletteItem key={d.type} def={d} onInserted={onInserted} />
-            ))}
+            <div className="atlas-wb-palette__grid">
+              {list.map((d) => (
+                <PaletteItem key={d.type} def={d} onInserted={onInserted} />
+              ))}
+            </div>
           </div>
         ))
       )}
@@ -120,7 +124,7 @@ function TemplateItem({ tpl, onInsert }) {
       {...attributes}
       {...listeners}
     >
-      <span aria-hidden="true">▤</span>
+      <LayoutTemplate aria-hidden="true" />
       <span className="atlas-wb-palette__item-body">
         <span>{tpl.label}</span>
         {tpl.description ? (
@@ -167,7 +171,7 @@ function TemplatesTab({ onInserted }) {
   )
 }
 
-const VISIBILITY_BADGE = { public: '🌐', draft: '✏️', private: '🔒' }
+const VISIBILITY_BADGE = { public: Globe, draft: Pencil, private: Lock }
 
 function PagesTab() {
   const page = useEditorStore((s) => s.page)
@@ -238,7 +242,7 @@ function PagesTab() {
           <div className="atlas-wb-page-item__slug">{page.slug || '/'}</div>
         </div>
         <span title={page.visibility} style={{ fontSize: 13 }}>
-          {VISIBILITY_BADGE[page.visibility] || '🌐'}
+          {(() => { const Badge = VISIBILITY_BADGE[page.visibility] || Globe; return <Badge aria-hidden="true" /> })()}
         </span>
       </div>
 
@@ -255,7 +259,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
   useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
     <aside ref={panelRef} tabIndex={-1} className="atlas-wb-panel atlas-wb-panel--left" aria-label={es.leftPanel.blocks}>
-      <div className="atlas-wb-panel__heading"><strong>Biblioteca</strong><button type="button" onClick={onClose} aria-label="Cerrar biblioteca">×</button></div>
+      <div className="atlas-wb-panel__heading"><strong>Biblioteca</strong><IconButton icon={X} onClick={onClose} label="Cerrar biblioteca" tooltip={false} /></div>
       <div className="atlas-wb-panel__tabs" role="tablist" aria-label="Biblioteca" onKeyDown={onTabListKeyDown} tabIndex={-1}>
         <button
           type="button"

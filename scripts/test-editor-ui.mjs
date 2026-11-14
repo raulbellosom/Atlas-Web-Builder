@@ -1,6 +1,6 @@
 ﻿import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, realpathSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { createServer } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -20,7 +20,8 @@ const peers = packedTools || reactTools
 const alias = { ...(peers ? { react: dirname(peers.resolve('react/package.json')), 'react-dom': dirname(peers.resolve('react-dom/package.json')) } : {}),
   ...(packedEntry ? { '../../src/index.js': packedEntry, '../../src/editor/store/EditorStoreProvider.jsx': packedEntry } : {}) }
 const packedCss = packedEntry && { name: 'packed-css', transformIndexHtml: () => [{ tag: 'link', attrs: { rel: 'stylesheet', href: `/@fs/${resolve(dirname(packedEntry), 'style.css').replaceAll('\\', '/')}` } }] }
-const server = await createServer({ configFile: false, root: resolve('tests/browser'), plugins: [react(), packedCss].filter(Boolean), resolve: { alias }, server: { host: '127.0.0.1', port: 0, fs: { allow: [root, ...(reactTools ? [dirname(process.env.ATLAS_TEST_REACT)] : []), ...(packedTools ? [dirname(resolve(process.env.ATLAS_TEST_PACKAGE))] : [])] } } })
+// realpath: a lowercase drive letter in cwd made Vite load one source file under two URLs (two React contexts).
+const server = await createServer({ configFile: false, root: realpathSync.native(resolve('tests/browser')), plugins: [react(), packedCss].filter(Boolean), resolve: { alias }, server: { host: '127.0.0.1', port: 0, fs: { allow: [root, ...(reactTools ? [dirname(process.env.ATLAS_TEST_REACT)] : []), ...(packedTools ? [dirname(resolve(process.env.ATLAS_TEST_PACKAGE))] : [])] } } })
 await server.listen()
 const url = `http://127.0.0.1:${server.httpServer.address().port}`, results = []
 const sizes = [[1440, 900], [320, 700], [390, 844], [768, 1024], [1024, 768]].filter(([width]) => !process.env.ATLAS_TEST_WIDTH || process.env.ATLAS_TEST_WIDTH.split(',').map(Number).includes(width))
@@ -35,10 +36,13 @@ async function closePanels(page) {
     }
   }
 }
+const APPEARANCE_LABELS = { light: 'Claro', dark: 'Oscuro', system: 'Sistema' }
 async function setAppearance(page, mode, compact) {
-  if (compact) await page.getByRole('button', { name: 'Más acciones', exact: true }).click()
-  await page.getByLabel('Apariencia del editor').selectOption(mode)
-  if (compact) await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: compact ? 'Más acciones' : 'Apariencia del editor', exact: true }).click()
+  const option = page.getByRole('menuitemradio', { name: APPEARANCE_LABELS[mode], exact: true })
+  assert(await option.evaluate(node => !!node.closest('.atlas-wb-editor .atlas-wb-overlay-scope')), 'Radix menu must portal inside the editor scope')
+  await option.click()
+  await expect(page.getByRole('menu')).toHaveCount(0)
 }
 async function openInspector(page, compact) {
   if (compact) {
@@ -49,8 +53,8 @@ async function openInspector(page, compact) {
 }
 async function save(page, compact) {
   if (compact) { await closePanels(page); await page.getByRole('button', { name: 'Más acciones', exact: true }).click() }
-  await page.getByRole('button', { name: 'Guardar borrador', exact: true }).click()
-  if (compact) await page.keyboard.press('Escape')
+  await page.getByRole(compact ? 'menuitem' : 'button', { name: 'Guardar borrador', exact: true }).click()
+  await expect(page.getByRole('menu')).toHaveCount(0)
 }
 try {
   for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]].filter(([name]) => !process.env.ATLAS_TEST_BROWSER || name === process.env.ATLAS_TEST_BROWSER)) {
@@ -180,6 +184,8 @@ try {
             await page.setViewportSize({ width, height })
             // The host shrinks the editor without a window resize: the context bar must follow the canvas.
             await closePanels(page)
+            // The floating bar of the previously selected block may cover its neighbour; reselect from the top.
+            await page.locator('[data-block-id="heading"]').tap()
             await page.locator('[data-block-id="link"]').tap()
             const host = page.locator('[data-fixture-session]')
             await host.evaluate(node => { node.style.height = '360px' })

@@ -1,4 +1,5 @@
 import { defaultFields } from '../fields/index.js'
+import { RotateCcw } from 'lucide-react'
 
 export function PropertyField({ propName, spec, value, onChange, defaultValue, hasValue }) {
   const Field = defaultFields[spec.type], label = spec.label || propName
@@ -11,7 +12,7 @@ export function PropertyField({ propName, spec, value, onChange, defaultValue, h
       <Field value={value} onChange={next => { if (!spec.readOnly) onChange(next) }} label={label} spec={spec} />
     </fieldset>}
     <div className="atlas-wb-property__meta"><span>{state}</span>
-      {modified && hasDefault && !readOnly && spec.resettable !== false && !(spec.type === 'image' && spec.withAssetMeta) && <button type="button" onClick={() => onChange(structuredClone(defaultValue))} aria-label={`Restablecer ${label}`} title={`Restablecer ${label}`}>↺</button>}
+      {modified && hasDefault && !readOnly && spec.resettable !== false && !(spec.type === 'image' && spec.withAssetMeta) && <button type="button" onClick={() => onChange(structuredClone(defaultValue))} aria-label={`Restablecer ${label}`} title={`Restablecer ${label}`}><RotateCcw /></button>}
     </div>
     {spec.readOnly && <p className="atlas-wb-field__hint" role="note">Sólo lectura: el contrato no permite editar este campo. Su valor se conserva.</p>}
     {spec.description && <p className="atlas-wb-field__hint">{spec.description}</p>}

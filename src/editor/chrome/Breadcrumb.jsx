@@ -1,4 +1,5 @@
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
+import { ChevronRight } from 'lucide-react'
 import { ancestorsOf } from '../../utils/tree.js'
 import { es } from '../i18n/es.js'
 
@@ -20,9 +21,7 @@ export function Breadcrumb() {
         if (!block) return null
         return (
           <span key={id} className="atlas-wb-breadcrumb__item-wrap">
-            <span aria-hidden="true" className="atlas-wb-breadcrumb__sep">
-              ›
-            </span>
+            <ChevronRight aria-hidden="true" className="atlas-wb-breadcrumb__sep" />
             <button type="button" className="atlas-wb-breadcrumb__item" onClick={() => select(id)}>
               {block.type}
             </button>

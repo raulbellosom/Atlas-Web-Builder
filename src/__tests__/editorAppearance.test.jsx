@@ -18,7 +18,11 @@ describe('editor appearance without document mutations', () => {
     fireEvent.click(view.container.querySelector('[data-block-id="h"]'))
     fireEvent.change(screen.getByLabelText('Texto', { exact: true }), { target: { value: 'Editado' } })
     const original = store, history = store.temporal.getState().pastStates.length
-    fireEvent.change(screen.getByLabelText('Apariencia del editor'), { target: { value: 'dark' } })
+    // Radix menu: keyboard opens it inside the editor's own container, never on the host body.
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Apariencia del editor' }), { key: 'Enter' })
+    const option = screen.getByRole('menuitemradio', { name: 'Oscuro' })
+    expect(option.closest('.atlas-wb-editor')).toBeTruthy()
+    fireEvent.click(option)
     expect(callback).toHaveBeenCalledWith('dark')
     view.rerender(<AtlasWebBuilderEditor {...props} appearance="dark" />)
     expect(store).toBe(original)

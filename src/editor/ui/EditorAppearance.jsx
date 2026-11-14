@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
 const AppearanceContext = createContext(null)
 const modes = ['light', 'dark', 'system']
@@ -34,38 +35,55 @@ export function EditorAppearanceProvider({ appearance, defaultAppearance = 'syst
   }), [mode, resolvedAppearance, appearance, onAppearanceChange])
 
   return <AppearanceContext.Provider value={value}>
-    <div className="atlas-wb-editor-scope" ref={scopeRef} data-appearance={resolvedAppearance} data-appearance-mode={mode}>
-      {children}
-    </div>
+    <TooltipPrimitive.Provider delayDuration={400} skipDelayDuration={200}>
+      <div className="atlas-wb-editor-scope" ref={scopeRef} data-appearance={resolvedAppearance} data-appearance-mode={mode}>
+        {children}
+      </div>
+    </TooltipPrimitive.Provider>
   </AppearanceContext.Provider>
 }
 
 export function useEditorAppearance() { return useContext(AppearanceContext) }
 
-/** Own-document portal, inside this editor's fullscreen element when applicable. */
-export function EditorPortal({ children }) {
+/** Overlay target in the editor's own document: the editor root, or its fullscreen ancestor.
+ * Inside a provider it never falls back to the host body; outside one (standalone
+ * controls) it uses the current document's body. */
+export function useOverlayContainer() {
   const appearance = useEditorAppearance()
   const scope = appearance?.scopeRef.current
-  const owner = scope?.ownerDocument ?? (typeof document === 'undefined' ? null : document)
+  const owner = scope?.ownerDocument ?? (appearance || typeof document === 'undefined' ? null : document)
   const [fullscreen, setFullscreen] = useState(owner?.fullscreenElement)
+  const [, remeasure] = useState(0)
+  useEffect(() => { if (appearance && !scope) remeasure(1) }, [appearance, scope])
   useEffect(() => {
     if (!owner) return
     const update = () => setFullscreen(owner.fullscreenElement)
     owner.addEventListener('fullscreenchange', update)
     return () => owner.removeEventListener('fullscreenchange', update)
   }, [owner])
-  if (!owner) return null
+  if (!owner) return { target: null, appearance: 'light' }
   const normalTarget = scope?.querySelector('.atlas-wb-editor') ?? scope ?? owner.body
-  const target = fullscreen && scope?.contains(fullscreen) && !fullscreen.contains(normalTarget)
-    ? fullscreen : normalTarget
-  return createPortal(<div className="atlas-wb-overlay-scope" data-appearance={appearance?.resolvedAppearance ?? 'light'}>{children}</div>, target)
+  const target = fullscreen && scope?.contains(fullscreen) && !fullscreen.contains(normalTarget) ? fullscreen : normalTarget
+  return { target, appearance: appearance?.resolvedAppearance ?? 'light' }
 }
 
-export function DialogSurface({ onClose, returnFocusRef, children, ...props }) {
-  const ref = useRef(null)
-  useDialogFocus(ref, onClose, true, returnFocusRef)
-  return <div ref={ref} tabIndex={-1} {...props}>{children}</div>
+/** Own-document portal, inside this editor's fullscreen element when applicable. */
+export function EditorPortal({ children }) {
+  const { target, appearance } = useOverlayContainer()
+  if (!target) return null
+  return createPortal(<div className="atlas-wb-overlay-scope" data-appearance={appearance}>{children}</div>, target)
 }
+
+/** Radix portal (Dialog/Popover/DropdownMenu/Tooltip `.Portal`) bound to the editor's
+ * container and appearance scope instead of the global document body. */
+export function OverlayPortal({ portal: Portal, children, ...props }) {
+  const { target, appearance } = useOverlayContainer()
+  if (!target) return null
+  return <Portal container={target} {...props}><div className="atlas-wb-overlay-scope" data-appearance={appearance}>{children}</div></Portal>
+}
+
+/** Radix layers portal into `.atlas-wb-overlay-scope`; panel focus management must not fight them. */
+const fromOverlay = event => !!event.target?.closest?.('.atlas-wb-overlay-scope')
 
 /** React 18 treats inert as an unknown attribute; React 19 treats it as boolean.
  * Set the native attribute before paint so both releases behave identically. */
@@ -89,7 +107,7 @@ export function useDialogFocus(ref, onClose, enabled = true, returnFocusRef) {
     const focus = () => (focusables()[0] ?? element).focus()
     focus()
     function onKey(event) {
-      if (stack.at(-1) !== element) return
+      if (stack.at(-1) !== element || fromOverlay(event)) return
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close.current?.(); return }
       if (event.key !== 'Tab') return
       const items = focusables(), index = items.indexOf(owner.activeElement)
@@ -97,7 +115,7 @@ export function useDialogFocus(ref, onClose, enabled = true, returnFocusRef) {
       else if (event.shiftKey && index <= 0) { event.preventDefault(); items.at(-1).focus() }
       else if (!event.shiftKey && (index === items.length - 1 || index < 0)) { event.preventDefault(); items[0].focus() }
     }
-    function onFocus(event) { if (stack.at(-1) === element && !element.contains(event.target)) focus() }
+    function onFocus(event) { if (stack.at(-1) === element && !element.contains(event.target) && !fromOverlay(event)) focus() }
     owner.addEventListener('keydown', onKey)
     owner.addEventListener('focusin', onFocus)
     return () => {

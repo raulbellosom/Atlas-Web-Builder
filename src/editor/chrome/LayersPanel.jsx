@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Box, ChevronDown, ChevronRight, CornerDownRight } from 'lucide-react'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { es } from '../i18n/es.js'
@@ -18,7 +19,7 @@ function LayerNode({ block, blocks, depth, selectedId, select }) {
         className={clsx('atlas-wb-layer', selectedId === block.id && 'atlas-wb-layer--selected')}
         style={{ paddingLeft: 8 + depth * 12 }}
       >
-        {hasChildren && <button type="button" className="atlas-wb-layer__fold" tabIndex={-1} aria-label={`${expanded ? 'Contraer' : 'Expandir'} ${block.type}`} onClick={() => setExpanded(value => !value)}>{expanded ? '▾' : '▸'}</button>}
+        {hasChildren && <button type="button" className="atlas-wb-layer__fold" tabIndex={-1} aria-label={`${expanded ? 'Contraer' : 'Expandir'} ${block.type}`} onClick={() => setExpanded(value => !value)}>{expanded ? <ChevronDown /> : <ChevronRight />}</button>}
         <button type="button" className="atlas-wb-layer__select" data-layer-id={block.id}
           onClick={() => select(block.id)}
           onKeyDown={event => {
@@ -31,14 +32,14 @@ function LayerNode({ block, blocks, depth, selectedId, select }) {
             const index = nodes.indexOf(event.currentTarget)
             const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))
             nodes[next]?.focus()
-          }}><span aria-hidden="true">▦</span><span>{block.type}</span></button>
+          }}><Box aria-hidden="true" /><span>{block.type}</span></button>
       </div>
       {expanded && slots.map(([slotName, ids]) => {
         if (!ids || !ids.length) return null
         return (
           <ul key={slotName} className="atlas-wb-layers atlas-wb-layers--nested">
             <li className="atlas-wb-layers__slot-label" aria-hidden="true">
-              <span style={{ paddingLeft: 8 + (depth + 1) * 12 }}>↳ {slotName}</span>
+              <span style={{ paddingLeft: 8 + (depth + 1) * 12 }}><CornerDownRight aria-hidden="true" />{slotName}</span>
             </li>
             {ids.map((childId) => (
               <LayerNode

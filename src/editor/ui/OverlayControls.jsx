@@ -1,31 +1,47 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { EditorPortal, DialogSurface } from './EditorAppearance.jsx'
+import { forwardRef, useEffect, useState } from 'react'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+import { X } from 'lucide-react'
+import clsx from 'clsx'
+import { OverlayPortal } from './EditorAppearance.jsx'
 
-function PopoverContent({ children, label, onClose, anchor }) {
-  const rect = anchor.current.getBoundingClientRect(), view = anchor.current.ownerDocument.defaultView
-  return <EditorPortal><div className="atlas-wb-popover-backdrop" role="presentation" onClick={onClose} />
-    <DialogSurface onClose={onClose} returnFocusRef={anchor} role="dialog" aria-modal="true" aria-label={label} className="atlas-wb-popover"
-      style={{ left: Math.max(8, Math.min(rect.left, view.innerWidth - 296)), top: Math.min(rect.bottom + 8, Math.max(8, view.innerHeight - 300)) }}>
-      <header><strong>{label}</strong><button type="button" className="atlas-wb-btn" onClick={onClose} aria-label={`Cerrar ${label}`}>×</button></header>
-      {children}
-    </DialogSurface></EditorPortal>
+/** Non-modal Radix popover: focus moves in, Escape/outside close, focus returns to the trigger. */
+export function Popover({ label, trigger, children }) {
+  return <PopoverPrimitive.Root>
+    <PopoverPrimitive.Trigger className="atlas-wb-btn" aria-label={label}>{trigger ?? label}</PopoverPrimitive.Trigger>
+    <OverlayPortal portal={PopoverPrimitive.Portal}>
+      <PopoverPrimitive.Content className="atlas-wb-popover" aria-label={label} side="bottom" align="start" sideOffset={8} collisionPadding={8}>
+        <header><strong>{label}</strong><PopoverPrimitive.Close className="atlas-wb-icon-btn" aria-label={`Cerrar ${label}`}><X /></PopoverPrimitive.Close></header>
+        {children}
+      </PopoverPrimitive.Content>
+    </OverlayPortal>
+  </PopoverPrimitive.Root>
 }
 
-export function Popover({ label, trigger, children }) {
-  const [open, setOpen] = useState(false), anchor = useRef(null)
-  return <><button ref={anchor} type="button" className="atlas-wb-btn" aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(value => !value)}>{trigger ?? label}</button>
-    {open && <PopoverContent label={label} anchor={anchor} onClose={() => setOpen(false)}>{children}</PopoverContent>}</>
+/** Accessible label rendered by Radix; works on hover and keyboard focus, never on touch. */
+export function TooltipLabel({ label, side = 'bottom', children }) {
+  return <TooltipPrimitive.Root>
+    <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+    <OverlayPortal portal={TooltipPrimitive.Portal}>
+      <TooltipPrimitive.Content className="atlas-wb-tooltip__content" side={side} sideOffset={6} collisionPadding={8}>{label}</TooltipPrimitive.Content>
+    </OverlayPortal>
+  </TooltipPrimitive.Root>
 }
 
 export function Tooltip({ label, children }) {
-  const id = useId(), anchor = useRef(null), [open, setOpen] = useState(false)
-  const rect = open ? anchor.current?.getBoundingClientRect() : null
-  return <button type="button" ref={anchor} className="atlas-wb-tooltip" aria-describedby={open ? id : undefined}
-    onFocus={() => setOpen(true)} onBlur={() => setOpen(false)} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}
-    onKeyDown={event => { if (event.key === 'Escape') setOpen(false) }}>{children}
-    {open && <EditorPortal><span className="atlas-wb-tooltip__content" role="tooltip" id={id} style={{ left: Math.max(8, Math.min(rect.left, anchor.current.ownerDocument.defaultView.innerWidth - 248)), top: Math.max(8, rect.top - 38) }}>{label}</span></EditorPortal>}
-  </button>
+  // Standalone controls may live outside the editor provider; a nested provider is harmless.
+  return <TooltipPrimitive.Provider delayDuration={400}>
+    <TooltipLabel label={label} side="top"><button type="button" className="atlas-wb-tooltip">{children}</button></TooltipLabel>
+  </TooltipPrimitive.Provider>
 }
+
+/** Icon-only button: Lucide icon, accessible name and tooltip from one label. */
+export const IconButton = forwardRef(function IconButton({ label, icon: Icon, tooltip = true, variant = 'ghost', active, className, children, side, ...props }, ref) {
+  const button = <button ref={ref} type="button" aria-label={label} className={clsx('atlas-wb-icon-btn', `atlas-wb-icon-btn--${variant}`, active && 'atlas-wb-icon-btn--active', className)} {...props}>
+    {Icon ? <Icon /> : null}{children}
+  </button>
+  return tooltip ? <TooltipLabel label={label} side={side}>{button}</TooltipLabel> : button
+})
 
 export function ColorInput({ value, onChange, label, swatches = ['#ffffff', '#111827', '#315dec', '#147547', '#db4c3f'] }) {
   const isHex = /^#[0-9a-f]{6}$/i.test(value ?? '')

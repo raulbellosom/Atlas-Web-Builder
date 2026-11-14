@@ -8,9 +8,10 @@ export function BlockToolbar({ anchorRef, positionKey, children }) {
     const anchor = anchorRef.current, owner = anchor.ownerDocument, view = owner.defaultView
     const update = () => {
       const rect = anchor.getBoundingClientRect(), canvas = anchor.closest('.atlas-wb-canvas').getBoundingClientRect()
-      const width = Math.min(360, canvas.width - 16), height = toolbar.current?.offsetHeight || 44
-      setPosition({ width, left: Math.max(canvas.left + 8, Math.min(rect.right - width, canvas.right - width - 8)),
-        top: Math.max(canvas.top + 48, Math.min(rect.top - height - 8, canvas.bottom - height - 8)),
+      // Content-sized floating bar, never wider than the canvas.
+      const maxWidth = canvas.width - 16, width = Math.min(toolbar.current?.offsetWidth || 300, maxWidth), height = toolbar.current?.offsetHeight || 52
+      setPosition({ maxWidth, left: Math.max(canvas.left + 8, Math.min(rect.right - width, canvas.right - width - 8)),
+        top: Math.max(canvas.top + 60, Math.min(rect.top - height - 8, canvas.bottom - height - 8)),
         visibility: rect.bottom > canvas.top && rect.top < canvas.bottom ? 'visible' : 'hidden' })
     }
     update()

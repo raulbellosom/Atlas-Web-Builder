@@ -1,28 +1,55 @@
-import { Popover } from '../ui/OverlayControls.jsx'
+import { FileDown, FileUp, Monitor, MonitorSmartphone, Moon, MoreHorizontal, Save, Send, Smartphone, Sun, Tablet } from 'lucide-react'
 import { useEditorAppearance } from '../ui/EditorAppearance.jsx'
+import { ActionMenu, MenuItem, MenuRadioGroup, MenuSeparator } from '../ui/Menu.jsx'
+import { es } from '../i18n/es.js'
 
+const APPEARANCES = [
+  { value: 'light', label: 'Claro', icon: Sun },
+  { value: 'dark', label: 'Oscuro', icon: Moon },
+  { value: 'system', label: 'Sistema', icon: MonitorSmartphone },
+]
+const DEVICE_OPTIONS = [
+  { value: 'desktop', label: 'Escritorio', icon: Monitor },
+  { value: 'tablet', label: 'Tableta', icon: Tablet },
+  { value: 'mobile', label: 'Teléfono', icon: Smartphone },
+]
+const appearanceIcon = mode => APPEARANCES.find(item => item.value === mode)?.icon ?? MonitorSmartphone
+
+function AppearanceItems() {
+  const appearance = useEditorAppearance()
+  if (!appearance) return null
+  return <MenuRadioGroup label="Interfaz del editor" value={appearance.appearance} onValueChange={appearance.setAppearance} options={APPEARANCES} />
+}
+
+/** Editor UI appearance (light/dark/system). It never changes Page, Theme or history. */
 export function AppearanceSelect() {
   const appearance = useEditorAppearance()
   if (!appearance) return null
-  return <label className="atlas-wb-appearance-control"><span className="atlas-wb-sr-only">Apariencia del editor</span>
-    <select aria-label="Apariencia del editor" value={appearance.appearance} onChange={event => appearance.setAppearance(event.target.value)}>
-      <option value="light">Claro</option><option value="dark">Oscuro</option><option value="system">Sistema</option>
-    </select></label>
+  const Icon = appearanceIcon(appearance.appearance)
+  return <ActionMenu label="Apariencia del editor" trigger={<button type="button" className="atlas-wb-icon-btn atlas-wb-icon-btn--ghost" aria-label="Apariencia del editor"><Icon /></button>}>
+    <AppearanceItems />
+  </ActionMenu>
 }
 
 export function ToolbarCommands({ compact, device, setDevice, onImport, onExport, onSave, onPublish, allowImport }) {
-  const actions = <div className="atlas-wb-toolbar-commands">
-    <button type="button" className="atlas-wb-btn atlas-wb-btn--ghost" onClick={onImport} disabled={!allowImport}>Importar JSON</button>
-    <button type="button" className="atlas-wb-btn atlas-wb-btn--ghost" onClick={onExport}>Exportar JSON</button>
-    <button type="button" className="atlas-wb-btn" onClick={onSave} disabled={!onSave}>Guardar borrador</button>
-    <button type="button" className="atlas-wb-btn atlas-wb-btn--primary" onClick={onPublish} disabled={!onPublish}>Publicar</button>
+  const moreTrigger = <button type="button" className="atlas-wb-icon-btn atlas-wb-icon-btn--ghost" aria-label="Más acciones"><MoreHorizontal /></button>
+  const fileItems = <>
+    <MenuItem icon={FileUp} onSelect={onImport} disabled={!allowImport}>Importar JSON</MenuItem>
+    <MenuItem icon={FileDown} onSelect={onExport}>Exportar JSON</MenuItem>
+  </>
+  if (!compact) return <div className="atlas-wb-toolbar-commands">
+    <ActionMenu label="Más acciones" trigger={moreTrigger}>{fileItems}</ActionMenu>
+    <button type="button" className="atlas-wb-btn atlas-wb-btn--secondary" onClick={onSave} disabled={!onSave}><Save /><span className="atlas-wb-topbar__btn-text">{es.topbar.saveDraft}</span></button>
+    <button type="button" className="atlas-wb-btn atlas-wb-btn--primary" onClick={onPublish} disabled={!onPublish}><Send /><span className="atlas-wb-topbar__btn-text">{es.topbar.publish}</span></button>
   </div>
-  if (!compact) return actions
-  return <Popover label="Más acciones" trigger={<span aria-hidden="true">⋯</span>}>
-    <label className="atlas-wb-field"><span className="atlas-wb-field__label">Vista del website</span><select className="atlas-wb-field__select" aria-label="Dispositivo" value={device} onChange={event => setDevice(event.target.value)}>
-      <option value="desktop">Escritorio</option><option value="tablet">Tableta</option><option value="mobile">Teléfono</option>
-    </select></label>
-    <div className="atlas-wb-field"><span className="atlas-wb-field__label">Interfaz del editor</span><AppearanceSelect /></div>
-    {actions}
-  </Popover>
+  return <ActionMenu label="Más acciones" trigger={moreTrigger}>
+    <MenuRadioGroup label="Vista del website" value={device} onValueChange={setDevice} options={DEVICE_OPTIONS} />
+    <MenuSeparator />
+    <AppearanceItems />
+    <MenuSeparator />
+    {fileItems}
+    <MenuSeparator />
+    <MenuItem icon={Save} onSelect={onSave} disabled={!onSave}>{es.topbar.saveDraft}</MenuItem>
+    <MenuItem icon={Send} tone="accent" onSelect={onPublish} disabled={!onPublish}>{es.topbar.publish}</MenuItem>
+  </ActionMenu>
 }

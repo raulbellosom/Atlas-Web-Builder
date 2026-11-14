@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { ImagePlus, LoaderCircle, X } from 'lucide-react'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { AssetPicker } from '../assets/AssetPicker.jsx'
 import { useOptionalEditorStore } from '../store/EditorStoreProvider.jsx'
@@ -94,7 +95,7 @@ export function ImageField({ value, onChange, label, spec }) {
             aria-label="Abrir selector de medios"
             disabled={uploading}
           >
-            {uploading ? '↑' : '⊞'}
+            {uploading ? <LoaderCircle className="atlas-wb-spin" /> : <ImagePlus />}
           </button>
         </div>
 
@@ -110,10 +111,10 @@ export function ImageField({ value, onChange, label, spec }) {
             <button
               type="button"
               onClick={() => setSrc('')}
-              style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.55)', color: 'white', border: 0, borderRadius: 4, padding: '1px 5px', fontSize: 11, cursor: 'pointer', lineHeight: 1.4 }}
+              className="atlas-wb-thumb-remove"
               aria-label="Quitar imagen"
             >
-              ✕
+              <X />
             </button>
           </div>
         ) : null}

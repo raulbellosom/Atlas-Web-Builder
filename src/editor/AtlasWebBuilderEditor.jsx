@@ -104,7 +104,7 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   // ----- Keyboard shortcuts ------------------------------------------------
   useEffect(() => {
     function onKey(e) {
-      if (e.defaultPrevented || e.target?.closest?.('[role="dialog"]')) return
+      if (e.defaultPrevented || e.target?.closest?.('[role="dialog"], [role="menu"]')) return
       const target = e.target
       const tag = target && target.tagName
       const isFormField =

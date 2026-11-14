@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { AtlasWebBuilderEditor } from '../editor/AtlasWebBuilderEditor.jsx'
 import { defineBlock } from '../registry/createBlockRegistry.js'
 import { useEditorStoreInstance } from '../editor/store/EditorStoreProvider.jsx'
@@ -70,7 +70,7 @@ describe('coherent controls preserve the existing value contract', () => {
     expect(input).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('uses arrow keys for segmented selection and returns focus after closing a popover', () => {
+  it('uses arrow keys for segmented selection and returns focus after closing a popover', async () => {
     const change = vi.fn()
     render(<><SegmentedControl label="Alinear" value="left" onChange={change} options={['left', 'center', 'right']} /><Popover label="Opciones"><input aria-label="Detalle" /></Popover></>)
     fireEvent.keyDown(screen.getByRole('radio', { name: 'left' }), { key: 'ArrowRight' })
@@ -80,7 +80,7 @@ describe('coherent controls preserve the existing value contract', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(trigger).toHaveFocus()
+    await waitFor(() => expect(trigger).toHaveFocus()) // Radix restores focus after unmount
   })
 
   it('keeps the typed numeric draft while its value round-trips, and follows external changes', () => {

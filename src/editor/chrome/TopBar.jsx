@@ -7,74 +7,16 @@ import { es } from '../i18n/es.js'
 import clsx from 'clsx'
 import { useEditorCapabilities } from '../capabilities.jsx'
 import { AppearanceSelect, ToolbarCommands } from './ToolbarCommands.jsx'
+import { Eye, EyeOff, Monitor, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Redo2, Smartphone, Tablet, Undo2 } from 'lucide-react'
+import { IconButton } from '../ui/OverlayControls.jsx'
 
 /** Default badge shown when no brandLogo prop is provided. */
 function DefaultBrandIcon() {
-  return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 24, height: 24,
-      background: '#1B35CC',
-      borderRadius: 6,
-      color: '#fff',
-      fontSize: 10,
-      fontWeight: 800,
-      letterSpacing: '-0.03em',
-      flexShrink: 0,
-      userSelect: 'none',
-    }}>
-      WB
-    </span>
-  )
+  return <span className="atlas-wb-topbar__badge" aria-hidden="true">WB</span>
 }
 
 const DEVICES = /** @type {const} */ (['desktop', 'tablet', 'mobile'])
-
-const DEVICE_ICONS = {
-  desktop: (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <rect x="1" y="2" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6 16h6M9 13v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  ),
-  tablet: (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <rect x="3" y="1" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="9" cy="14" r="1" fill="currentColor" />
-    </svg>
-  ),
-  mobile: (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <rect x="5" y="1" width="8" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="9" cy="14" r="0.75" fill="currentColor" />
-    </svg>
-  ),
-}
-
-const ICON_LEFT = (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-    <rect x="1" y="1" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
-    <rect x="1" y="1" width="6" height="16" rx="2" fill="currentColor" opacity=".15" />
-    <line x1="7" y1="1" x2="7" y2="17" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-)
-
-const ICON_RIGHT = (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-    <rect x="1" y="1" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
-    <rect x="11" y="1" width="6" height="16" rx="2" fill="currentColor" opacity=".15" />
-    <line x1="11" y1="1" x2="11" y2="17" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-)
-
-const ICON_PREVIEW = (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.5" />
-    <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-)
+const DEVICE_ICONS = { desktop: Monitor, tablet: Tablet, mobile: Smartphone }
 
 export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive, onToggleLeft, onToggleRight, leftClosed, rightClosed, brandLogo, brandName, compact = false }) {
   const capabilities = useEditorCapabilities()
@@ -134,78 +76,49 @@ export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive,
 
   return (
     <header className="atlas-wb-topbar" role="toolbar" aria-label={es.topbar.title}>
-      {/* Panel toggle — left */}
-      <button
-        type="button"
-        className={clsx('atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__panel-toggle', !leftClosed && 'atlas-wb-btn--active')}
-        onClick={onToggleLeft}
-        aria-label={leftClosed ? 'Mostrar panel de bloques' : 'Ocultar panel de bloques'}
-        title="Panel izquierdo (bloques)"
-      >
-        {ICON_LEFT}
-      </button>
-
-      <div className="atlas-wb-topbar__brand">
-        {brandLogo ?? <DefaultBrandIcon />}
-        <span>{brandName ?? es.topbar.title}</span>
+      <div className="atlas-wb-topbar__start">
+        <IconButton
+          className="atlas-wb-topbar__panel-toggle"
+          icon={leftClosed ? PanelLeftOpen : PanelLeftClose}
+          active={!leftClosed}
+          onClick={onToggleLeft}
+          label={leftClosed ? 'Mostrar panel de bloques' : 'Ocultar panel de bloques'}
+        />
+        <div className="atlas-wb-topbar__brand">
+          {brandLogo ?? <DefaultBrandIcon />}
+          <span>{brandName ?? es.topbar.title}</span>
+        </div>
+        <div className="atlas-wb-topbar__group" role="group" aria-label="Historial">
+          <IconButton icon={Undo2} onClick={() => undo()} disabled={pastStates === 0} label={es.topbar.undo} />
+          <IconButton icon={Redo2} onClick={() => redo()} disabled={futureStates === 0} label={es.topbar.redo} />
+        </div>
       </div>
 
-      {/* History */}
-      <div className="atlas-wb-topbar__group" aria-label="Historial">
-        <button
-          type="button"
-          className="atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__icon-btn"
-          onClick={() => undo()}
-          disabled={pastStates === 0}
-          aria-label={es.topbar.undo}
-          title={`${es.topbar.undo} (Ctrl+Z)`}
-        >
-          ↶
-        </button>
-        <button
-          type="button"
-          className="atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__icon-btn"
-          onClick={() => redo()}
-          disabled={futureStates === 0}
-          aria-label={es.topbar.redo}
-          title={`${es.topbar.redo} (Ctrl+Y)`}
-        >
-          ↷
-        </button>
-      </div>
-
-      {/* Device switcher — icons only */}
-      <div className="atlas-wb-topbar__group atlas-wb-topbar__devices" role="radiogroup" aria-label="Dispositivo">
+      {/* Device switcher — website preview width, not the editor's own layout */}
+      <div className="atlas-wb-segment atlas-wb-topbar__devices" role="radiogroup" aria-label="Dispositivo">
         {DEVICES.map((d) => (
-          <button
+          <IconButton
             key={d}
-            type="button"
             role="radio"
             aria-checked={device === d}
-            className={clsx('atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__device-btn', device === d && 'atlas-wb-btn--active')}
+            icon={DEVICE_ICONS[d]}
+            active={device === d}
             onClick={() => setDevice(d)}
-            title={es.topbar.device[d]}
-            aria-label={es.topbar.device[d]}
-          >
-            {DEVICE_ICONS[d]}
-          </button>
+            label={es.topbar.device[d]}
+          />
         ))}
       </div>
 
-      <div className="atlas-wb-topbar__spacer" />
-
-      {!compact && <AppearanceSelect />}
-
-      {/* Actions */}
-      <div className="atlas-wb-topbar__group atlas-wb-topbar__actions">
+      <div className="atlas-wb-topbar__end">
+        {!compact && <AppearanceSelect />}
         <button
           type="button"
-          className={clsx('atlas-wb-btn atlas-wb-topbar__preview-btn', previewActive && 'atlas-wb-btn--active')}
+          className={clsx('atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__preview-btn', previewActive && 'atlas-wb-btn--active')}
           onClick={onTogglePreview}
-          title={es.topbar.preview}
           aria-label={es.topbar.preview}
+          aria-pressed={!!previewActive}
         >
-          {ICON_PREVIEW}
+          {previewActive ? <EyeOff /> : <Eye />}
           <span className="atlas-wb-topbar__btn-text">{es.topbar.preview}</span>
         </button>
         <ToolbarCommands compact={compact} device={device} setDevice={setDevice}
@@ -220,18 +133,14 @@ export function TopBar({ onSaveDraft, onPublish, onTogglePreview, previewActive,
           aria-hidden="true"
           tabIndex={-1}
         />
+        <IconButton
+          className="atlas-wb-topbar__panel-toggle"
+          icon={rightClosed ? PanelRightOpen : PanelRightClose}
+          active={!rightClosed}
+          onClick={onToggleRight}
+          label={rightClosed ? 'Mostrar panel de propiedades' : 'Ocultar panel de propiedades'}
+        />
       </div>
-
-      {/* Panel toggle — right */}
-      <button
-        type="button"
-        className={clsx('atlas-wb-btn atlas-wb-btn--ghost atlas-wb-topbar__panel-toggle', !rightClosed && 'atlas-wb-btn--active')}
-        onClick={onToggleRight}
-        aria-label={rightClosed ? 'Mostrar panel de propiedades' : 'Ocultar panel de propiedades'}
-        title="Panel derecho (propiedades)"
-      >
-        {ICON_RIGHT}
-      </button>
     </header>
   )
 }

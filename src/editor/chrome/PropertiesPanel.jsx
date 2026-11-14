@@ -1,6 +1,7 @@
 import { UniversalEffects } from './UniversalEffects.jsx'
 import { useId, useState } from 'react'
 import clsx from 'clsx'
+import { ChevronRight, MousePointerClick } from 'lucide-react'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { PropertyField as FieldRow } from './PropertyField.jsx'
@@ -21,14 +22,13 @@ function CollapseSection({ label, children, defaultOpen = true }) {
         aria-controls={id}
       >
         <span className="atlas-wb-props__section-label">{label}</span>
-        <span
+        <ChevronRight
+          aria-hidden="true"
           className={clsx(
             'atlas-wb-props__section-chevron',
             open && 'atlas-wb-props__section-chevron--open',
           )}
-        >
-          ›
-        </span>
+        />
       </button>
       {open ? <div id={id} className="atlas-wb-props__section-body">{children}</div> : null}
     </div>
@@ -44,12 +44,7 @@ export function PropertiesPanel() {
   if (!selectedId) {
     return (
       <div className="atlas-wb-props__empty">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" opacity=".3">
-          <rect x="4" y="4" width="32" height="32" rx="6" stroke="currentColor" strokeWidth="2" />
-          <rect x="10" y="14" width="20" height="2" rx="1" fill="currentColor" />
-          <rect x="10" y="19" width="14" height="2" rx="1" fill="currentColor" />
-          <rect x="10" y="24" width="17" height="2" rx="1" fill="currentColor" />
-        </svg>
+        <MousePointerClick aria-hidden="true" className="atlas-wb-props__empty-icon" />
         <p>{es.rightPanel.noSelection}</p>
       </div>
     )

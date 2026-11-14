@@ -7,6 +7,7 @@ import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
 import { useCallback, useRef } from 'react'
 import { BlockToolbar } from './BlockToolbar.jsx'
+import { ArrowDown, ArrowUp, Copy, GripVertical, Trash2 } from 'lucide-react'
 
 /**
  * Wraps a single block instance with editor chrome: selection outline,
@@ -89,7 +90,7 @@ export function EditableBlock({
       {isSelected ? (
         <BlockToolbar anchorRef={elementRef} positionKey={index}>
           <span className="atlas-wb-block__toolbar-label">{blockLabel}</span>
-          <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...(inlineEditingHere ? {} : attributes)} {...(inlineEditingHere ? {} : listeners)} aria-label={`Arrastrar ${blockLabel}`} title="Arrastrar bloque">⋮⋮</button>
+          <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...(inlineEditingHere ? {} : attributes)} {...(inlineEditingHere ? {} : listeners)} aria-label={`Arrastrar ${blockLabel}`} title="Arrastrar bloque"><GripVertical /></button>
           <div className="atlas-wb-block__toolbar-sep" />
           <button
             type="button"
@@ -98,7 +99,7 @@ export function EditableBlock({
             title={es.selection.moveUp}
             aria-label={es.selection.moveUp}
           >
-            ↑
+            <ArrowUp />
           </button>
           <button
             type="button"
@@ -107,7 +108,7 @@ export function EditableBlock({
             title={es.selection.moveDown}
             aria-label={es.selection.moveDown}
           >
-            ↓
+            <ArrowDown />
           </button>
           <button
             type="button"
@@ -115,7 +116,7 @@ export function EditableBlock({
             title={es.selection.duplicate}
             aria-label={es.selection.duplicate}
           >
-            ⧉
+            <Copy />
           </button>
           <button
             type="button"
@@ -124,7 +125,7 @@ export function EditableBlock({
             title={es.selection.remove}
             aria-label={es.selection.remove}
           >
-            ✕
+            <Trash2 />
           </button>
         </BlockToolbar>
       ) : null}

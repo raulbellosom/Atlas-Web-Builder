@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { X } from 'lucide-react'
 import { useNotifications } from './NotificationsProvider.jsx'
 import { es } from '../i18n/es.js'
 
@@ -29,7 +30,7 @@ export function NotificationCenter() {
             onClick={() => dismiss(n.id)}
             aria-label={es.notifications.dismiss}
           >
-            ✕
+            <X />
           </button>
         </div>
       ))}
