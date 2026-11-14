@@ -1,8 +1,9 @@
 # Changelog
 
-## Sin publicar
+## 0.5.1
 
 - Delimitaciones de bloques por encima de sus fondos, con grosor visual estable al cambiar el zoom y prioridad correcta para selección/edición frente a hover. No ocupan espacio ni interceptan eventos. Ver [verificación](docs/audits/BLOCK_BOUNDARIES_2026-11-14.md).
+- Sin cambios de esquema, capacidades, renderer público ni dependencias. Importar JavaScript y CSS de la misma versión. Sigue pendiente la validación en iPhone/Safari y Android físicos.
 
 ## 0.5.0
 

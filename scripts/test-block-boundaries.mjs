@@ -1,16 +1,24 @@
 import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
-import { mkdirSync, realpathSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { createServer } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const require = createRequire(process.env.ATLAS_BROWSER_TOOLS || import.meta.url)
 const { chromium, webkit, expect } = require('@playwright/test')
 const baseline = !!process.env.ATLAS_BOUNDARY_BASELINE
-const output = resolve(`.artifacts/block-boundaries/${baseline ? 'before' : 'after'}`)
+const output = resolve(process.env.ATLAS_TEST_OUTPUT || `.artifacts/block-boundaries/${baseline ? 'before' : 'after'}`)
 mkdirSync(output, { recursive: true })
-const server = await createServer({ configFile: false, root: realpathSync.native(resolve('tests/browser')), plugins: [react()], server: { host: '127.0.0.1', port: 0, fs: { allow: [process.cwd()] } } })
+const consumer = process.env.ATLAS_TEST_PACKAGE && resolve(process.env.ATLAS_TEST_PACKAGE)
+const packed = consumer && createRequire(consumer)
+const entry = packed?.resolve('@raulbellosom/atlas-web-builder').replace(/\.cjs$/, '.js')
+const alias = packed ? {
+  react: dirname(packed.resolve('react/package.json')), 'react-dom': dirname(packed.resolve('react-dom/package.json')),
+  '../../src/index.js': entry, '../../src/editor/store/EditorStoreProvider.jsx': entry,
+} : {}
+const packedCss = entry && { name: 'packed-css', transformIndexHtml: () => [{ tag: 'link', attrs: { rel: 'stylesheet', href: `/@fs/${resolve(dirname(entry), 'style.css').replaceAll('\\', '/')}` } }] }
+const server = await createServer({ configFile: false, root: realpathSync.native(resolve('tests/browser')), plugins: [react(), packedCss].filter(Boolean), resolve: { alias }, server: { host: '127.0.0.1', port: 0, fs: { allow: [process.cwd(), ...(consumer ? [dirname(consumer)] : [])] } } })
 await server.listen()
 const url = `http://127.0.0.1:${server.httpServer.address().port}`, results = []
 const settle = page => page.evaluate(() => Promise.all(document.getAnimations().map(animation => animation.finished.catch(() => {}))))
@@ -26,6 +34,7 @@ try {
         const page = await browser.newPage({ viewport: { width, height: 900 }, hasTouch: true, colorScheme: width === 390 ? 'dark' : 'light', reducedMotion: 'reduce' })
         const errors = []; page.on('pageerror', error => errors.push(error.message))
         await page.goto(url)
+        if (consumer) assert.equal(await page.evaluate(() => window.atlasApiVersion), JSON.parse(readFileSync('package.json')).version)
         const section = page.locator('[data-block-id="section"]'), heading = page.locator('[data-block-id="heading"]')
         await expect(section).toBeVisible()
         for (const zoom of ['fit', '1', '0.25', '1.5']) {
@@ -66,7 +75,7 @@ try {
           }
           assert.deepEqual(await geometry(page), before, 'Selecting a nested block must not change the layout')
           if (zoom === 'fit') await page.screenshot({ path: resolve(output, `${name}-${width}-nested.png`) })
-          results.push({ browser: name, width, zoom, painted, layoutUnchanged: true })
+          results.push({ browser: name, react: await page.evaluate(() => window.atlasReactVersion), width, zoom, painted, layoutUnchanged: true })
         }
         assert.deepEqual(errors, [])
         await page.close()

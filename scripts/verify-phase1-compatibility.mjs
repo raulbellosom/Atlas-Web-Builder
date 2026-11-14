@@ -29,7 +29,10 @@ symlinkSync(consumer ? join(consumer, 'node_modules') : resolve('node_modules'),
 const oldRequire = createRequire(join(oldRoot, 'package.json'))
 const baseline = oldRequire('./dist/atlas-web-builder.cjs'), atlas = require(candidate)
 const esm = await import(pathToFileURL(candidate.replace(/\.cjs$/, '.js')))
-if (consumer) { assert.equal(atlas.version, '0.5.0'); assert.equal(atlas.getVersion(), '0.5.0') }
+if (consumer) {
+  const expectedVersion = JSON.parse(readFileSync(resolve('package.json'))).version
+  assert.equal(atlas.version, expectedVersion); assert.equal(atlas.getVersion(), expectedVersion)
+}
 assert.deepEqual(Object.keys(atlas).sort(), Object.keys(esm).sort())
 assert(Object.keys(baseline).every(key => key in atlas))
 assert.equal(Object.keys(atlas).length, 142)
