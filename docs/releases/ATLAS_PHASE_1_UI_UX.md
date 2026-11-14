@@ -1,6 +1,6 @@
 # Atlas — Fase 1: UI/UX del editor
 
-Fecha: 2026-11-13. Estado: **APTO PARA REVISIÓN VISUAL DE FASE 1**.
+Fecha: 2026-11-13. Estado: **APTO PARA REVISIÓN VISUAL DE FASE 1**. Cierre de Fase 1.1: **APTO para preparar 0.5.0** (ver [Fase 1.1](#fase-11--pulido-visual-controles-y-experiencia-táctil)).
 
 Implementación local sobre `main`, partiendo de `e5a2939d9a28a7693f2339641f0e9a63b8c644ef`. No se crearon ramas ni worktrees. No se hicieron push, publicación npm ni despliegues. ERP y Developer Hub no se modificaron. La versión npm estable sigue siendo 0.4.0; esta UI todavía no forma parte de ella.
 
@@ -127,7 +127,7 @@ El runner usa Playwright y navegadores ya instalados, en este entorno mediante e
 
 ### Capturas
 
-Capturas reales de los recorridos aprobados, revisadas visualmente. El texto de prueba muestra el ancho para identificar el guardado/reapertura.
+Capturas reales de los recorridos aprobados, revisadas visualmente. El texto de prueba muestra el ancho para identificar el guardado/reapertura. Nota de Fase 1.1: estas capturas se tomaron durante la transición de color de 100 ms posterior al cambio de apariencia; por eso las tarjetas de la biblioteca y algunos botones aparecen grises en `desktop-dark.png` y el segmentado de `mobile-inspector.png` muestra un estado intermedio. Las capturas corregidas están en [Fase 1.1](#fase-11--pulido-visual-controles-y-experiencia-táctil).
 
 ![Escritorio claro](evidence/phase-1/desktop-light.png)
 
@@ -148,7 +148,7 @@ Capturas reales de los recorridos aprobados, revisadas visualmente. El texto de 
 | C: responsive, touch y verificadores | `5c04a649dc9b45b62a27514dc91b3b9bbf4b0566` |
 | Protección de campos desconocidos y grupos legacy | `d53ae6c2e71769fca21d5fa6bff9e7a2fe761b53` |
 
-El commit de documentación que contiene este informe agrega README, changelog, capturas y resultados. Todos permanecen locales en `main`. Las referencias anteriores se conservan.
+El commit de documentación que contiene este informe agrega README, changelog, capturas y resultados. Estos commits se publicaron después en `origin/main`. Las referencias anteriores se conservan.
 
 ## Archivos modificados
 
@@ -220,14 +220,102 @@ tests/browser/index.html
 ## Limitaciones y siguiente versión
 
 - No se probaron teléfonos/tabletas físicos, teclados virtuales reales ni selectores de color de cada sistema operativo. WebKit táctil usa eventos sintéticos; se recomienda una pasada manual en Safari/iOS y Android antes del release.
-- Fullscreen WebKit queda sin verificación. El soporte está implementado mediante el documento propietario y el ancestro fullscreen, y sí se verificó en Chromium e iframe.
-- Hay zoom mediante controles y scroll; no se implementó un gesto de pinch exclusivo del editor. Se conservan los gestos nativos disponibles del navegador.
+- Fullscreen: verificado en Chromium y, desde Fase 1.1, en el motor WebKit de escritorio de Playwright. Safari de iPhone no expone fullscreen de elementos y no se verificó (ver Fase 1.1).
+- Hay zoom mediante controles y scroll; no se implementó un gesto de pinch exclusivo del editor. Se conservan los gestos nativos disponibles del navegador. Evaluación en Fase 1.1.
 - Las pruebas de contrato son dirigidas. No se modificaron ni desplegaron integraciones de ERP/Hub ni se certifica producción con esta UI.
-- Las cinco advertencias de React Doctor quedan visibles para revisión; no hay errores reportados por esa herramienta.
+- Las cinco advertencias de React Doctor se revisaron en Fase 1.1; ninguna queda con consecuencia funcional abierta. No hay errores reportados por esa herramienta.
 - No se inició Fase 2. Los controles existentes de tipografía y degradados se conservan; no se añadió su edición avanzada.
 
 Se recomienda **0.5.0** para un futuro release, por las APIs opcionales nuevas y el alcance del cambio del editor, manteniendo compatibilidad del contenido y capacidades v1. Requiere revisión visual y autorización independiente de preparación/publicación. No debe publicarse el build de Fase 1 como otra instancia de 0.4.0.
 
-Para volver al punto estable se puede consumir npm 0.4.0 y el tag `v0.4.0`; para deshacer esta UI en una historia compartida futura se usarían commits de revert en orden inverso, sin reset destructivo ni force push. Actualmente los cambios sólo existen localmente y producción permanece intacta.
+Para volver al punto estable se puede consumir npm 0.4.0 y el tag `v0.4.0`; para deshacer esta UI en la historia compartida se usarían commits de revert en orden inverso, sin reset destructivo ni force push. Fase 1 y Fase 1.1 están en `origin/main`; no hay publicación npm ni despliegue, y producción permanece intacta.
 
 **APTO PARA REVISIÓN VISUAL DE FASE 1**.
+
+## Fase 1.1 — Pulido visual, controles y experiencia táctil
+
+Fecha: 2026-11-13. Base: `fef8c178f757f0dcc45279994286064fc9bc8d87`, sobre `main`, sin ramas. Commit de código: `47557a9bf0fe27b37d115925b16178d6be99f79c`. No se modificaron ERP ni Hub (el Hub sólo se usó en modo lectura como fuente de Playwright y de los peers de React 19). Versión del paquete: 0.4.0, sin cambios. Sin publicación npm ni despliegue.
+
+### Revisión de las cinco capturas de Fase 1
+
+| Observación | Causa | Resolución |
+| --- | --- | --- |
+| Tarjetas de la biblioteca y botones grises en `desktop-dark.png` | Captura tomada durante la transición de color de 100 ms tras cambiar a oscuro. En reposo, la tarjeta es `#191f2b` sobre panel `#121824`, con texto `#e7edf7`, medido en el navegador | El runner espera a que terminen las transiciones antes de cada captura (`settle`) |
+| Segmentado sin opción marcada en `mobile-inspector.png` | El mismo artefacto de transición. Además, `:hover` sustituía el fondo de la opción marcada y en touch queda fijo tras tocar | Hover sólo con `(hover: hover)` y nunca sobre la opción marcada. También en las tarjetas de la biblioteca |
+| Encabezado **Efectos** desalineado, chevron recortado | Margen negativo aplicado dos veces (contenedor y sección): 335 px de ancho en un panel de 311 px | Se elimina el margen del contenedor y el borde duplicado |
+| Estado («Modificado», «Heredado») encima de la etiqueta, al mismo peso que los encabezados de sección | Orden de los elementos y etiquetas en mayúsculas, con tamaño y color casi iguales a los de las secciones | Etiqueta → control → estado y restablecer. Las etiquetas pasan a frase en color principal; las secciones son el único nivel en mayúsculas. El orden del DOM y del foco coincide con el visual |
+| Hover primario sin cambio en oscuro | `--awb-accent-hover` casi igual a `--awb-accent` | `#2b55b8`; el texto blanco mantiene AA |
+
+### Controles unificados
+
+- Los selects de apariencia y zoom usan el mismo chevron que los campos (token `--awb-chevron`) y siguen siendo `<select>` nativos, de modo que en touch abren el selector del sistema.
+- El interruptor apagado usa `--awb-muted` para el riel: en claro y oscuro alcanza 3:1 frente al panel, y el pulgar se distingue en oscuro.
+- Encabezados de sección de 40 px de altura mínima. Espaciado del inspector: 14 px entre propiedades y la fila de estado pegada a su control. No cambian contratos, tipos de campo ni valores guardados.
+
+### Bottom sheet, overlays y barra contextual (320 y 390 px)
+
+- Se mantiene la comprobación existente: con la altura reducida a 420 px, la hoja de propiedades no queda recortada. Se añade otra: la hoja no cubre la barra superior.
+- **Defecto corregido**: cuando el anfitrión reducía la altura del editor sin un `resize` de ventana (layout del host, o `visualViewport` con teclado), la barra contextual del bloque conservaba su posición anterior y quedaba visible fuera del editor. Se reprodujo en WebKit a 320 px: falló en 2 de 2 ejecuciones sin la corrección y pasó en 2 de 2 con ella. Ahora el `ResizeObserver` también observa el canvas. La nueva comprobación del runner acepta la barra dentro del canvas o, si el bloque quedó fuera de la vista, oculta.
+
+### React Doctor
+
+Ejecutado con `npx react-doctor@latest`, sin instalarlo en el proyecto. Con alcance desde la base de Fase 1 (`e5a2939`): 75/100, las mismas cinco advertencias y ningún error. Con alcance limitado a los cambios de Fase 1.1: 90/100, sin advertencias.
+
+| Advertencia | Consecuencia funcional | Decisión |
+| --- | --- | --- |
+| Complejidad de `EditableBlock` y `PropertyField` | Ninguna, es de mantenimiento | Sin cambios |
+| `NumberInput`: reinicio y ajuste del borrador al cambiar la prop (×2) | **No demostrable.** React no reescribe un `input[type=number]` con un valor numéricamente igual, así que «1.0» no colapsa a «1» mientras se escribe. Undo y reset externos sí actualizan el borrador | Sin cambios. Se añadió una prueba de regresión |
+| `ColorInput`: reinicio del borrador al cambiar la prop | **Demostrable en un caso relacionado:** tras un hexadecimal rechazado, volver a elegir el mismo color en una muestra o en el selector nativo dejaba el borrador inválido y su aviso, porque el valor no cambiaba | Corregido: elegir un color reemplaza también el borrador. Prueba añadida. La advertencia persiste porque el efecto sigue siendo necesario para undo y cambios externos |
+
+### Fullscreen en WebKit
+
+La comprobación de Fase 1 sólo se ejecutaba en Chromium. El motor WebKit de escritorio de Playwright expone la API sin prefijo y entra en fullscreen de elementos. Ahora la misma comprobación se ejecuta en ambos motores: el portal del selector de medios queda dentro del elemento fullscreen y el foco permanece contenido (`fullscreen: true` en ambos resultados).
+
+**No verificado**: Safari en iPhone no admite fullscreen de elementos que no sean vídeo, así que ese caso no aplica en iPhone. Safari en macOS e iPadOS sólo se cubre a través del motor WebKit de Playwright en Windows, no con Safari real. Tampoco se verificó el antiguo `webkitfullscreenchange` con prefijo; el editor sólo escucha el evento estándar (Safari 16.4 o posterior).
+
+### Pinch zoom del canvas (evaluación)
+
+No se implementó. Un pinch propio del editor obligaría a usar `touch-action: none` o a cancelar `gesturestart` y `touchmove` en el canvas. Eso desactivaría el scroll natural con un dedo durante el gesto y el zoom de accesibilidad del navegador, y en WebKit los eventos de gesto son propietarios. Además, la calibración de umbrales exige dispositivos físicos, que no hubo. Hoy los bloques declaran `touch-action: pan-x pan-y pinch-zoom`, que mantiene el pinch nativo del navegador, y el zoom del lienzo (25–150 %) se controla con los botones y el select. Se recomienda, si se pide, añadirlo después de 0.5.0 como opción explícita del host y validarlo en iOS y Android físicos.
+
+### Validación
+
+- Unitarias dirigidas: 39 pruebas en 8 archivos (editor, apariencia, inspector y controles, capacidades, edición inline, paneles responsive, tema, efectos). Todas aprobadas, dos de ellas nuevas.
+- `pnpm lint` y `pnpm build`: aprobados. Compatibilidad ([compatibility.json](evidence/phase-1.1/compatibility.json)): 140 exports anteriores conservados (142 en total), capacidades v1, metadatos de bloques idénticos, SSR del renderer público idéntico byte a byte, JSON idéntico y SHA-256 del tarball 0.4.0 sin cambios. El verificador necesita el `tar` de Windows (bsdtar) primero en el `PATH`; el GNU tar de Git Bash interpreta `D:` como un host remoto.
+- Navegadores, React 18.3.1: Chromium y WebKit a 1440×900, 1024×768, 768×1024, 390×844 y 320×700, en claro, oscuro y sistema. Todos aprobados, más controles y casos límite en ambos motores ([resultados](evidence/phase-1.1/react18-browser-results.json)).
+- React 19.3.0: Chromium y WebKit a 390×844, aprobados ([resultados](evidence/phase-1.1/react19-browser-results.json)).
+- Sin acceso a dispositivos físicos. Touch se emuló (CDP en Chromium, TouchEvents sintéticos en WebKit) y el teclado virtual se simuló reduciendo la altura. Esto **no** es una certificación de compatibilidad en iOS ni Android.
+
+### Capturas nuevas
+
+| Escenario | Captura |
+| --- | --- |
+| Escritorio claro, 1440 | ![Escritorio claro, 1440](evidence/phase-1.1/desktop-light.png) |
+| Escritorio oscuro, 1440: biblioteca y Efectos corregidos | ![Escritorio oscuro, 1440: biblioteca y Efectos corregidos](evidence/phase-1.1/desktop-dark.png) |
+| Tablet 768, inspector claro | ![Tablet 768, inspector claro](evidence/phase-1.1/tablet-inspector-light.png) |
+| Tablet 768, inspector oscuro | ![Tablet 768, inspector oscuro](evidence/phase-1.1/tablet-inspector-dark.png) |
+| Móvil 390 oscuro | ![Móvil 390 oscuro](evidence/phase-1.1/mobile-390-dark.png) |
+| Móvil 390, hoja de propiedades clara | ![Móvil 390, hoja de propiedades clara](evidence/phase-1.1/mobile-390-inspector-light.png) |
+| Móvil 390, hoja de propiedades oscura | ![Móvil 390, hoja de propiedades oscura](evidence/phase-1.1/mobile-390-inspector-dark.png) |
+| WebKit 320 oscuro | ![WebKit 320 oscuro](evidence/phase-1.1/webkit-320-dark.png) |
+| WebKit 320, hoja de propiedades | ![WebKit 320, hoja de propiedades](evidence/phase-1.1/webkit-320-inspector-light.png) |
+
+### Archivos de Fase 1.1
+
+```text
+docs/releases/ATLAS_PHASE_1_UI_UX.md
+docs/releases/evidence/phase-1.1/*  (9 capturas, resultados React 18/19, compatibility.json)
+CHANGELOG.md
+scripts/test-editor-ui.mjs
+src/__tests__/inspectorControls.test.jsx
+src/editor/chrome/BlockToolbar.jsx
+src/editor/chrome/PropertyField.jsx
+src/editor/ui/OverlayControls.jsx
+src/styles/editor.css
+tests/browser/edgeChecks.mjs
+```
+
+Las capturas de Fase 1 se conservan sin cambios.
+
+### Estado final
+
+**APTO para preparar Atlas 0.5.0.** Condiciones que siguen pendientes: una pasada manual en Safari/iOS y en Android físicos antes de publicar, y la autorización independiente del release. La versión estable sigue siendo 0.4.0.

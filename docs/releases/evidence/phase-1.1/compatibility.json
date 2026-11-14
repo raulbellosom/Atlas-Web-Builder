@@ -1,0 +1,9 @@
+{
+  "exports": 142,
+  "previousExportsPreserved": 140,
+  "capabilities": 1,
+  "blockMetadataIdentical": true,
+  "rendererSsrByteIdentical": true,
+  "jsonIdentical": true,
+  "stableArtifactSha256": "988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2"
+}
