@@ -7,6 +7,7 @@
 - Drawers y hoja de propiedades móvil, zoom, tiradores táctiles, reordenación accesible y mejoras de teclado/foco.
 - Validación dirigida en Chromium/WebKit y React 18/19. Ver [entrega de Fase 1](docs/releases/ATLAS_PHASE_1_UI_UX.md).
 - Metadatos preparados para 0.5.0. Publicación pendiente de aceptación móvil física y autorización. Véase [migración desde 0.4.0](docs/releases/0.5.0-migration.md).
+- Fase 1.2: rediseño visual del editor. Lucide es el único sistema de iconos de la interfaz y Radix Primitives (Dialog, DropdownMenu, Popover, Tooltip) gestiona foco, teclado, cierre y posición de los overlays, siempre dentro del documento y contenedor del editor, también en fullscreen e iframe. Barra superior, navegación móvil, biblioteca, canvas, barra contextual e inspector rediseñados en claro y oscuro. Nuevas dependencias de ejecución: `lucide-react` y cuatro paquetes `@radix-ui/react-*`. Sin cambios de Page, renderer, capacidades ni exports. Ver [Fase 1.2](docs/releases/ATLAS_PHASE_1_UI_UX.md#fase-12--rediseño-visual-con-lucide-y-radix).
 - Fase 1.1: jerarquía del inspector (etiqueta, control, estado), sección Efectos alineada, estados táctiles sin hover fijo, controles con chevron común, barra contextual que sigue al canvas cuando cambia la altura disponible, borrador hexadecimal corregido y fullscreen verificado en WebKit. Ver [cierre de Fase 1.1](docs/releases/ATLAS_PHASE_1_UI_UX.md#fase-11--pulido-visual-controles-y-experiencia-táctil).
 
 ## 0.4.0 — publicado

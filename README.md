@@ -747,7 +747,7 @@ const heroCtaTemplate = defineTemplate({
 | `onPublish`   | `(page: Page) => void`     |           | Callback al publicar                                        |
 | `onLinkClick` | `(href: string) => void`   |           | En edición se interceptan todos los enlaces, incluidos los de nueva pestaña. En vista previa se conserva la apertura de `target="_blank"` |
 
-La UI en desarrollo incluye el hook `useEditorAppearance()` y los componentes reutilizables de `editorControls`. `theme` sigue siendo exclusivamente el tema del website: una página blanca permanece blanca con la interfaz oscura. Las nuevas props son opcionales; los perfiles `capabilities` v1 conservan sus restricciones. Esta UI todavía no se ha publicado; npm 0.4.0 y el tag v0.4.0 son el punto estable anterior. Véanse [API, controles, pruebas y capturas de Fase 1](docs/releases/ATLAS_PHASE_1_UI_UX.md).
+La UI en desarrollo incluye el hook `useEditorAppearance()` y los componentes reutilizables de `editorControls`. Los iconos de la interfaz usan `lucide-react` y los overlays (diálogos, menús, popovers y tooltips) usan Radix Primitives, montados dentro del editor; ambos se instalan como dependencias del paquete. `theme` sigue siendo exclusivamente el tema del website: una página blanca permanece blanca con la interfaz oscura. Las nuevas props son opcionales; los perfiles `capabilities` v1 conservan sus restricciones. Esta UI todavía no se ha publicado; npm 0.4.0 y el tag v0.4.0 son el punto estable anterior. Véanse [API, controles, pruebas y capturas de Fase 1](docs/releases/ATLAS_PHASE_1_UI_UX.md).
 
 ### `<AtlasWebRenderer>`
 
