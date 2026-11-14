@@ -5,7 +5,8 @@ import { defineBlock } from '../registry/createBlockRegistry.js'
 import { useEditorStoreInstance } from '../editor/store/EditorStoreProvider.jsx'
 import { UnitInput, NumberInput } from '../editor/ui/NumericControls.jsx'
 import { Combobox, SegmentedControl } from '../editor/ui/ChoiceControls.jsx'
-import { Popover } from '../editor/ui/OverlayControls.jsx'
+import { Popover, ColorInput } from '../editor/ui/OverlayControls.jsx'
+import { useState } from 'react'
 import { serializePage, parsePage } from '../persistence/serializePage.js'
 import { PropertyField } from '../editor/chrome/PropertyField.jsx'
 import { partitionGroups } from '../editor/chrome/propertyGroups.js'
@@ -80,5 +81,27 @@ describe('coherent controls preserve the existing value contract', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
+  })
+
+  it('keeps the typed numeric draft while its value round-trips, and follows external changes', () => {
+    function Controlled() { const [value, setValue] = useState(3); return <><NumberInput label="Medida" value={value} step={0.01} onChange={setValue} /><button type="button" onClick={() => setValue(7)}>Externo</button></> }
+    render(<Controlled />)
+    const input = screen.getByRole('spinbutton', { name: 'Medida' })
+    fireEvent.change(input, { target: { value: '1.0' } })
+    expect(input).toHaveValue(1)
+    expect(input.value).toBe('1.0') // must not collapse to "1" mid-typing (1.0 → 1.05)
+    fireEvent.click(screen.getByRole('button', { name: 'Externo' }))
+    expect(input.value).toBe('7')
+  })
+
+  it('clears a rejected hex draft when the same color is chosen again', () => {
+    const change = vi.fn()
+    render(<ColorInput label="Color" value="#315dec" onChange={change} />)
+    const hex = screen.getByLabelText('Color (hexadecimal)')
+    fireEvent.change(hex, { target: { value: '#31' } })
+    expect(screen.getByText(/no aplicado/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '#315dec' }))
+    expect(hex).toHaveValue('#315dec')
+    expect(screen.queryByText(/no aplicado/)).not.toBeInTheDocument()
   })
 })

@@ -32,13 +32,15 @@ export function ColorInput({ value, onChange, label, swatches = ['#ffffff', '#11
   const [draft, setDraft] = useState(value ?? '')
   useEffect(() => setDraft(value ?? ''), [value])
   const valid = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(draft)
+  // Picking a color also replaces a rejected draft, even when the saved value does not change.
+  const pick = color => { setDraft(color); onChange(color) }
   return <div className="atlas-wb-color-input">
     <label className="atlas-wb-color-input__native"><span className="atlas-wb-sr-only">{label}</span>
-      <input type="color" value={isHex ? value : '#000000'} onChange={event => onChange(event.target.value)} /></label>
+      <input type="color" value={isHex ? value : '#000000'} onChange={event => pick(event.target.value)} /></label>
     <input type="text" aria-label={`${label} (hexadecimal)`} className="atlas-wb-field__input" value={draft} aria-invalid={!valid || undefined} onChange={event => { setDraft(event.target.value); if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(event.target.value)) onChange(event.target.value) }} />
     {!valid && <span className="atlas-wb-field__hint">Hexadecimal no aplicado; se conserva el valor anterior.</span>}
     <div className="atlas-wb-color-input__swatches" role="group" aria-label={`Muestras de ${label}`}>
-      {swatches.map(color => <button key={color} type="button" aria-label={color} aria-pressed={value === color} style={{ '--swatch': color }} onClick={() => onChange(color)} />)}
+      {swatches.map(color => <button key={color} type="button" aria-label={color} aria-pressed={value === color} style={{ '--swatch': color }} onClick={() => pick(color)} />)}
     </div>
   </div>
 }

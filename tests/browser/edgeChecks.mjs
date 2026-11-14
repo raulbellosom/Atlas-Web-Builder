@@ -19,7 +19,8 @@ export async function checkEdges(page, url, browser, expect) {
   await expect(modal).toBeVisible()
   await page.keyboard.press('Escape')
   let fullscreen = false
-  if (browser === 'chromium' && await page.evaluate(() => document.fullscreenEnabled)) {
+  // Desktop WebKit exposes the unprefixed API; iPhone Safari does not (reported as unverifiable).
+  if (await page.evaluate(() => document.fullscreenEnabled)) {
     await page.locator('.atlas-wb-editor').evaluate(node => node.requestFullscreen())
     await page.getByRole('button', { name: 'Abrir selector de medios' }).click()
     await expect(modal).toBeVisible()

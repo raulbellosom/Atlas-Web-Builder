@@ -19,6 +19,8 @@ const server = await createServer({ configFile: false, root: resolve('tests/brow
 await server.listen()
 const url = `http://127.0.0.1:${server.httpServer.address().port}`, results = []
 const sizes = [[1440, 900], [320, 700], [390, 844], [768, 1024], [1024, 768]].filter(([width]) => !process.env.ATLAS_TEST_WIDTH || width === Number(process.env.ATLAS_TEST_WIDTH))
+// Phase 1 captures caught colour transitions mid-way (grey library cards, stale segmented state).
+const settle = page => page.evaluate(() => Promise.all(document.getAnimations().map(animation => animation.finished.catch(() => {}))))
 async function closePanels(page) {
   for (const [label, attribute] of [['Cerrar inspector', 'data-right-closed'], ['Cerrar biblioteca', 'data-left-closed']]) {
     const button = page.getByRole('button', { name: label })
@@ -84,6 +86,7 @@ try {
             assert(contrastRatio(tokens['accent-fg'], tokens.accent) >= 4.5, 'Primary control contrast')
             assert.equal(await page.locator('[data-block-id="heading"]').getAttribute('data-selected'), 'true')
             assert.equal(await page.evaluate(() => window.atlasTest.history()), history)
+            if (mode !== 'system') await settle(page)
             if (mode !== 'system') await page.screenshot({ path: resolve(output, `${name}-${width}-${mode}.png`) })
           }
           await page.emulateMedia({ colorScheme: 'light' })
@@ -101,7 +104,12 @@ try {
           await page.getByRole('button', { name: 'Restablecer Alineación' }).click()
           assert.equal(await page.evaluate(() => window.atlasTest.page().blocks.heading.props.align), 'left')
           if (compact) {
+            await settle(page)
             await page.screenshot({ path: resolve(output, `${name}-${width}-inspector.png`) })
+            // Appearance is still "system" here, so the dark inspector needs no extra UI steps.
+            await page.emulateMedia({ colorScheme: 'dark' }); await page.locator('.atlas-wb-editor-scope[data-appearance="dark"]').waitFor(); await settle(page)
+            await page.screenshot({ path: resolve(output, `${name}-${width}-inspector-dark.png`) })
+            await page.emulateMedia({ colorScheme: 'light' }); await page.locator('.atlas-wb-editor-scope[data-appearance="light"]').waitFor()
             await closePanels(page)
             await page.getByRole('button', { name: 'Bloques', exact: true }).click()
             const panel = page.locator('.atlas-wb-panel--left .atlas-wb-panel__body')
@@ -162,7 +170,15 @@ try {
             await page.setViewportSize({ width, height: 420 })
             await page.getByLabel('Texto alternativo').focus()
             assert(await page.locator('.atlas-wb-panel--right').evaluate(node => node.getBoundingClientRect().bottom <= innerHeight + 1), 'Keyboard-sized viewport clips inspector')
+            assert(await page.evaluate(() => document.querySelector('.atlas-wb-panel--right').getBoundingClientRect().top >= document.querySelector('.atlas-wb-topbar').getBoundingClientRect().bottom - 1), 'Bottom sheet covers the top bar')
             await page.setViewportSize({ width, height })
+            // The host shrinks the editor without a window resize: the context bar must follow the canvas.
+            await closePanels(page)
+            await page.locator('[data-block-id="link"]').tap()
+            const host = page.locator('[data-fixture-session]')
+            await host.evaluate(node => { node.style.height = '360px' })
+            await expect.poll(() => page.evaluate(() => { const node = document.querySelector('.atlas-wb-block__toolbar'), bar = node.getBoundingClientRect(), canvas = document.querySelector('.atlas-wb-canvas').getBoundingClientRect(); return getComputedStyle(node).visibility === 'hidden' || (bar.top >= canvas.top - 1 && bar.bottom <= canvas.bottom + 1) })).toBe(true)
+            await host.evaluate(node => { node.style.height = '100dvh' })
           }
           if (width === 390) assert(await page.locator('.atlas-wb-panel--right').evaluate(node => parseFloat(getComputedStyle(node).transitionDuration) < .001), 'Reduced motion')
           assert.deepEqual(errors, [])

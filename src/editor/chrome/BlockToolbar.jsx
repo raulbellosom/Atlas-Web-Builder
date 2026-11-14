@@ -15,7 +15,8 @@ export function BlockToolbar({ anchorRef, positionKey, children }) {
     }
     update()
     const observer = view.ResizeObserver ? new view.ResizeObserver(update) : null
-    observer?.observe(anchor)
+    // The canvas also resizes without a window resize (host layout, visualViewport/keyboard).
+    observer?.observe(anchor); observer?.observe(anchor.closest('.atlas-wb-canvas'))
     owner.addEventListener('scroll', update, true); view.addEventListener('resize', update)
     return () => { observer?.disconnect(); owner.removeEventListener('scroll', update, true); view.removeEventListener('resize', update) }
   }, [anchorRef, positionKey])
