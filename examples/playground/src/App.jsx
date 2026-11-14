@@ -240,8 +240,8 @@ export default function App() {
           initialPage={page}
           appearance={appearance}
           onAppearanceChange={changeAppearance}
-          brandLogo={<img src="/logo.png" alt="Atlas WB" height={26} width={26} style={{ display: 'block', objectFit: 'contain' }} />}
-          brandName="Atlas WB"
+          brandLogo={<img src="/atlas-logo-64.png" alt="" height={28} width={28} style={{ display: 'block', objectFit: 'contain' }} />}
+          brandName="Atlas"
           onSaveDraft={save}
         />
       </div>
