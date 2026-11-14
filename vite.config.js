@@ -26,6 +26,8 @@ export default defineConfig({
         'zundo',
         'nanoid',
         'clsx',
+        'lucide-react',
+        /^@radix-ui\//,
       ],
       output: {
         globals: {
