@@ -1,6 +1,6 @@
 # Atlas — Fase 1: UI/UX del editor
 
-Fecha: 2026-11-13. Estado: **APTO PARA REVISIÓN VISUAL DE FASE 1**. Cierre de Fase 1.1: **APTO para preparar 0.5.0** (ver [Fase 1.1](#fase-11--pulido-visual-controles-y-experiencia-táctil)).
+Fecha: 2026-11-13. Estado: **APTO PARA REVISIÓN VISUAL DE FASE 1**. Cierre de Fase 1.1: **APTO para preparar 0.5.0** (ver [Fase 1.1](#fase-11--pulido-visual-controles-y-experiencia-táctil)). Fase 1.2: **APTO PARA REVISIÓN ESTÉTICA FINAL DE ATLAS 0.5.0** (ver [Fase 1.2](#fase-12--rediseño-visual-con-lucide-y-radix)).
 
 Implementación local sobre `main`, partiendo de `e5a2939d9a28a7693f2339641f0e9a63b8c644ef`. No se crearon ramas ni worktrees. No se hicieron push, publicación npm ni despliegues. ERP y Developer Hub no se modificaron. La versión npm estable sigue siendo 0.4.0; esta UI todavía no forma parte de ella.
 
@@ -319,3 +319,141 @@ Las capturas de Fase 1 se conservan sin cambios.
 ### Estado final
 
 **APTO para preparar Atlas 0.5.0.** Condiciones que siguen pendientes: una pasada manual en Safari/iOS y en Android físicos antes de publicar, y la autorización independiente del release. La versión estable sigue siendo 0.4.0.
+
+## Fase 1.2 — Rediseño visual con Lucide y Radix
+
+Fecha: 2026-11-13. Base: `797dee25eda293e9acf6ca53bd36c5753c0c9c06`, sobre `main`, sin ramas ni worktrees. No se modificaron ERP ni Developer Hub; del Hub sólo se usaron, en lectura, Playwright y los peers de React 19. No hay publicación npm, tag definitivo ni despliegue. La versión sigue siendo 0.5.0 sin publicar, y npm estable sigue en 0.4.0.
+
+### Bibliotecas
+
+| Paquete | Rango en `package.json` | Lockfile del repositorio | Consumidores limpios |
+| --- | --- | --- | --- |
+| `lucide-react` | `^1.65.0` | 1.65.0 (publicado el 2026-10-30) | 1.72.0 |
+| `@radix-ui/react-dialog` | `^1.3.1` | 1.3.1 | 1.3.1 |
+| `@radix-ui/react-dropdown-menu` | `^2.2.1` | 2.2.1 | 2.2.1 |
+| `@radix-ui/react-popover` | `^1.3.1` | 1.3.1 | 1.3.1 |
+| `@radix-ui/react-tooltip` | `^1.4.1` | 1.4.1 | 1.4.1 |
+
+Los cinco paquetes declaran compatibilidad con React 18 y 19 y se excluyen del build de la biblioteca, igual que las dependencias anteriores. No se instalaron Radix Themes, shadcn/ui ni otra biblioteca de iconos. En el lockfile se fijó una versión de Lucide con al menos dos semanas de antigüedad; los consumidores resuelven la última versión dentro del rango, y ambas versiones se probaron.
+
+**Corrección de seguridad de dependencias existentes.** La revisión de dependencias detectó que el lockfile resolvía `dompurify@3.4.7`, con diez avisos hasta 3.4.16 (uno crítico, `SAFE_FOR_TEMPLATES`, y varios XSS en modo `IN_PLACE` y con hooks), y una versión de `nanoid` anterior a 5.1.16 (aviso alto). Atlas no usa `IN_PLACE` ni hooks, pero los rangos `^3.1.6` y `^5.1.11` permitían versiones vulnerables. Ahora exigen `^3.4.17` y `^5.1.16`. `pnpm audit --prod` no informa vulnerabilidades conocidas. Ambas dependencias son externas al build, así que JS y CSS no cambian. Las pruebas de sanitización, SSR, persistencia e identificadores pasaron: 87 en 11 archivos.
+
+### Componentes migrados a Radix
+
+| Antes | Ahora |
+| --- | --- |
+| Modal del selector de medios con `DialogSurface` | `Dialog` modal: foco atrapado, Escape, título accesible y devolución del foco al botón que lo abrió |
+| Popover de «Más acciones» con selects | `DropdownMenu` no modal con grupos `menuitemradio` (dispositivo y apariencia), Importar/Exportar, Guardar y Publicar |
+| Select de apariencia de la barra superior | `DropdownMenu` con Claro, Oscuro y Sistema |
+| `editorControls.Popover` | `Popover` de Radix, con las mismas props públicas |
+| `editorControls.Tooltip` y `title` de los botones de icono | `Tooltip` de Radix; `IconButton` interno une nombre accesible y tooltip |
+
+`OverlayPortal` pasa a cada `Portal` de Radix el contenedor del editor en su propio documento, o el elemento fullscreen que lo contiene, y la clase de apariencia. Dentro de un proveedor nunca recurre al `body` del anfitrión. Los menús no son modales: no bloquean el scroll ni cambian `pointer-events` en el `body` del anfitrión. El diálogo de medios sí es modal: mientras está abierto, Radix bloquea el scroll del documento propietario y oculta el resto de la página a tecnologías de asistencia, y lo restaura al cerrar. Esta limitación queda documentada en la guía de migración.
+
+Se retiraron `DialogSurface` y el posicionamiento manual de popover y tooltip, cubiertos por pruebas de navegador de foco, Escape, devolución de foco y contención. Los drawers y la hoja inferior móvil conservan su gestor de foco (`useDialogFocus`), sin cambios de scroll ni touch, y ahora ignoran los eventos que vienen de capas de overlay, para no disputarse el foco con Radix. El combobox sigue siendo propio, porque Radix no tiene un primitive de combobox. Los atajos del editor ignoran también las teclas pulsadas dentro de menús.
+
+### Cambios visuales
+
+- **Sistema:**
+  - Tokens claro y oscuro refinados, con bordes discretos y un borde fuerte para hover.
+  - Botones primario, secundario, ghost y de icono con alturas de 32 px (44 px en modo compacto), radios de 7 y 10 px y estados hover, focus, active y disabled.
+  - Sombras reservadas a superficies flotantes.
+  - Lucide de 16–20 px con trazo uniforme, aplicado sólo al chrome: el contenido del canvas no se toca, para que el website se vea igual que publicado.
+- **Barra superior:**
+  - Paneles, marca e historial a la izquierda; dispositivos centrados en un segmentado; a la derecha, apariencia, vista previa, menú de acciones, Guardar (secundario) y Publicar (primario).
+  - En modo compacto quedan historial, vista previa y el menú de acciones.
+- **Navegación móvil:** icono y etiqueta visibles, estado activo con fondo y un indicador, objetivos de al menos 44 × 48 px y áreas seguras, sin aumentar la altura de 56 px.
+- **Canvas:**
+  - Fondo punteado discreto, píldora de zoom flotante y marco del website con sombra suave.
+  - Barra contextual ligera, ajustada a su contenido, con objetivos de 44 px a cualquier zoom; por debajo de 360 px oculta la etiqueta.
+  - Anillo de selección que se ve igual sobre websites claros y oscuros.
+- **Biblioteca:** tarjetas en dos columnas con icono, nombre y asa de arrastre. Tocar una tarjeta sigue insertando el bloque; el asa conserva el arrastre táctil.
+- **Inspector:**
+  - Encabezado con icono, pestañas que se ajustan a su contenido y secciones de 44 px.
+  - Estado modificado con punto de acento y restablecer con icono.
+  - Inputs, selects, número unido, segmentado, color, sliders, unidades, Efectos y Tema unificados, con un único anillo de foco.
+  - No cambian contratos, valores ni campos persistibles.
+- **Playground:**
+  - Landing de una marca ficticia hecha sólo con bloques reales, imágenes SVG locales y anclas internas.
+  - Apariencia controlada; el pie de pruebas lleva su propio estilo y la etiqueta «Playground», sigue el modo oscuro y ocupa una sola fila en teléfonos.
+  - Se conservan guardar y reabrir.
+
+### Defectos encontrados y corregidos durante el corte
+
+| Defecto | Corrección | Evidencia |
+| --- | --- | --- |
+| Tras elegir una opción de un menú, el foco vuelve al disparador y abre su tooltip, también al tocar en un teléfono (WebKit marca ese foco como visible) | El menú marca la devolución de foco y los tooltips del chrome se abren sólo con hover o con foco de teclado | El runner comprueba que no queda ningún tooltip tras cada selección |
+| Las pestañas truncadas («Propied…») en paneles estrechos | Pestañas con ancho ajustado a su contenido | Capturas |
+| Doble anillo de foco en inputs | Se suprime el contorno genérico en los campos | Capturas |
+| A 320 px la barra contextual tapaba el bloque vecino que la prueba tocaba | La prueba vuelve a seleccionar desde arriba; la etiqueta se oculta por debajo de 360 px | Runner a 320 px |
+| En el arnés, Vite cargaba un módulo con dos URL según la mayúscula de la unidad (`d:` frente a `D:`), y la carga fallaba de forma intermitente | El root de Vite se resuelve con `realpath` | 4 de 4 cargas limpias; la matriz completa aprueba |
+
+**Hallazgo previo, no corregido en este corte.** En el canvas de edición, `EditorSlot` envuelve los hijos de un slot en la zona de soltado, así que un `GridBlock` muestra sus elementos apilados en una sola columna, mientras que la vista previa y el website publicado los muestran en cuadrícula. Arreglarlo exige cambiar la geometría de las zonas de soltado y podría romper el arrastre, por lo que se deja para un corte propio con pruebas de DnD. La landing usa `ColumnsBlock`, que el canvas representa fielmente.
+
+### Validación
+
+- **Unitarias:**
+  - Suite completa una vez, tras la migración, por afectar al chrome compartido: 210 de 210 en 35 archivos.
+  - Después, sólo pruebas dirigidas: 17 de 17 (inspector, apariencia, editor, paneles, capacidades) y 87 de 87 (sanitización, SSR, persistencia, ids, renderer).
+  - Se actualizaron dos pruebas por el cambio de mecanismo: la apariencia se elige ahora en un menú y Radix devuelve el foco de forma asíncrona.
+- **Navegador, fuentes con React 18.3.1:** Chromium y WebKit a 1440×900, 1024×768, 768×1024, 390×844 y 320×700: 10 de 10. Edge checks en ambos motores: menús con teclado, Escape y devolución de foco, `body` del anfitrión intacto, capacidades, vista previa, embed estrecho, menús y diálogo dentro del iframe, y diálogo y menú dentro del elemento fullscreen ([resultados](evidence/phase-1.2/source-react18-browser-results.json)).
+- **Navegador, artefacto empaquetado:** consumidores con React 18.3.1 y 19.3.0: 20 de 20 recorridos sin fallos, con controles y edge checks en ambos motores ([React 18](evidence/0.5.0/react18-browser-results.json), [React 19](evidence/0.5.0/react19-browser-results.json)).
+- **Contenido de los recorridos:** apariencias y cambio del sistema, selección, edición, guardar y reabrir con remount, deshacer y rehacer, restablecer, overlays y foco, teclado, scroll de la biblioteca y arrastre táctil emulado (CDP en Chromium, TouchEvents sintéticos en WebKit), movimiento reducido, altura reducida a 420 px, reducción de altura del anfitrión y ausencia de desbordamiento horizontal.
+- **Playground LAN:** edición, guardado, recarga, reapertura, datos históricos, imagen local, cero peticiones externas, rutas sensibles denegadas y pie oscuro. Sólo Chromium emulado.
+- **Contratos (en ambos consumidores):** se conservan los 140 exports de 0.4.0 (142 en total), capacidades v1, metadatos de los bloques base idénticos, HTML SSR del renderer público idéntico byte a byte y JSON idéntico.
+- **React Doctor** (alcance: cambios desde `797dee2`): sin avisos de código. La única incidencia fue la de `dompurify`, corregida arriba.
+
+Fullscreen se verificó en Chromium y en el WebKit de escritorio de Playwright. En WebKit, Escape sale de fullscreen antes de llegar a la página, comportamiento normal de la plataforma, así que la prueba cierra el diálogo con su botón. Safari en iPhone no admite fullscreen de elementos.
+
+### Tamaño del bundle ([detalle](evidence/phase-1.2/bundle-size.json))
+
+| Medida | Antes | Después |
+| --- | --- | --- |
+| Biblioteca ESM | 357.62 kB (86.31 gzip) | 347.20 kB (86.07 gzip) |
+| Biblioteca CJS | 252.65 kB (73.32 gzip) | 244.72 kB (72.98 gzip) |
+| CSS | 51.68 kB (9.49 gzip) | 64.17 kB (11.60 gzip) |
+| App del playground (JS) | 444.33 kB (137.93 gzip) | 579.68 kB (181.19 gzip) |
+
+La biblioteca baja porque se retiraron los SVG propios y las dependencias son externas. El coste real lo paga el consumidor: Radix aporta ≈ 33.9 kB gzip (cuatro primitives con Floating UI, gestión de foco y bloqueo de scroll) y Lucide ≈ 7.3 kB gzip, con tree-shaking de unos 60 iconos. El resto del aumento corresponde a la landing.
+
+### Capturas
+
+| Escenario | Captura |
+| --- | --- |
+| Escritorio 1440 claro, bloque seleccionado | ![Escritorio claro](evidence/phase-1.2/desktop-1440-light.png) |
+| Escritorio 1440 oscuro, bloque seleccionado | ![Escritorio oscuro](evidence/phase-1.2/desktop-1440-dark.png) |
+| Menú de apariencia (oscuro) | ![Menú de apariencia](evidence/phase-1.2/desktop-appearance-menu-dark.png) |
+| Diálogo de medios (claro) | ![Diálogo de medios](evidence/phase-1.2/desktop-media-dialog-light.png) |
+| Inspector con Layout y Efectos abiertos (oscuro) | ![Inspector](evidence/phase-1.2/desktop-inspector-sections-dark.png) |
+| Pestaña Tema (oscuro) | ![Tema](evidence/phase-1.2/desktop-theme-tab-dark.png) |
+| Tooltip | ![Tooltip](evidence/phase-1.2/desktop-tooltip-light.png) |
+| Tableta 768 claro y oscuro | ![Tableta clara](evidence/phase-1.2/tablet-768-light.png) ![Tableta oscura](evidence/phase-1.2/tablet-768-dark.png) |
+| Tableta 768, inspector claro y oscuro | ![Inspector claro](evidence/phase-1.2/tablet-768-inspector-light.png) ![Inspector oscuro](evidence/phase-1.2/tablet-768-inspector-dark.png) |
+| Móvil 390 claro y oscuro | ![Móvil claro](evidence/phase-1.2/mobile-390-light.png) ![Móvil oscuro](evidence/phase-1.2/mobile-390-dark.png) |
+| Móvil 390, hoja de propiedades clara y oscura | ![Hoja clara](evidence/phase-1.2/mobile-390-inspector-light.png) ![Hoja oscura](evidence/phase-1.2/mobile-390-inspector-dark.png) |
+| Móvil 390, menú de acciones y diálogo (oscuro) | ![Menú móvil](evidence/phase-1.2/mobile-390-menu-dark.png) ![Diálogo móvil](evidence/phase-1.2/mobile-390-media-dialog-dark.png) |
+| Móvil 320 en WebKit, canvas, hoja y biblioteca | ![320](evidence/phase-1.2/webkit-320-light.png) ![320 hoja](evidence/phase-1.2/webkit-320-inspector-light.png) ![320 biblioteca](evidence/phase-1.2/mobile-320-blocks-light.png) |
+| Playground, landing en escritorio | ![Landing clara](evidence/phase-1.2/playground-1440-light.png) ![Landing oscura](evidence/phase-1.2/playground-1440-dark.png) |
+| Playground, servicios y planes | ![Servicios](evidence/phase-1.2/playground-1440-light-scrolled.png) ![Planes](evidence/phase-1.2/playground-1440-dark-plans.png) |
+| Playground en móvil | ![Landing móvil oscura](evidence/phase-1.2/playground-390-dark.png) ![Landing móvil clara](evidence/phase-1.2/playground-390-light.png) |
+
+Todas las capturas se tomaron después de terminar las animaciones y transiciones. Las de tamaño por apariencia y las del inspector provienen del artefacto empaquetado con React 18; las de menús, diálogos, tooltip y playground se tomaron de las fuentes del mismo commit.
+
+### Commits
+
+| Corte | Commit |
+| --- | --- |
+| Dependencias Lucide y Radix | `52ee5c6` |
+| Sistema visual, overlays de Radix y arnés | `71be4dd` |
+| Landing y banco de pruebas del playground | `bf97db3` |
+| Documentos empaquetados de 0.5.0 | `61037cd` |
+| Tooltip tras devolver el foco un menú | `a3a42fd` |
+| Rangos con parche de `dompurify` y `nanoid` | `869fca3` (fuente del tarball) |
+
+### Pendientes
+
+- No se probaron teléfonos físicos. Siguen pendientes la [aceptación en iPhone/Safari y Android/Chrome](ATLAS_0_5_0_MOBILE_ACCEPTANCE.md), el teclado virtual real, los selectores nativos, las hojas y los menús de Radix con gestos y el botón Atrás.
+- El problema del canvas con `GridBlock`, descrito arriba.
+- La autorización de publicación y el tag `v0.5.0`.
+
+**APTO PARA REVISIÓN ESTÉTICA FINAL DE ATLAS 0.5.0**

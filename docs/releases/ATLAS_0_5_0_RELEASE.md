@@ -1,6 +1,8 @@
 # Atlas Web Builder 0.5.0 — preparación del release
 
-Fecha: 2026-11-13. **APTO PARA PRUEBAS FÍSICAS Y AUTORIZACIÓN DE ATLAS 0.5.0**.
+Fecha: 2026-11-13, actualizado tras la Fase 1.2. **APTO PARA REVISIÓN ESTÉTICA FINAL DE ATLAS 0.5.0**; después siguen pendientes las pruebas físicas y la autorización.
+
+> **Artefacto reemplazado.** El tarball anterior (SHA-256 `a23227ab…62201`, fuentes `b71383e`) quedó obsoleto con el rediseño de la [Fase 1.2](ATLAS_PHASE_1_UI_UX.md#fase-12--rediseño-visual-con-lucide-y-radix). Se movió a `.artifacts/releases/0.5.0/superseded-a23227ab/` y **no debe publicarse**. Su integridad no se reutiliza: los datos de abajo corresponden al artefacto nuevo.
 
 No implica autorización de publicación. Las pruebas físicas de Safari/iPhone y Chrome/Android siguen pendientes. No se ejecutaron `npm publish`, cambios de dist-tags, creación del tag v0.5.0 ni despliegues.
 
@@ -8,19 +10,19 @@ No implica autorización de publicación. Las pruebas físicas de Safari/iPhone 
 
 | Dato | Valor |
 | --- | --- |
-| Base sincronizada al iniciar | `9e39605c4e6a85ec7f596dbd12beb861242016d1` |
-| Commit de preparación de fuentes | `b71383e2131aa47f42ac0596ac1a0bfee2577bbd` |
+| Base de la Fase 1.2 | `797dee25eda293e9acf6ca53bd36c5753c0c9c06` |
+| Commit de fuentes del artefacto | `869fca38d7ca0da83837307d6652270a08f47325` |
 | Rama | `main`, sin ramas ni worktrees nuevos |
 | Versión preparada | `@raulbellosom/atlas-web-builder@0.5.0` |
 | Tarball local | `.artifacts/releases/0.5.0/raulbellosom-atlas-web-builder-0.5.0.tgz` |
-| SHA-256 | `a23227ab2fdf270ea51181bfd04b7e73a75b970423cf89e6649c763c01662201` |
-| npm shasum (SHA-1) | `a9f54db8494418d2300d302a93c956448c4b51fd` |
-| npm integrity | `sha512-JYVbRBqqx2qMP3cvnOyWwiIlK6UdyUkeeCVQfV8gsxolLr4ilA0ZtLLybWgV28U81mHvwX3vK5Z66i9CAMyAvA==` |
-| Tamaño | 612620 bytes comprimidos, 2385322 bytes descomprimidos |
+| SHA-256 | `09303a7c0051005ac309981ba40103ac2a79ba72fdb53c29eca22c5c2d98fb1d` |
+| npm shasum (SHA-1) | `eacb8ee4b8179c053b8cacdf74b880a5a44081af` |
+| npm integrity | `sha512-j58foNru2d8E1fN8NFkLIwffxFoVimQ4fsfrcDz2x/YqFztSzq1YjVIcyEL2v+1WgJFsGy0MUHd+F+S5/F1jxA==` |
+| Tamaño | 618581 bytes comprimidos, 2361988 bytes descomprimidos |
 
 El commit documental que contiene este informe sólo agrega informe y evidencia; no altera los archivos del paquete verificado. El tarball permanece local e ignorado por Git. Publicar ese archivo exacto después de autorizar, sin volver a empaquetar silenciosamente. Si se pierde, reproducirlo y comparar hashes antes de considerarlo aprobado.
 
-`package.json` y `src/index.js` declaran 0.5.0; `getVersion()` devuelve 0.5.0. El lockfile pnpm sólo cambia el nombre de la dependencia workspace del playground, sin actualizaciones de versiones. Se aprobó `pnpm install --frozen-lockfile --ignore-scripts`. No existe otro lockfile de release que haya que regenerar.
+`package.json` y `src/index.js` declaran 0.5.0; `getVersion()` devuelve 0.5.0. Dependencias de ejecución nuevas: `lucide-react` y `@radix-ui/react-dialog`, `-dropdown-menu`, `-popover` y `-tooltip`. Los mínimos de `dompurify` (`^3.4.17`) y `nanoid` (`^5.1.16`) se elevaron a versiones con parche, y `pnpm audit --prod` no informa vulnerabilidades conocidas. El lockfile se regeneró con esos cambios. Se aprobó `pnpm install --frozen-lockfile --ignore-scripts`. No existe otro lockfile de release que haya que regenerar.
 
 ## Empaquetado y compatibilidad
 
@@ -50,13 +52,13 @@ Exports del manifiesto: import ESM, require CJS, `/styles` y `/package.json`. Se
 
 El renderer SSR produjo HTML idéntico byte a byte al de 0.4.0 para el fixture de compatibilidad. La reapertura conservó JSON, SEO, efectos y propiedades históricas desconocidas. Se fija el reloj únicamente en esa comparación porque ambos serializadores estampan `updatedAt`. No hay migración nueva de schema, catálogo o contrato de guardado.
 
-Build: ESM 357.62 kB, CJS 252.65 kB, CSS 51.68 kB (gzip 86.31 / 73.32 / 9.49 kB). Se comprobaron tokens de apariencia y safe areas en el CSS emitido. SHA-256 del CSS: `80b03a3b8064857023dda7ef74758540ef4b5ef9f83353935229415946449da7`.
+Build: ESM 347.20 kB, CJS 244.72 kB, CSS 64.17 kB (gzip 86.07 / 72.98 / 11.60 kB); antes eran 357.62 / 252.65 / 51.68 kB. Lucide y Radix son externos; su coste en una app consumidora es de ≈ 41 kB gzip ([medición](evidence/phase-1.2/bundle-size.json)). Se comprobaron los tokens de apariencia y las safe areas en el CSS emitido. SHA-256 del CSS: `c405460d6f775d42b2c927763133c5317e8ba4ee69f550a6a481c1179694135f`.
 
 Evidencia: [manifiesto npm pack](evidence/0.5.0/pack.json), [verificación y hashes por archivo](evidence/0.5.0/package-verification.json).
 
 ## Consumidores aislados y verificaciones dirigidas
 
-Se crearon dos aplicaciones privadas temporales fuera del repositorio y se instaló el tarball con npm, sin scripts de instalación y sin lockfiles definitivos. Una usa React/React DOM 18.3.1 y otra 19.3.0, con sus propias dependencias instaladas. Se comprobó que la resolución de Atlas permanece dentro de cada consumidor y que sus bytes coinciden con el tarball final. No se usó una dependencia `file:` en ERP/Hub.
+Para el artefacto nuevo se crearon otras dos aplicaciones privadas temporales fuera del repositorio, y se instaló el tarball con npm sin scripts de instalación ni lockfiles definitivos. Una usa React/React DOM 18.3.1 y la otra 19.3.0. Ambas resolvieron `lucide-react@1.72.0`, Radix (dialog 1.3.1, dropdown-menu 2.2.1, popover 1.3.1, tooltip 1.4.1), `dompurify@3.4.17` y `nanoid@5.1.16`. Se comprobó que la resolución de Atlas permanece dentro de cada consumidor y que sus bytes coinciden con el tarball final. No se usó una dependencia `file:` en ERP/Hub.
 
 | Comprobación | Resultado |
 | --- | --- |
@@ -65,11 +67,11 @@ Se crearon dos aplicaciones privadas temporales fuera del repositorio y se insta
 | Instalación workspace con lockfile congelado | Aprobada |
 | ESM/CJS, versión, capacidades v1 y 140 exports previos | Aprobados en React 18 y 19 |
 | Metadatos base, Page antiguo, unknown props y SSR vs 0.4.0 | Aprobados en ambos consumidores |
-| Editor empaquetado en Chromium y WebKit, React 18.3.1 | 320×700 y 390×844 aprobados |
-| Editor empaquetado en Chromium y WebKit, React 19.3.0 | 320×700 y 390×844 aprobados |
-| Controles, capacidades restringidas, preview, iframe, embed y fullscreen de escritorio | Aprobados en ambos motores/versiones |
+| Editor empaquetado en Chromium y WebKit, React 18.3.1 | 1440, 1024, 768, 390 y 320 px aprobados (10 de 10) |
+| Editor empaquetado en Chromium y WebKit, React 19.3.0 | 1440, 1024, 768, 390 y 320 px aprobados (10 de 10) |
+| Menús, diálogo, popover y tooltip de Radix, capacidades restringidas, vista previa, iframe, embed y fullscreen de escritorio | Aprobados en ambos motores y versiones |
 | Playground por URL LAN | Edición, guardado, recarga, reapertura y recuperación aprobados en Chromium emulado |
-| React Doctor del playground modificado | 100/100, sin incidencias |
+| React Doctor de los cambios de la Fase 1.2 | Sin avisos de código; el aviso de cadena de suministro de `dompurify` se corrigió |
 
 Se reutilizó `scripts/test-editor-ui.mjs` con `ATLAS_TEST_PACKAGE` apuntando al package.json de cada consumidor. El editor y su store provienen del paquete instalado, y el CSS se carga desde ese paquete; no se prueban mediante el alias de fuentes. El andamiaje de la galería de controles reutiliza el proveedor de apariencia de los fixtures del repositorio. Los resultados completos están en [React 18](evidence/0.5.0/react18-browser-results.json) y [React 19](evidence/0.5.0/react19-browser-results.json).
 
@@ -77,7 +79,7 @@ Los recorridos incluyeron apariencias y cambio del sistema, selección, edición
 
 Las pruebas de los cinco tamaños de Fase 1.1 ya aprobadas se conservan en [su informe](ATLAS_PHASE_1_UI_UX.md#fase-11--pulido-visual-controles-y-experiencia-táctil). No se repitieron suites unitarias globales ni auditorías; este corte no cambia el motor, aparte de su constante de versión. La comprobación de contratos es dirigida y no sustituye una futura prueba de adopción en ERP/Hub ni una certificación de todos los sitios posibles.
 
-El empaquetado final actualizó documentación respecto de la primera prueba de navegador. Sus JS/CSS permanecen idénticos a los probados; se reinstaló el tarball final y se verificaron todos sus bytes y compatibilidad en ambos consumidores, sin repetir recorridos sin cambio funcional.
+El tarball final se instaló en consumidores limpios después del último commit de fuentes, y los recorridos de navegador se repitieron contra ese mismo artefacto.
 
 ### Comandos de reproducción
 
@@ -138,7 +140,7 @@ Primero completar aceptación física, resolver defectos bloqueantes y obtener a
 
 ```powershell
 $Artifact = (Resolve-Path .artifacts/releases/0.5.0/raulbellosom-atlas-web-builder-0.5.0.tgz).Path
-$Expected = 'a23227ab2fdf270ea51181bfd04b7e73a75b970423cf89e6649c763c01662201'
+$Expected = '09303a7c0051005ac309981ba40103ac2a79ba72fdb53c29eca22c5c2d98fb1d'
 if ((Get-FileHash $Artifact -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw 'Artefacto distinto: detener' }
 npm whoami --registry https://registry.npmjs.org/
 npm access list packages raulbellosom --json --registry https://registry.npmjs.org/
@@ -172,7 +174,7 @@ La adopción exacta 0.5.0 y lockfiles de ERP/Hub constituye otro corte autorizad
 
 ## Rollback y estados independientes
 
-- **Atlas/GitHub:** preparación y documentación en `main`, push normal de los cortes validados, sin force. Este commit documental registra la entrega; el SHA de fuentes/paquete es `b71383e…`. La respuesta de cierre confirma el SHA remoto final después del push.
+- **Atlas/GitHub:** preparación y documentación en `main`, push normal de los cortes validados, sin force. El SHA de fuentes y paquete es `869fca3…`; el commit documental de la Fase 1.2 registra la entrega. La respuesta de cierre confirma el SHA remoto final después del push.
 - **Atlas/npm:** consulta del registro: `latest = 0.4.0`, `next = 0.4.0`, 0.5.0 ausente. No hubo operaciones de distribución. El paquete/tag estable 0.4.0 permanece intacto; su tarball conserva SHA-256 `988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2` y el tag apunta a `62e9688eba083cb8c4f82f00ee8075cca41681f1`.
 - **ERP:** sin cambios de esta tarea. Pin desktop 0.4.0; HEAD local observado `34ca30fc4390dd40f7d22338c2529571134f4bdb`. Se preservó el archivo ajeno no rastreado `packages/module-compiler/src/__tests__/entity-list-integration.test.js`. El bloqueo de privacidad documentado anteriormente sigue fuera de esta preparación; no se reejecutó ni alteró el gate.
 - **Hub:** sin cambios de esta tarea. Pin 0.4.0; HEAD observado `ff6f7a5f74ef76c928e0d22f7e763fb7b8b9a051`, árbol limpio. Se usaron únicamente sus herramientas de navegador en modo lectura.
@@ -188,10 +190,11 @@ El paquete 0.5.0 publicado y los tags de versión no se sobrescriben ni eliminan
 
 ## Pendientes reales
 
-1. Pruebas físicas de iPhone/Safari y Android/Chrome, incluido teclado virtual real y conectividad desde el teléfono. Los recorridos emulados no las completan.
-2. Revisión de esos resultados y autorización independiente para publicar npm y crear el tag definitivo.
-3. Verificación posterior del paquete del registro y futura adopción de consumidores bajo sus controles, antes de considerar despliegues.
+1. Revisión estética final del rediseño de la [Fase 1.2](ATLAS_PHASE_1_UI_UX.md#fase-12--rediseño-visual-con-lucide-y-radix), con sus capturas.
+2. Pruebas físicas de iPhone/Safari y Android/Chrome, incluido teclado virtual real y conectividad desde el teléfono. Los recorridos emulados no las completan.
+3. Revisión de esos resultados y autorización independiente para publicar npm y crear el tag definitivo.
+4. Verificación posterior del paquete del registro y futura adopción de consumidores bajo sus controles, antes de considerar despliegues.
 
-No hay un bloqueo técnico encontrado que impida comenzar las pruebas físicas. No se iniciaron Fase 2 ni cambios visuales nuevos basados en las imágenes de referencia.
+No se encontró ningún bloqueo técnico para empezar las pruebas físicas. Hay un hallazgo previo no bloqueante, documentado en la Fase 1.2: en el canvas de edición, `GridBlock` se ve en una sola columna. No se inició la Fase 2.
 
-**APTO PARA PRUEBAS FÍSICAS Y AUTORIZACIÓN DE ATLAS 0.5.0**.
+**APTO PARA REVISIÓN ESTÉTICA FINAL DE ATLAS 0.5.0**.

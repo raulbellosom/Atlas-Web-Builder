@@ -3,6 +3,24 @@
     "browser": "chromium",
     "react": "19.3.0",
     "viewport": [
+      1440,
+      900
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": false,
+    "pointerDrag": "mouse"
+  },
+  {
+    "browser": "chromium",
+    "react": "19.3.0",
+    "viewport": [
       320,
       700
     ],
@@ -36,6 +54,40 @@
   },
   {
     "browser": "chromium",
+    "react": "19.3.0",
+    "viewport": [
+      768,
+      1024
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true
+  },
+  {
+    "browser": "chromium",
+    "react": "19.3.0",
+    "viewport": [
+      1024,
+      768
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true
+  },
+  {
+    "browser": "chromium",
     "controls": "combobox/units/switch/number/color/popover/tooltip passed"
   },
   {
@@ -47,6 +99,24 @@
       "iframePortal": true,
       "fullscreen": true
     }
+  },
+  {
+    "browser": "webkit",
+    "react": "19.3.0",
+    "viewport": [
+      1440,
+      900
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": false,
+    "pointerDrag": "mouse"
   },
   {
     "browser": "webkit",
@@ -82,6 +152,40 @@
     "keyboard": true,
     "emulatedTouch": true,
     "pointerDrag": "synthetic TouchEvents"
+  },
+  {
+    "browser": "webkit",
+    "react": "19.3.0",
+    "viewport": [
+      768,
+      1024
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true
+  },
+  {
+    "browser": "webkit",
+    "react": "19.3.0",
+    "viewport": [
+      1024,
+      768
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true
   },
   {
     "browser": "webkit",

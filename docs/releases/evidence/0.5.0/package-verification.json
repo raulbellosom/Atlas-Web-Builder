@@ -1,7 +1,7 @@
 {
-  "sourceSha": "b71383e2131aa47f42ac0596ac1a0bfee2577bbd",
+  "sourceSha": "869fca38d7ca0da83837307d6652270a08f47325",
   "version": "0.5.0",
-  "tarballSha256": "a23227ab2fdf270ea51181bfd04b7e73a75b970423cf89e6649c763c01662201",
+  "tarballSha256": "09303a7c0051005ac309981ba40103ac2a79ba72fdb53c29eca22c5c2d98fb1d",
   "files": [
     "CHANGELOG.md",
     "LICENSE",
@@ -18,21 +18,21 @@
     "package.json"
   ],
   "fileSha256": {
-    "CHANGELOG.md": "d172f9e8c441d412c618e8c56a2bb5449113eebb6ce50de0fe5f5f02670ba8e9",
+    "CHANGELOG.md": "fefc92219dc0c5c866b648209bc9844da06274865e41070f73787a957ea42ba5",
     "LICENSE": "1d06fcfdd1ea006820ec2b72fd329ce5857ba17996e983259d5dc2b7dc5210c4",
-    "README.md": "b73d2a3106357e4e8205cc44454ddb99990bb602f57a6b10951a0da42dd830cc",
-    "dist/atlas-web-builder.cjs": "16a863eda0e07a234d2c87885054954cde41d676b72a85cf39c23a341d4b5c4a",
-    "dist/atlas-web-builder.cjs.map": "379387bef33925553ecf2134b5071df5426365229310bc6b531fc3a4dcea26b2",
-    "dist/atlas-web-builder.js": "224d33b6c0151fe02aae33821dfc73b4442b634ae33af6e255a6d22676240783",
-    "dist/atlas-web-builder.js.map": "25a97e255d5185a87d5dbf7984fb1272044a4056b54b3c754ef1e63f8c85be42",
-    "dist/style.css": "80b03a3b8064857023dda7ef74758540ef4b5ef9f83353935229415946449da7",
+    "README.md": "59c1bfcf6fbc2efe084201bff89131987667e3d2849bc2685b06415940fefc93",
+    "dist/atlas-web-builder.cjs": "c8683f70bc8ea07af358c30e5fac5ae0818e68c2329945322dc8163362e84b2c",
+    "dist/atlas-web-builder.cjs.map": "6277072dd826bdc6cd5cc68a750106aea5020468a22dc9d6202c93ec9afb8bfe",
+    "dist/atlas-web-builder.js": "d7a64e2d42f9324ce16ea7e5b13bdd9d0e572ed28b64481728227a6da3abfadb",
+    "dist/atlas-web-builder.js.map": "6f83706926b93c5c8cd5e96b6392dffd50a69593b089dcc10e896f4437b52798",
+    "dist/style.css": "c405460d6f775d42b2c927763133c5317e8ba4ee69f550a6a481c1179694135f",
     "docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md": "f0d8b6c91b6ae8291807473b20e23c47298946c1b82d54d41906807dbb0f3d20",
     "docs/releases/0.3.5-provenance.md": "28affa5983c921a2bdcb3041ea37e757108c1b5c116d31561c4219a2fd530817",
     "docs/releases/0.4.0-migration.md": "fc3c64464a4173667c6aa986f58f2faaeb75a80a52fdbb8e66f20c808a53552e",
-    "docs/releases/0.5.0-migration.md": "b08c9135dfb10d72f854ceb2bdf8aa20ac52ce2a19be9bff34c305b1709e4e89",
-    "package.json": "e104474eaecca54d4ceb2a8e578fbee39d649531301b239f7bfc23ccea62bb12"
+    "docs/releases/0.5.0-migration.md": "0a59760c7b262ee7a1867e77c034026d85d0d249d3c6d2713aa8d3487a1ec0b1",
+    "package.json": "949133e6179a0da13d5106ac35250cf03f6c802a6f15478c21821464b65eee72"
   },
-  "cssSha256": "80b03a3b8064857023dda7ef74758540ef4b5ef9f83353935229415946449da7",
+  "cssSha256": "c405460d6f775d42b2c927763133c5317e8ba4ee69f550a6a481c1179694135f",
   "consumers": [
     {
       "react": "18.3.1",

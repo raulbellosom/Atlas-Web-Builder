@@ -1,0 +1,12 @@
+{
+  "note": "Library builds externalize all runtime dependencies; the consumer cost is measured on the playground production build (vite 5, same app shell).",
+  "library": {
+    "before": { "esm": "357.62 kB / 86.31 kB gzip", "cjs": "252.65 kB / 73.32 kB gzip", "css": "51.68 kB / 9.49 kB gzip" },
+    "after":  { "esm": "347.20 kB / 86.07 kB gzip", "cjs": "244.72 kB / 72.98 kB gzip", "css": "64.17 kB / 11.60 kB gzip" }
+  },
+  "playgroundApp": {
+    "before": { "js": "444.33 kB / 137.93 kB gzip", "css": "51.68 kB / 9.49 kB gzip" },
+    "after":  { "js": "579.68 kB / 181.19 kB gzip", "css": "65.81 kB / 12.00 kB gzip" },
+    "afterChunks": { "radix": "101.99 kB / 33.92 kB gzip", "lucide": "35.21 kB / 7.29 kB gzip", "vendor (react, dnd-kit, zustand…)": "232.04 kB / 76.17 kB gzip", "app + atlas": "211.83 kB / 63.33 kB gzip" }
+  }
+}
