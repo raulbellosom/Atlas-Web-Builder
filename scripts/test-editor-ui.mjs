@@ -43,6 +43,8 @@ async function setAppearance(page, mode, compact) {
   assert(await option.evaluate(node => !!node.closest('.atlas-wb-editor .atlas-wb-overlay-scope')), 'Radix menu must portal inside the editor scope')
   await option.click()
   await expect(page.getByRole('menu')).toHaveCount(0)
+  // Focus returns to the trigger after a pointer choice; that must not leave its tooltip open.
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
 }
 async function openInspector(page, compact) {
   if (compact) {

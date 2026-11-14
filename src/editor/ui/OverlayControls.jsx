@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { X } from 'lucide-react'
@@ -18,10 +18,19 @@ export function Popover({ label, trigger, children }) {
   </PopoverPrimitive.Root>
 }
 
-/** Accessible label rendered by Radix; works on hover and keyboard focus, never on touch. */
-export function TooltipLabel({ label, side = 'bottom', children }) {
-  return <TooltipPrimitive.Root>
-    <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+/** Accessible label rendered by Radix; works on hover and keyboard focus, never on touch.
+ * `strictFocus` ignores programmatic focus (e.g. a menu returning focus to its trigger after a
+ * tap), which would otherwise leave a stray tooltip open. */
+export function TooltipLabel({ label, side = 'bottom', strictFocus = true, children }) {
+  const [open, setOpen] = useState(false), trigger = useRef(null)
+  const intentional = node => { try { return !!node?.matches(':hover, :focus-visible') } catch { return true } } // older engines/jsdom
+  const onOpenChange = next => {
+    // A menu returning focus to this trigger is not a request for its tooltip (consumed once).
+    if (next && trigger.current?.hasAttribute('data-awb-focus-return')) { trigger.current.removeAttribute('data-awb-focus-return'); return }
+    setOpen(next && (!strictFocus || intentional(trigger.current)))
+  }
+  return <TooltipPrimitive.Root open={open} onOpenChange={onOpenChange}>
+    <TooltipPrimitive.Trigger asChild ref={trigger}>{children}</TooltipPrimitive.Trigger>
     <OverlayPortal portal={TooltipPrimitive.Portal}>
       <TooltipPrimitive.Content className="atlas-wb-tooltip__content" side={side} sideOffset={6} collisionPadding={8}>{label}</TooltipPrimitive.Content>
     </OverlayPortal>
@@ -31,7 +40,7 @@ export function TooltipLabel({ label, side = 'bottom', children }) {
 export function Tooltip({ label, children }) {
   // Standalone controls may live outside the editor provider; a nested provider is harmless.
   return <TooltipPrimitive.Provider delayDuration={400}>
-    <TooltipLabel label={label} side="top"><button type="button" className="atlas-wb-tooltip">{children}</button></TooltipLabel>
+    <TooltipLabel label={label} side="top" strictFocus={false}><button type="button" className="atlas-wb-tooltip">{children}</button></TooltipLabel>
   </TooltipPrimitive.Provider>
 }
 
