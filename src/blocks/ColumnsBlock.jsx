@@ -42,30 +42,36 @@ export const ColumnsBlock = defineBlock({
     { label: 'Opciones',   fields: ['valign', 'stackOnMobile'] },
   ],
   slots: { col0: {}, col1: {}, col2: {}, col3: {} },
-  render: ({ count, gap, valign, layout, paddingY, ctx }) => {
+  render: ({ count, gap, valign, layout, paddingY, stackOnMobile, ctx }) => {
     const n = Math.max(1, Math.min(4, Number(count) || 2))
     const slots = Array.from({ length: n }, (_, i) => `col${i}`)
 
     const templateFn = LAYOUT_TEMPLATES[layout] || LAYOUT_TEMPLATES.equal
     const gridTemplate = n === 2 ? templateFn(n) : LAYOUT_TEMPLATES.equal(n)
 
+    // The wrapper is the size container: stacking follows the width of the rendered page
+    // (canvas device frame, preview or published site), not the browser viewport. The
+    // configured template stays inline, so markup without the stylesheet keeps its columns.
     return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: gridTemplate,
-          gap: spacingVar(gap),
-          alignItems: valign || 'start',
-          width: '100%',
-          paddingTop:    paddingY && paddingY !== '0' ? spacingVar(paddingY) : undefined,
-          paddingBottom: paddingY && paddingY !== '0' ? spacingVar(paddingY) : undefined,
-        }}
-      >
-        {slots.map((slotName) => (
-          <div key={slotName} style={{ minWidth: 0 }}>
-            {ctx.slot(slotName)}
-          </div>
-        ))}
+      <div className={stackOnMobile === false ? 'atlas-cols' : 'atlas-cols atlas-cols--stack'}>
+        <div
+          className="atlas-cols__grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: gridTemplate,
+            gap: spacingVar(gap),
+            alignItems: valign || 'start',
+            width: '100%',
+            paddingTop:    paddingY && paddingY !== '0' ? spacingVar(paddingY) : undefined,
+            paddingBottom: paddingY && paddingY !== '0' ? spacingVar(paddingY) : undefined,
+          }}
+        >
+          {slots.map((slotName) => (
+            <div key={slotName} style={{ minWidth: 0 }}>
+              {ctx.slot(slotName)}
+            </div>
+          ))}
+        </div>
       </div>
     )
   },

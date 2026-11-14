@@ -7,6 +7,7 @@ import react from '@vitejs/plugin-react'
 import { nativePaletteScroll, pointerSorting } from '../tests/browser/gestures.mjs'
 import { checkControls } from '../tests/browser/controlChecks.mjs'
 import { checkEdges, contrastRatio } from '../tests/browser/edgeChecks.mjs'
+import { checkColumns } from '../tests/browser/columnsChecks.mjs'
 
 // Optional reuse of an installed test-tool package; no runtime dependency on a host.
 const require = createRequire(process.env.ATLAS_BROWSER_TOOLS || import.meta.url)
@@ -214,6 +215,7 @@ try {
       edges.setDefaultTimeout(8000)
       results.push({ browser: name, edges: await checkEdges(edges, url, name, expect) })
       await edges.close()
+      results.push({ browser: name, columns: await checkColumns(browser, url, expect) })
     } finally { await browser.close() }
   }
 } finally { await server.close(); writeFileSync(resolve(output, 'browser-results.json'), JSON.stringify(results, null, 2)) }

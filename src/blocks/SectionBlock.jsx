@@ -85,6 +85,8 @@ export const SectionBlock = defineBlock({
         style={{
           padding: `${spacingVar(paddingY)} ${spacingVar(paddingX)}`,
           width: fullBleed ? '100%' : 'auto',
+          // Padding inside the width: a full-bleed section never overflows a host without a border-box reset.
+          boxSizing: 'border-box',
           borderRadius: rVar,
           boxShadow: sVar,
           borderTop,

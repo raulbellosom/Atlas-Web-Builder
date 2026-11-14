@@ -1720,6 +1720,13 @@
   line-height: 1.4;
 }
 
+/* ── ColumnsBlock: stack below 640px of the rendered page width (container, not viewport) ── */
+/* Published-site style, like the navbar rules below. !important overrides the inline template. */
+.atlas-cols { container-type: inline-size; width: 100%; min-width: 0; }
+@container (max-width: 639.98px) {
+  .atlas-cols--stack > .atlas-cols__grid { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
 /* ── 29. Navbar block dropdown menus ──────────────────────────────────────── */
 /* These styles are scoped to .atlas-nb-* so they don't leak into the host app */
 .atlas-nb-nav {

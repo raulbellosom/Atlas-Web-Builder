@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AtlasWebBuilderEditor, baseBlocks, defaultTheme, editorControls, getVersion } from '../../src/index.js'
+import { AtlasWebBuilderEditor, AtlasWebBuilderProvider, AtlasWebRenderer, baseBlocks, defaultTheme, editorControls, getVersion } from '../../src/index.js'
 import { useEditorStoreInstance } from '../../src/editor/store/EditorStoreProvider.jsx'
 import { EditorAppearanceProvider } from '../../src/editor/ui/EditorAppearance.jsx'
 
@@ -15,11 +15,29 @@ const original = {
     link: { id: 'link', type: 'ButtonBlock', props: { label: 'Conoce el estudio', href: 'https://example.test/estudio', newTab: true } },
   }, seo: { title: 'SEO histórico' },
 }
+// ColumnsBlock matrix: 2/3/4 columns × stackOnMobile on/off; each column holds a card with text, image and button.
+const cardImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="360"%3E%3Crect width="640" height="360" fill="%23ede9fe"/%3E%3C/svg%3E'
+const columnsPage = (() => {
+  const blocks = {}, roots = []
+  for (const count of [2, 3, 4]) for (const stack of [true, false]) {
+    const id = `cols_${count}_${stack ? 'stack' : 'fixed'}`, children = {}
+    for (let i = 0; i < count; i++) {
+      const card = `${id}_card${i}`
+      blocks[card] = { id: card, type: 'CardBlock', props: { imageSrc: cardImage, imageAlt: `Imagen ${i + 1}`, title: `Servicio ${i + 1}`, description: 'Texto de la tarjeta que debe verse completo.', ctaLabel: 'Ver más', ctaHref: '#', ctaStyle: 'solid' } }
+      children[`col${i}`] = [card]
+    }
+    blocks[id] = { id, type: 'ColumnsBlock', props: { count: String(count), gap: '4', stackOnMobile: stack }, children }
+    roots.push(id)
+  }
+  blocks.section = { id: 'section', type: 'SectionBlock', props: { paddingY: '6', paddingX: '4' }, children: { children: roots } }
+  return { schemaVersion: 1, id: 'columns', slug: '/', title: 'Columnas', visibility: 'public', regions: { main: { children: ['section'] } }, blocks, seo: {} }
+})()
+const params = new URLSearchParams(location.search)
 let editorStore, saved, reopen
 const assets = { list: async () => [{ id: 'sample', name: 'Muestra', kind: 'image', url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="400"%3E%3Crect width="600" height="400" fill="%23315dec"/%3E%3C/svg%3E' }] }
 function Probe() { editorStore = useEditorStoreInstance(); return <span className="fixture-brand">A</span> }
 function App() {
-  const [initial, setInitial] = useState(original)
+  const [initial, setInitial] = useState(params.has('columns') ? columnsPage : original)
   const [session, setSession] = useState(0)
   const restricted = new URLSearchParams(location.search).has('restricted')
   reopen = () => { setInitial(structuredClone(saved)); setSession(value => value + 1) }
@@ -30,7 +48,7 @@ function App() {
       capabilities={restricted ? { schemaVersion: 1, effects: false, seo: false, pageMetadata: false, reason: 'Website v2' } : undefined} />
   </div>
 }
-window.atlasTest = { page: () => editorStore.getState().page, saved: () => saved, reopen: () => reopen(), history: () => editorStore.temporal.getState().pastStates.length }
+window.atlasTest = { setDevice: device => editorStore.getState().setDevice(device), page: () => editorStore.getState().page, saved: () => saved, reopen: () => reopen(), history: () => editorStore.temporal.getState().pastStates.length }
 window.atlasReactVersion = React.version
 window.atlasApiVersion = getVersion()
 function ControlGallery() {
@@ -48,4 +66,5 @@ function ControlGallery() {
     <output data-testid="values">{JSON.stringify(values)}</output>
   </div></EditorAppearanceProvider>
 }
-createRoot(document.getElementById('root')).render(new URLSearchParams(location.search).has('controls') ? <ControlGallery /> : <App />)
+const PublicRenderer = () => <AtlasWebBuilderProvider blocks={baseBlocks}><AtlasWebRenderer page={columnsPage} mode="public" /></AtlasWebBuilderProvider>
+createRoot(document.getElementById('root')).render(params.has('controls') ? <ControlGallery /> : params.has('render') ? <PublicRenderer /> : <App />)
