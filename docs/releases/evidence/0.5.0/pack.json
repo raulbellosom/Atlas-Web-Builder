@@ -3,15 +3,15 @@
     "id": "@raulbellosom/atlas-web-builder@0.5.0",
     "name": "@raulbellosom/atlas-web-builder",
     "version": "0.5.0",
-    "size": 618581,
-    "unpackedSize": 2361988,
-    "shasum": "eacb8ee4b8179c053b8cacdf74b880a5a44081af",
-    "integrity": "sha512-j58foNru2d8E1fN8NFkLIwffxFoVimQ4fsfrcDz2x/YqFztSzq1YjVIcyEL2v+1WgJFsGy0MUHd+F+S5/F1jxA==",
+    "size": 620001,
+    "unpackedSize": 2366509,
+    "shasum": "22014ab9e65b9358d5c9ce57749fb46bd165d158",
+    "integrity": "sha512-wkwLOc5VWgrUKidY4TUtuHk+C+MtziCWSXTzsKHezmLAvzEIDx9+yk2eyEp8oypZ5dHyoubuqBd+H1egQqmDsQ==",
     "filename": "raulbellosom-atlas-web-builder-0.5.0.tgz",
     "files": [
       {
         "path": "CHANGELOG.md",
-        "size": 3139,
+        "size": 3749,
         "mode": 420
       },
       {
@@ -26,27 +26,27 @@
       },
       {
         "path": "dist/atlas-web-builder.cjs",
-        "size": 245195,
+        "size": 245348,
         "mode": 420
       },
       {
         "path": "dist/atlas-web-builder.cjs.map",
-        "size": 799619,
+        "size": 800710,
         "mode": 420
       },
       {
         "path": "dist/atlas-web-builder.js",
-        "size": 347674,
+        "size": 347986,
         "mode": 420
       },
       {
         "path": "dist/atlas-web-builder.js.map",
-        "size": 833018,
+        "size": 834121,
         "mode": 420
       },
       {
         "path": "dist/style.css",
-        "size": 64168,
+        "size": 64347,
         "mode": 420
       },
       {
@@ -66,7 +66,7 @@
       },
       {
         "path": "docs/releases/0.5.0-migration.md",
-        "size": 3328,
+        "size": 4401,
         "mode": 420
       },
       {

@@ -101,6 +101,31 @@
     }
   },
   {
+    "browser": "chromium",
+    "columns": {
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "surfaces": [
+        "renderer",
+        "canvas mobile/tablet/desktop",
+        "preview"
+      ],
+      "counts": [
+        2,
+        3,
+        4
+      ],
+      "stackOnMobile": [
+        true,
+        false
+      ]
+    }
+  },
+  {
     "browser": "webkit",
     "react": "18.3.1",
     "viewport": [
@@ -199,6 +224,31 @@
       "narrowEmbed": true,
       "iframePortal": true,
       "fullscreen": true
+    }
+  },
+  {
+    "browser": "webkit",
+    "columns": {
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "surfaces": [
+        "renderer",
+        "canvas mobile/tablet/desktop",
+        "preview"
+      ],
+      "counts": [
+        2,
+        3,
+        4
+      ],
+      "stackOnMobile": [
+        true,
+        false
+      ]
     }
   }
 ]

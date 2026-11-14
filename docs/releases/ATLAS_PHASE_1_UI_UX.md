@@ -448,7 +448,9 @@ Todas las capturas se tomaron después de terminar las animaciones y transicione
 | Landing y banco de pruebas del playground | `bf97db3` |
 | Documentos empaquetados de 0.5.0 | `61037cd` |
 | Tooltip tras devolver el foco un menú | `a3a42fd` |
-| Rangos con parche de `dompurify` y `nanoid` | `869fca3` (fuente del tarball) |
+| Rangos con parche de `dompurify` y `nanoid` | `869fca3` |
+
+**Corrección posterior.** `ColumnsBlock` aplica ya `stackOnMobile` mediante container queries, y `SectionBlock` incluye su padding en el ancho (`3405eb0`). Las capturas móviles del playground se actualizaron. El artefacto vigente es el de `a9c927a`; detalles y pruebas en el [informe del release](ATLAS_0_5_0_RELEASE.md#corrección-final-columnas-en-páginas-estrechas).
 
 ### Pendientes
 

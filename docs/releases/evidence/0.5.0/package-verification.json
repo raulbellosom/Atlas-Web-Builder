@@ -1,7 +1,7 @@
 {
-  "sourceSha": "869fca38d7ca0da83837307d6652270a08f47325",
+  "sourceSha": "a9c927a45b383b7dda917de1b00328aab35c90f5",
   "version": "0.5.0",
-  "tarballSha256": "09303a7c0051005ac309981ba40103ac2a79ba72fdb53c29eca22c5c2d98fb1d",
+  "tarballSha256": "05874a77ef7627533d1ad2d0b8e992229308639114af2ee926ced9403fb8bc10",
   "files": [
     "CHANGELOG.md",
     "LICENSE",
@@ -18,21 +18,21 @@
     "package.json"
   ],
   "fileSha256": {
-    "CHANGELOG.md": "fefc92219dc0c5c866b648209bc9844da06274865e41070f73787a957ea42ba5",
+    "CHANGELOG.md": "00a55a6da9a603ec4243c8791ec4fa534c55f77b24619b1897fe0429f8620830",
     "LICENSE": "1d06fcfdd1ea006820ec2b72fd329ce5857ba17996e983259d5dc2b7dc5210c4",
     "README.md": "59c1bfcf6fbc2efe084201bff89131987667e3d2849bc2685b06415940fefc93",
-    "dist/atlas-web-builder.cjs": "c8683f70bc8ea07af358c30e5fac5ae0818e68c2329945322dc8163362e84b2c",
-    "dist/atlas-web-builder.cjs.map": "6277072dd826bdc6cd5cc68a750106aea5020468a22dc9d6202c93ec9afb8bfe",
-    "dist/atlas-web-builder.js": "d7a64e2d42f9324ce16ea7e5b13bdd9d0e572ed28b64481728227a6da3abfadb",
-    "dist/atlas-web-builder.js.map": "6f83706926b93c5c8cd5e96b6392dffd50a69593b089dcc10e896f4437b52798",
-    "dist/style.css": "c405460d6f775d42b2c927763133c5317e8ba4ee69f550a6a481c1179694135f",
+    "dist/atlas-web-builder.cjs": "5fd1654e2bc7ae7bd864996fdbbfb1945cc295a85397aedd47bf17db07150d3c",
+    "dist/atlas-web-builder.cjs.map": "8c2553f0e4cedf39f81256afe788fec18c79dfb5520ce4db0c7f35faa5a8c65d",
+    "dist/atlas-web-builder.js": "7a79c7869e869eb45a55c8537c68cd383f2040d7fd1f7111066f4cc8103be342",
+    "dist/atlas-web-builder.js.map": "d315784fbfb2aa07d5b7cad2c78af63d5421d251daa2a8907cc9dd6a6e22d3fb",
+    "dist/style.css": "57e60339733e6bbff9ca742597d8168420f8eab028f3a4fe9420ac6e1d9e019e",
     "docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md": "f0d8b6c91b6ae8291807473b20e23c47298946c1b82d54d41906807dbb0f3d20",
     "docs/releases/0.3.5-provenance.md": "28affa5983c921a2bdcb3041ea37e757108c1b5c116d31561c4219a2fd530817",
     "docs/releases/0.4.0-migration.md": "fc3c64464a4173667c6aa986f58f2faaeb75a80a52fdbb8e66f20c808a53552e",
-    "docs/releases/0.5.0-migration.md": "0a59760c7b262ee7a1867e77c034026d85d0d249d3c6d2713aa8d3487a1ec0b1",
+    "docs/releases/0.5.0-migration.md": "dc3e9218135ac4afc75bc69a10c555a37098f66abcdb0207dcddff3fd431af90",
     "package.json": "949133e6179a0da13d5106ac35250cf03f6c802a6f15478c21821464b65eee72"
   },
-  "cssSha256": "c405460d6f775d42b2c927763133c5317e8ba4ee69f550a6a481c1179694135f",
+  "cssSha256": "57e60339733e6bbff9ca742597d8168420f8eab028f3a4fe9420ac6e1d9e019e",
   "consumers": [
     {
       "react": "18.3.1",
