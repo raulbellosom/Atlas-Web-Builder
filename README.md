@@ -747,7 +747,7 @@ const heroCtaTemplate = defineTemplate({
 | `onPublish`   | `(page: Page) => void`     |           | Callback al publicar                                        |
 | `onLinkClick` | `(href: string) => void`   |           | En edición se interceptan todos los enlaces, incluidos los de nueva pestaña. En vista previa se conserva la apertura de `target="_blank"` |
 
-La UI en desarrollo incluye el hook `useEditorAppearance()` y los componentes reutilizables de `editorControls`. Los iconos de la interfaz usan `lucide-react` y los overlays (diálogos, menús, popovers y tooltips) usan Radix Primitives, montados dentro del editor; ambos se instalan como dependencias del paquete. `theme` sigue siendo exclusivamente el tema del website: una página blanca permanece blanca con la interfaz oscura. Las nuevas props son opcionales; los perfiles `capabilities` v1 conservan sus restricciones. Esta UI todavía no se ha publicado; npm 0.4.0 y el tag v0.4.0 son el punto estable anterior. Véanse [API, controles, pruebas y capturas de Fase 1](docs/releases/ATLAS_PHASE_1_UI_UX.md).
+La UI en desarrollo incluye el hook `useEditorAppearance()` y los componentes reutilizables de `editorControls`. Los iconos de la interfaz usan `lucide-react` y los overlays (diálogos, menús, popovers y tooltips) usan Radix Primitives, montados dentro del editor; ambos se instalan como dependencias del paquete. `theme` sigue siendo exclusivamente el tema del website: una página blanca permanece blanca con la interfaz oscura. Las nuevas props son opcionales; los perfiles `capabilities` v1 conservan sus restricciones. Esta UI se publica en 0.5.0; 0.4.0 y el tag v0.4.0 siguen disponibles como versión anterior. Limitación conocida: no se ha certificado en dispositivos físicos iOS ni Android; la compatibilidad móvil está validada sólo con emulación automatizada en Chromium y WebKit. Véanse [API, controles, pruebas y capturas de Fase 1](docs/releases/ATLAS_PHASE_1_UI_UX.md).
 
 ### `<AtlasWebRenderer>`
 
@@ -974,7 +974,7 @@ MIT © RacoonDevs
 
 ## Capacidades de guardado (0.4.0)
 
-La versión 0.4.0 está publicada y estable. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Las mejoras de UI de Fases 1 y 1.1 están en GitHub y preparadas para 0.5.0, pendiente de aceptación física y autorización de publicación. Véanse [los cambios](CHANGELOG.md) y [la migración a 0.5.0](docs/releases/0.5.0-migration.md).
+La versión 0.4.0 está publicada y estable. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Las mejoras de UI de las Fases 1 a 1.2 se publican en 0.5.0, que conserva estas capacidades. Véanse [los cambios](CHANGELOG.md) y [la migración a 0.5.0](docs/releases/0.5.0-migration.md).
 
 El perfil sólo restringe controles, preserva los valores existentes y no sustituye los validadores del backend. Véase [el contrato de capacidades](docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md) y [la procedencia de 0.3.5](docs/releases/0.3.5-provenance.md).
 
