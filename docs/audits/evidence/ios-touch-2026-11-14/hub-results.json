@@ -1,0 +1,12 @@
+[
+  {
+    "name": "chromium",
+    "passed": true,
+    "physicalIOS": false
+  },
+  {
+    "name": "webkit",
+    "passed": true,
+    "physicalIOS": false
+  }
+]

@@ -1,0 +1,64 @@
+[
+  {
+    "name": "chromium",
+    "mode": "",
+    "previewWidth": 1440
+  },
+  {
+    "name": "chromium",
+    "mode": "",
+    "geometry": {
+      "bottom": 480,
+      "height": 480
+    }
+  },
+  {
+    "name": "chromium",
+    "mode": "?dedicated",
+    "previewWidth": 1440
+  },
+  {
+    "name": "chromium",
+    "mode": "?dedicated",
+    "geometry": {
+      "bottom": 307,
+      "height": 307
+    }
+  },
+  {
+    "name": "chromium",
+    "passed": true,
+    "physicalIOS": false
+  },
+  {
+    "name": "webkit",
+    "mode": "",
+    "previewWidth": 1440
+  },
+  {
+    "name": "webkit",
+    "mode": "",
+    "geometry": {
+      "bottom": 480,
+      "height": 480
+    }
+  },
+  {
+    "name": "webkit",
+    "mode": "?dedicated",
+    "previewWidth": 1440
+  },
+  {
+    "name": "webkit",
+    "mode": "?dedicated",
+    "geometry": {
+      "bottom": 308,
+      "height": 308
+    }
+  },
+  {
+    "name": "webkit",
+    "passed": true,
+    "physicalIOS": false
+  }
+]

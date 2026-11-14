@@ -1,0 +1,30 @@
+[
+  {
+    "name": "chromium",
+    "legacy": true,
+    "hydration": "client render",
+    "passed": true,
+    "physicalIOS": false
+  },
+  {
+    "name": "chromium",
+    "legacy": false,
+    "hydration": "SSR hydrate",
+    "passed": true,
+    "physicalIOS": false
+  },
+  {
+    "name": "webkit",
+    "legacy": true,
+    "hydration": "client render",
+    "passed": true,
+    "physicalIOS": false
+  },
+  {
+    "name": "webkit",
+    "legacy": false,
+    "hydration": "SSR hydrate",
+    "passed": true,
+    "physicalIOS": false
+  }
+]
