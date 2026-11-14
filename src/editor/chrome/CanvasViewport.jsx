@@ -37,7 +37,7 @@ export function CanvasViewport({ device, frameProps, children }) {
       </div>
     </div>
     <div className="atlas-wb-canvas__stage" style={{ width: width * scale, height: size.height * scale, alignSelf: width * scale > size.available ? 'flex-start' : 'center' }}>
-      <div ref={frame} className="atlas-wb-canvas__frame" {...frameProps} style={{ width, maxWidth: 'none', transform: `scale(${scale})`, transformOrigin: 'top left' }}>{children}</div>
+      <div ref={frame} className="atlas-wb-canvas__frame" {...frameProps} style={{ width, maxWidth: 'none', transform: `scale(${scale})`, transformOrigin: 'top left', '--awb-canvas-scale': scale }}>{children}</div>
     </div>
   </>
 }

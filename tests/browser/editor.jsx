@@ -48,7 +48,7 @@ function App() {
       capabilities={restricted ? { schemaVersion: 1, effects: false, seo: false, pageMetadata: false, reason: 'Website v2' } : undefined} />
   </div>
 }
-window.atlasTest = { setDevice: device => editorStore.getState().setDevice(device), page: () => editorStore.getState().page, saved: () => saved, reopen: () => reopen(), history: () => editorStore.temporal.getState().pastStates.length }
+window.atlasTest = { clearSelection: () => editorStore.getState().clearSelection(), setDevice: device => editorStore.getState().setDevice(device), page: () => editorStore.getState().page, saved: () => saved, reopen: () => reopen(), history: () => editorStore.temporal.getState().pastStates.length }
 window.atlasReactVersion = React.version
 window.atlasApiVersion = getVersion()
 function ControlGallery() {

@@ -540,22 +540,31 @@
 /* ── 10. Block wrappers ─────────────────────────────────────────────────────── */
 .atlas-wb-block {
   position: relative;
-  outline: 2px solid transparent;
-  outline-offset: -2px;
-  transition: outline-color 100ms ease;
+  --awb-block-outline: transparent;
+}
+/* Paint above opaque children, inside the block, without affecting layout or hit testing. */
+.atlas-wb-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 calc(2px / var(--awb-canvas-scale, 1)) var(--awb-block-outline);
+  transition: box-shadow 100ms ease;
 }
 .atlas-wb-block:hover {
-  outline-color: color-mix(in srgb, var(--awb-ring) 45%, transparent);
+  --awb-block-outline: color-mix(in srgb, var(--awb-ring) 70%, transparent);
 }
 /* --awb-ring stays saturated in dark mode: the outline sits on the website, not on editor chrome. */
-.atlas-wb-block--selected {
-  outline-color: var(--awb-ring);
+.atlas-wb-block.atlas-wb-block--selected {
+  --awb-block-outline: var(--awb-ring);
 }
 .atlas-wb-block--dragging {
   opacity: 0.35;
 }
-.atlas-wb-block--editing {
-  outline-color: var(--awb-selection);
+.atlas-wb-block.atlas-wb-block--editing {
+  --awb-block-outline: var(--awb-selection);
 }
 
 /* ── 11. Breadcrumb ─────────────────────────────────────────────────────────── */
@@ -1340,9 +1349,6 @@
 }
 
 /* ── 22. Inline editing ─────────────────────────────────────────────────────── */
-.atlas-wb-block--editing {
-  outline-color: var(--awb-selection);
-}
 [data-atlas-inline-prop] {
   cursor: text;
 }

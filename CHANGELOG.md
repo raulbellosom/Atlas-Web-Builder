@@ -1,5 +1,9 @@
 # Changelog
 
+## Sin publicar
+
+- Delimitaciones de bloques por encima de sus fondos, con grosor visual estable al cambiar el zoom y prioridad correcta para selección/edición frente a hover. No ocupan espacio ni interceptan eventos. Ver [verificación](docs/audits/BLOCK_BOUNDARIES_2026-11-14.md).
+
 ## 0.5.0
 
 - Apariencias light/dark/system del editor, con tokens y portales aislados del website y de la aplicación anfitriona.
