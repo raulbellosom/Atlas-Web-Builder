@@ -1,0 +1,100 @@
+[
+  {
+    "browser": "chromium",
+    "react": "18.3.1",
+    "viewport": [
+      320,
+      700
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true
+  },
+  {
+    "browser": "chromium",
+    "react": "18.3.1",
+    "viewport": [
+      390,
+      844
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true,
+    "pointerDrag": "CDP touch"
+  },
+  {
+    "browser": "chromium",
+    "controls": "combobox/units/switch/number/color/popover/tooltip passed"
+  },
+  {
+    "browser": "chromium",
+    "edges": {
+      "capabilitiesLocked": true,
+      "publicPreview": true,
+      "narrowEmbed": true,
+      "iframePortal": true,
+      "fullscreen": true
+    }
+  },
+  {
+    "browser": "webkit",
+    "react": "18.3.1",
+    "viewport": [
+      320,
+      700
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true
+  },
+  {
+    "browser": "webkit",
+    "react": "18.3.1",
+    "viewport": [
+      390,
+      844
+    ],
+    "appearances": 3,
+    "edits": true,
+    "roundtrip": true,
+    "undoRedo": true,
+    "capabilities": "preserved",
+    "overlays": true,
+    "overflow": false,
+    "keyboard": true,
+    "emulatedTouch": true,
+    "pointerDrag": "synthetic TouchEvents"
+  },
+  {
+    "browser": "webkit",
+    "controls": "combobox/units/switch/number/color/popover/tooltip passed"
+  },
+  {
+    "browser": "webkit",
+    "edges": {
+      "capabilitiesLocked": true,
+      "publicPreview": true,
+      "narrowEmbed": true,
+      "iframePortal": true,
+      "fullscreen": true
+    }
+  }
+]

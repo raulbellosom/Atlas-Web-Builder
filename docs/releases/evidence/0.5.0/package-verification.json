@@ -1,0 +1,60 @@
+{
+  "sourceSha": "b71383e2131aa47f42ac0596ac1a0bfee2577bbd",
+  "version": "0.5.0",
+  "tarballSha256": "a23227ab2fdf270ea51181bfd04b7e73a75b970423cf89e6649c763c01662201",
+  "files": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "dist/atlas-web-builder.cjs",
+    "dist/atlas-web-builder.cjs.map",
+    "dist/atlas-web-builder.js",
+    "dist/atlas-web-builder.js.map",
+    "dist/style.css",
+    "docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md",
+    "docs/releases/0.3.5-provenance.md",
+    "docs/releases/0.4.0-migration.md",
+    "docs/releases/0.5.0-migration.md",
+    "package.json"
+  ],
+  "fileSha256": {
+    "CHANGELOG.md": "d172f9e8c441d412c618e8c56a2bb5449113eebb6ce50de0fe5f5f02670ba8e9",
+    "LICENSE": "1d06fcfdd1ea006820ec2b72fd329ce5857ba17996e983259d5dc2b7dc5210c4",
+    "README.md": "b73d2a3106357e4e8205cc44454ddb99990bb602f57a6b10951a0da42dd830cc",
+    "dist/atlas-web-builder.cjs": "16a863eda0e07a234d2c87885054954cde41d676b72a85cf39c23a341d4b5c4a",
+    "dist/atlas-web-builder.cjs.map": "379387bef33925553ecf2134b5071df5426365229310bc6b531fc3a4dcea26b2",
+    "dist/atlas-web-builder.js": "224d33b6c0151fe02aae33821dfc73b4442b634ae33af6e255a6d22676240783",
+    "dist/atlas-web-builder.js.map": "25a97e255d5185a87d5dbf7984fb1272044a4056b54b3c754ef1e63f8c85be42",
+    "dist/style.css": "80b03a3b8064857023dda7ef74758540ef4b5ef9f83353935229415946449da7",
+    "docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md": "f0d8b6c91b6ae8291807473b20e23c47298946c1b82d54d41906807dbb0f3d20",
+    "docs/releases/0.3.5-provenance.md": "28affa5983c921a2bdcb3041ea37e757108c1b5c116d31561c4219a2fd530817",
+    "docs/releases/0.4.0-migration.md": "fc3c64464a4173667c6aa986f58f2faaeb75a80a52fdbb8e66f20c808a53552e",
+    "docs/releases/0.5.0-migration.md": "b08c9135dfb10d72f854ceb2bdf8aa20ac52ce2a19be9bff34c305b1709e4e89",
+    "package.json": "e104474eaecca54d4ceb2a8e578fbee39d649531301b239f7bfc23ccea62bb12"
+  },
+  "cssSha256": "80b03a3b8064857023dda7ef74758540ef4b5ef9f83353935229415946449da7",
+  "consumers": [
+    {
+      "react": "18.3.1",
+      "version": "0.5.0",
+      "exports": 142,
+      "previousExportsPreserved": 140,
+      "capabilities": 1,
+      "blockMetadataIdentical": true,
+      "rendererSsrByteIdentical": true,
+      "jsonIdentical": true,
+      "stableArtifactSha256": "988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2"
+    },
+    {
+      "react": "19.3.0",
+      "version": "0.5.0",
+      "exports": 142,
+      "previousExportsPreserved": 140,
+      "capabilities": 1,
+      "blockMetadataIdentical": true,
+      "rendererSsrByteIdentical": true,
+      "jsonIdentical": true,
+      "stableArtifactSha256": "988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2"
+    }
+  ]
+}
