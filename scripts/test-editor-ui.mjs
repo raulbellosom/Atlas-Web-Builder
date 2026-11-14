@@ -11,14 +11,19 @@ import { checkEdges, contrastRatio } from '../tests/browser/edgeChecks.mjs'
 // Optional reuse of an installed test-tool package; no runtime dependency on a host.
 const require = createRequire(process.env.ATLAS_BROWSER_TOOLS || import.meta.url)
 const { chromium, webkit, expect } = require('@playwright/test')
-const root = process.cwd(), output = resolve(`.artifacts/${process.env.ATLAS_TEST_REACT ? 'phase-1-react19' : 'phase-1'}`)
+const root = process.cwd(), output = resolve(process.env.ATLAS_TEST_OUTPUT || `.artifacts/${process.env.ATLAS_TEST_REACT ? 'phase-1-react19' : 'phase-1'}`)
 mkdirSync(output, { recursive: true })
 const reactTools = process.env.ATLAS_TEST_REACT ? createRequire(process.env.ATLAS_TEST_REACT) : null
-const alias = reactTools ? { react: dirname(reactTools.resolve('react/package.json')), 'react-dom': dirname(reactTools.resolve('react-dom/package.json')) } : undefined
-const server = await createServer({ configFile: false, root: resolve('tests/browser'), plugins: [react()], resolve: { alias }, server: { host: '127.0.0.1', port: 0, fs: { allow: [root, ...(reactTools ? [dirname(process.env.ATLAS_TEST_REACT)] : [])] } } })
+const packedTools = process.env.ATLAS_TEST_PACKAGE ? createRequire(resolve(process.env.ATLAS_TEST_PACKAGE)) : null
+const packedEntry = packedTools?.resolve('@raulbellosom/atlas-web-builder').replace(/\.cjs$/, '.js')
+const peers = packedTools || reactTools
+const alias = { ...(peers ? { react: dirname(peers.resolve('react/package.json')), 'react-dom': dirname(peers.resolve('react-dom/package.json')) } : {}),
+  ...(packedEntry ? { '../../src/index.js': packedEntry, '../../src/editor/store/EditorStoreProvider.jsx': packedEntry } : {}) }
+const packedCss = packedEntry && { name: 'packed-css', transformIndexHtml: () => [{ tag: 'link', attrs: { rel: 'stylesheet', href: `/@fs/${resolve(dirname(packedEntry), 'style.css').replaceAll('\\', '/')}` } }] }
+const server = await createServer({ configFile: false, root: resolve('tests/browser'), plugins: [react(), packedCss].filter(Boolean), resolve: { alias }, server: { host: '127.0.0.1', port: 0, fs: { allow: [root, ...(reactTools ? [dirname(process.env.ATLAS_TEST_REACT)] : []), ...(packedTools ? [dirname(resolve(process.env.ATLAS_TEST_PACKAGE))] : [])] } } })
 await server.listen()
 const url = `http://127.0.0.1:${server.httpServer.address().port}`, results = []
-const sizes = [[1440, 900], [320, 700], [390, 844], [768, 1024], [1024, 768]].filter(([width]) => !process.env.ATLAS_TEST_WIDTH || width === Number(process.env.ATLAS_TEST_WIDTH))
+const sizes = [[1440, 900], [320, 700], [390, 844], [768, 1024], [1024, 768]].filter(([width]) => !process.env.ATLAS_TEST_WIDTH || process.env.ATLAS_TEST_WIDTH.split(',').map(Number).includes(width))
 // Phase 1 captures caught colour transitions mid-way (grey library cards, stale segmented state).
 const settle = page => page.evaluate(() => Promise.all(document.getAnimations().map(animation => animation.finished.catch(() => {}))))
 async function closePanels(page) {
@@ -62,6 +67,7 @@ try {
         page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
         try {
           await page.goto(url)
+          if (packedEntry) assert.equal(await page.evaluate(() => window.atlasApiVersion), '0.5.0')
           await page.locator('.atlas-wb-canvas__frame').waitFor()
           if (compact) await page.locator('[data-block-id="heading"]').tap()
           else await page.locator('[data-block-id="heading"]').click()

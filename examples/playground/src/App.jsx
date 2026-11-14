@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   AtlasWebBuilderEditor,
   baseBlocks,
@@ -5,7 +6,9 @@ import {
   defineTheme,
   defaultTheme,
   getVersion,
-} from '@racoondevs/atlas-web-builder'
+  serializePage,
+  parsePage,
+} from '@raulbellosom/atlas-web-builder'
 /* CSS loaded automatically via the source alias in vite.config.js */
 
 /* --------------------------------------------------------------------------
@@ -66,7 +69,15 @@ const initialPage = {
       id: 'blk_section',
       type: 'SectionBlock',
       props: { background: 'muted', paddingY: '8' },
-      children: { children: [] },
+      children: { children: ['blk_nested', 'blk_image'] },
+    },
+    blk_nested: {
+      id: 'blk_nested', type: 'HeadingBlock',
+      props: { text: 'Prueba táctil anidada', level: 'h3', _opacity: 0.85, customHistorical: { keep: true } },
+    },
+    blk_image: {
+      id: 'blk_image', type: 'ImageBlock',
+      props: { src: '/mobile-sample.svg', alt: 'Paisaje de prueba local', caption: 'Imagen local, sin servicios externos', width: '100%' },
     },
   },
   seo: { title: '', description: '', canonical: null, ogImageAssetId: null },
@@ -167,15 +178,35 @@ const demoTemplates = [
   }),
 ]
 
+const storageKey = 'atlas-playground-0.5.0-page'
 export default function App() {
+  const [page, setPage] = useState(initialPage)
+  const [session, setSession] = useState(0)
+  const [status, setStatus] = useState('Prueba local: guarda y reabre antes de recargar.')
+  function save(document) {
+    try {
+      localStorage.setItem(storageKey, serializePage(document))
+      setStatus('Borrador guardado en este navegador. Pulsa Reabrir guardado.')
+    } catch (error) { setStatus(`No se pudo guardar: ${error.message}`) }
+  }
+  function reopen() {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (!saved) { setStatus('No hay borrador guardado en este navegador.'); return }
+      setPage(parsePage(saved))
+      setSession(value => value + 1)
+      setStatus('Borrador reabierto. El historial comienza una sesión nueva.')
+    } catch (error) { setStatus(`No se pudo reabrir; el borrador se conserva: ${error.message}`) }
+  }
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, minHeight: 0 }}>
         <AtlasWebBuilderEditor
+          key={session}
           blocks={baseBlocks}
           templates={demoTemplates}
           theme={customTheme}
-          initialPage={initialPage}
+          initialPage={page}
           brandLogo={
             <img
               src="/logo.png"
@@ -186,26 +217,21 @@ export default function App() {
             />
           }
           brandName="Atlas WB"
-          onSaveDraft={(page) => {
-            // eslint-disable-next-line no-console
-            console.log('Guardar borrador →', page)
-          }}
-          onPublish={(page) => {
-            // eslint-disable-next-line no-console
-            console.log('Publicar →', page)
-          }}
+          onSaveDraft={save}
         />
       </div>
       <div
         style={{
-          padding: '4px 12px',
+          padding: '4px 12px max(4px, env(safe-area-inset-bottom))',
           fontSize: 12,
           color: '#6b7280',
           borderTop: '1px solid #e5e7eb',
           background: '#fafafa',
         }}
       >
-        Atlas WB v{getVersion()} · @racoondevs/atlas-web-builder
+        <button type="button" onClick={reopen} style={{ minHeight: 44 }}>Reabrir guardado</button>
+        <span role="status" aria-label="Estado del playground" style={{ marginInlineStart: 8 }}>{status}</span>
+        <small style={{ display: 'block' }}>Atlas v{getVersion()} · Prueba local · Sin publicación</small>
       </div>
     </div>
   )

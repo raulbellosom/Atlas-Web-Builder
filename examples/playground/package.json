@@ -1,5 +1,5 @@
 {
-  "name": "@racoondevs/atlas-web-builder-playground",
+  "name": "@raulbellosom/atlas-web-builder-playground",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@racoondevs/atlas-web-builder": "workspace:*",
+    "@raulbellosom/atlas-web-builder": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

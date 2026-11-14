@@ -974,6 +974,19 @@ MIT © RacoonDevs
 
 ## Capacidades de guardado (0.4.0)
 
-La versión 0.4.0 está publicada y estable. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Las mejoras de UI de Fase 1 sólo están en desarrollo local hasta autorizar otro release. Véanse [los cambios](CHANGELOG.md) y [la migración desde 0.3.5](docs/releases/0.4.0-migration.md).
+La versión 0.4.0 está publicada y estable. `editorCapabilitiesVersion = 1` identifica el API opcional `capabilities` del editor, independientemente del esquema Page 1 y del ZIP Website v2. Un host debe verificar ese marcador antes de habilitar edición restringida; el npm 0.3.5 original no lo implementa. Las mejoras de UI de Fases 1 y 1.1 están en GitHub y preparadas para 0.5.0, pendiente de aceptación física y autorización de publicación. Véanse [los cambios](CHANGELOG.md) y [la migración a 0.5.0](docs/releases/0.5.0-migration.md).
 
 El perfil sólo restringe controles, preserva los valores existentes y no sustituye los validadores del backend. Véase [el contrato de capacidades](docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md) y [la procedencia de 0.3.5](docs/releases/0.3.5-provenance.md).
+
+## Playground en teléfonos de la red local
+
+Desde la raíz del repositorio, con Node y pnpm instalados:
+
+```sh
+pnpm install --frozen-lockfile --ignore-scripts
+pnpm playground:lan
+```
+
+Abrir en el teléfono la URL privada que imprime el comando (puerto 5173). Usar la misma red Wi-Fi, sin túneles ni publicación pública. El playground carga las fuentes locales, incluye imagen y bloques anidados y permite guardar/reabrir en localStorage; no se conecta con ERP/Hub ni publica contenido. Ctrl+C detiene el servidor. El teléfono no necesita instalar Atlas.
+
+Véase el [checklist físico iPhone/Android](docs/releases/ATLAS_0_5_0_MOBILE_ACCEPTANCE.md). Las pruebas automatizadas emuladas no certifican hardware real.

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" role="img" aria-label="Paisaje geométrico local">
+  <rect width="900" height="400" fill="#dbeafe"/>
+  <circle cx="700" cy="100" r="50" fill="#fbbf24"/>
+  <path d="M0 400 280 80 580 400Z" fill="#315dec"/>
+  <path d="M300 400 620 160 900 400Z" fill="#16336b"/>
+</svg>

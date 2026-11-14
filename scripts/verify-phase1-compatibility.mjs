@@ -7,7 +7,10 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const require = createRequire(import.meta.url)
+// Optional isolated consumer: exercise the installed tarball, never the source alias.
+const consumer = process.argv[2] && resolve(process.argv[2])
+const require = createRequire(consumer ? join(consumer, 'package.json') : import.meta.url)
+const candidate = consumer ? require.resolve('@raulbellosom/atlas-web-builder') : resolve('dist/atlas-web-builder.cjs')
 const artifact = resolve('.artifacts/releases/0.4.0/registry/raulbellosom-atlas-web-builder-0.4.0.tgz')
 const expected = '988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2'
 if (!existsSync(artifact)) {
@@ -19,12 +22,14 @@ if (!existsSync(artifact)) {
 }
 assert.equal(createHash('sha256').update(readFileSync(artifact)).digest('hex'), expected)
 const scratch = mkdtempSync(join(tmpdir(), 'atlas-ui-compat-'))
-execFileSync('tar', ['-xzf', artifact, '-C', scratch])
+const tar = process.platform === 'win32' ? join(process.env.SystemRoot || 'C:/Windows', 'System32/tar.exe') : 'tar'
+execFileSync(tar, ['-xzf', artifact, '-C', scratch])
 const oldRoot = join(scratch, 'package')
-symlinkSync(resolve('node_modules'), join(oldRoot, 'node_modules'), 'junction')
+symlinkSync(consumer ? join(consumer, 'node_modules') : resolve('node_modules'), join(oldRoot, 'node_modules'), 'junction')
 const oldRequire = createRequire(join(oldRoot, 'package.json'))
-const baseline = oldRequire('./dist/atlas-web-builder.cjs'), atlas = require('../dist/atlas-web-builder.cjs')
-const esm = await import(pathToFileURL(resolve('dist/atlas-web-builder.js')))
+const baseline = oldRequire('./dist/atlas-web-builder.cjs'), atlas = require(candidate)
+const esm = await import(pathToFileURL(candidate.replace(/\.cjs$/, '.js')))
+if (consumer) { assert.equal(atlas.version, '0.5.0'); assert.equal(atlas.getVersion(), '0.5.0') }
 assert.deepEqual(Object.keys(atlas).sort(), Object.keys(esm).sort())
 assert(Object.keys(baseline).every(key => key in atlas))
 assert.equal(Object.keys(atlas).length, 142)
@@ -43,7 +48,8 @@ try { assert.deepEqual(atlas.parsePage(atlas.serializePage(page)), baseline.pars
 finally { globalThis.Date = RealDate }
 const markup = (api, loader) => loader('react-dom/server').renderToStaticMarkup(loader('react').createElement(api.AtlasWebBuilderProvider, { blocks: api.baseBlocks }, loader('react').createElement(api.AtlasWebRenderer, { page })))
 assert.equal(markup(atlas, require), markup(baseline, oldRequire))
-const result = { exports: 142, previousExportsPreserved: 140, capabilities: 1, blockMetadataIdentical: true, rendererSsrByteIdentical: true, jsonIdentical: true, stableArtifactSha256: expected }
-mkdirSync('.artifacts/phase-1', { recursive: true })
-writeFileSync('.artifacts/phase-1/compatibility.json', JSON.stringify(result, null, 2))
+const result = { version: atlas.version, react: require('react').version, exports: 142, previousExportsPreserved: 140, capabilities: 1, blockMetadataIdentical: true, rendererSsrByteIdentical: true, jsonIdentical: true, stableArtifactSha256: expected }
+const output = process.env.ATLAS_COMPAT_OUTPUT || '.artifacts/phase-1/compatibility.json'
+mkdirSync(resolve(output, '..'), { recursive: true })
+writeFileSync(output, JSON.stringify(result, null, 2))
 console.log(JSON.stringify(result, null, 2))

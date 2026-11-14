@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AtlasWebBuilderEditor, baseBlocks, defaultTheme, editorControls } from '../../src/index.js'
+import { AtlasWebBuilderEditor, baseBlocks, defaultTheme, editorControls, getVersion } from '../../src/index.js'
 import { useEditorStoreInstance } from '../../src/editor/store/EditorStoreProvider.jsx'
 import { EditorAppearanceProvider } from '../../src/editor/ui/EditorAppearance.jsx'
 
@@ -32,6 +32,7 @@ function App() {
 }
 window.atlasTest = { page: () => editorStore.getState().page, saved: () => saved, reopen: () => reopen(), history: () => editorStore.temporal.getState().pastStates.length }
 window.atlasReactVersion = React.version
+window.atlasApiVersion = getVersion()
 function ControlGallery() {
   const [values, setValues] = useState({ family: 'first', length: '12px', amount: 20, enabled: false, color: '#315dec' })
   const change = key => value => setValues(previous => ({ ...previous, [key]: value }))

@@ -84,7 +84,7 @@ importers:
 
   examples/playground:
     dependencies:
-      '@racoondevs/atlas-web-builder':
+      '@raulbellosom/atlas-web-builder':
         specifier: workspace:*
         version: link:../..
       react:
