@@ -35,6 +35,11 @@ try {
   await expect(page.locator('[data-block-id="blk_heading"]')).toContainText('Guardado desde la prueba LAN')
   assert.equal(await page.evaluate(() => localStorage.getItem('atlas-playground-0.5.0-page')), '{invalid')
   assert.equal(await page.locator('body').evaluate(node => node.scrollWidth > innerWidth), false)
+  // The test bench footer follows the editor appearance (it stayed white in dark mode before 1.2).
+  await page.getByRole('button', { name: 'Más acciones', exact: true }).tap()
+  await page.getByRole('menuitemradio', { name: 'Oscuro', exact: true }).tap()
+  await expect(page.locator('.pg-shell')).toHaveAttribute('data-theme', 'dark')
+  assert.equal(await page.locator('.pg-bench').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(11, 12, 16)')
   assert.deepEqual(errors, [])
   assert.deepEqual(external, [])
   for (const path of ['.env', '.git/HEAD', '.artifacts/releases/0.5.0/pack.json']) {

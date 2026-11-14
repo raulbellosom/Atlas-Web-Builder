@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Ilustración de estrategia">
+  <rect width="640" height="360" fill="#ede9fe"/>
+  <g fill="none" stroke="#5b3df5" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M110 270 230 180 320 220 450 110 530 140"/>
+  </g>
+  <g fill="#5b3df5"><circle cx="230" cy="180" r="16"/><circle cx="320" cy="220" r="16"/><circle cx="450" cy="110" r="16"/></g>
+  <rect x="110" y="292" width="420" height="10" rx="5" fill="#c4b5fd"/>
+</svg>
