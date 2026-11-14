@@ -1,0 +1,62 @@
+{
+  "sourceSha": "b90ed0ce5481ed25be5e01695c4ca824f064ff2b",
+  "version": "0.5.1",
+  "tarballSha256": "72aa0e0dc8307d1bc6231e68adb0b75ae8624619fbb7b71a9d52e821929ac098",
+  "files": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "dist/atlas-web-builder.cjs",
+    "dist/atlas-web-builder.cjs.map",
+    "dist/atlas-web-builder.js",
+    "dist/atlas-web-builder.js.map",
+    "dist/style.css",
+    "docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md",
+    "docs/releases/0.3.5-provenance.md",
+    "docs/releases/0.4.0-migration.md",
+    "docs/releases/0.5.0-migration.md",
+    "docs/releases/0.5.1-migration.md",
+    "package.json"
+  ],
+  "fileSha256": {
+    "CHANGELOG.md": "abd16dad2249464fd18193398bde02964d5fc0a996a1967e60ff9bbefbcd18d0",
+    "LICENSE": "1d06fcfdd1ea006820ec2b72fd329ce5857ba17996e983259d5dc2b7dc5210c4",
+    "README.md": "8f4834e3e42ba8a23df05ab8be782f0a25868eacaadf1279bd2ae3a66aa7b7bc",
+    "dist/atlas-web-builder.cjs": "7e5bb4fe7ac3b1fa99925e80c3190a09f75a4976b8aa979835e39205d58fdcca",
+    "dist/atlas-web-builder.cjs.map": "e9a93a78cd038a13320def8efc5c1f4f084ef70874fffb95d4d836dbfef8926e",
+    "dist/atlas-web-builder.js": "034b8901b667ec731d3865f222537db247e8b463f0a609d549e5e129b1be85b4",
+    "dist/atlas-web-builder.js.map": "d6dcbd02d9eb0e5d24df5e7b44d753b20cf930f21b3e6a4ed03684ed30043348",
+    "dist/style.css": "fe57ec473e887799e6f72eafdc06860668669b5ba39bcbfc23c8afcaaeaef9fe",
+    "docs/contracts/WEBSITE_EDITOR_CAPABILITIES_V1.md": "f0d8b6c91b6ae8291807473b20e23c47298946c1b82d54d41906807dbb0f3d20",
+    "docs/releases/0.3.5-provenance.md": "28affa5983c921a2bdcb3041ea37e757108c1b5c116d31561c4219a2fd530817",
+    "docs/releases/0.4.0-migration.md": "fc3c64464a4173667c6aa986f58f2faaeb75a80a52fdbb8e66f20c808a53552e",
+    "docs/releases/0.5.0-migration.md": "7bcb36c9f8cfa76753f1d30e5ea03618f1237bdfc58a6580703337bc01dcbb16",
+    "docs/releases/0.5.1-migration.md": "545f3c89e863e49500f05c964c5d73ea8246e8e9ba1206e3b037e22122c3ad54",
+    "package.json": "21846718c2eb759232c3eade77f577bfc7322082782bec145b247ec8f9f0a211"
+  },
+  "cssSha256": "fe57ec473e887799e6f72eafdc06860668669b5ba39bcbfc23c8afcaaeaef9fe",
+  "consumers": [
+    {
+      "react": "18.3.1",
+      "version": "0.5.1",
+      "exports": 142,
+      "previousExportsPreserved": 140,
+      "capabilities": 1,
+      "blockMetadataIdentical": true,
+      "rendererSsrByteIdentical": true,
+      "jsonIdentical": true,
+      "stableArtifactSha256": "988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2"
+    },
+    {
+      "react": "19.3.0",
+      "version": "0.5.1",
+      "exports": 142,
+      "previousExportsPreserved": 140,
+      "capabilities": 1,
+      "blockMetadataIdentical": true,
+      "rendererSsrByteIdentical": true,
+      "jsonIdentical": true,
+      "stableArtifactSha256": "988739086c54ecb2e50843f5738a66008db38ec528f3d23df5eb20071c73c9c2"
+    }
+  ]
+}

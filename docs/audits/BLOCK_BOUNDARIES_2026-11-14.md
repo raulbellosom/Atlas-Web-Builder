@@ -1,6 +1,6 @@
 # Delimitaciones de bloques — 14 de noviembre de 2026
 
-Corregido en la fuente de Atlas; pendiente de publicar y adoptar en los consumidores.
+Publicado en Atlas 0.5.1; pendiente de adoptar en los consumidores. Véase el [registro de publicación](../releases/ATLAS_0_5_1_RELEASE.md).
 
 Las líneas anteriores usaban un `outline` interior en el wrapper del bloque. Los fondos de sus hijos podían pintarse encima. Además, `.atlas-wb-block:hover` tenía más prioridad que `.atlas-wb-block--selected`, por lo que el hover atenuaba la selección. El escalado del lienzo reducía también el grosor visible.
 
@@ -28,4 +28,4 @@ También pasaron 9 unitarios de editor/apariencia/renderer, ESLint del component
 
 La prueba limpia la barra contextual entre casos a zoom muy reducido, porque puede cubrir un bloque pequeño; no cambia su comportamiento. Las mediciones de posición se hacen relativas al canvas para distinguir desplazamiento de layout del scroll automático del navegador.
 
-No se modificaron el renderer público, permisos, sandbox, contratos ni dependencias. No se publicó un paquete ni se actualizó el Atlas 0.5.0 instalado en Hub/ERP: esos consumidores necesitan adoptar una nueva distribución con este cambio; JavaScript y CSS deben proceder de la misma versión. No hubo push ni despliegue. Pendiente la comprobación en iPhone físico.
+No se modificaron el renderer público, permisos, sandbox, contratos ni dependencias. La corrección inicial no publicó un paquete. Posteriormente se publicó 0.5.1 por solicitud del propietario; el Atlas 0.5.0 instalado en Hub/ERP no se actualizó. Esos consumidores necesitan adoptar la nueva distribución; JavaScript y CSS deben proceder de la misma versión. No hubo push ni despliegue. Pendiente la comprobación en iPhone físico.
