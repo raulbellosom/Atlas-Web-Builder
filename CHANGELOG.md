@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3
+
+- La versión pública se deriva de package.json y se recompila al empaquetar. Corrige la constante desactualizada incluida en 0.6.2; los consumidores deben adoptar 0.6.3.
+
 ## 0.6.2
 
 - Footer admite imagen de logo, nombre opcional, texto adicional, tamaño, distribución, separación y enlace de marca. Conserva columnas, copyright, variantes y el interruptor para ocultar toda la marca.

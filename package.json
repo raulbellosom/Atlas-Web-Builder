@@ -1,6 +1,6 @@
 {
   "name": "@raulbellosom/atlas-web-builder",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "React-first, controlled website composer for Atlas ERP and reusable React projects.",
   "license": "MIT",
   "author": "raulbellosom",
@@ -46,6 +46,7 @@
     "dev": "vite build --watch",
     "playground:lan": "node scripts/playground-lan.mjs",
     "build": "vite build",
+    "prepack": "pnpm build",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "format": "prettier --write \"src/**/*.{js,jsx,css,md}\"",
     "test": "vitest run",
