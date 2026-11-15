@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
-import { Globe, GripVertical, LayoutTemplate, Lock, Pencil, X } from 'lucide-react'
+import { Files, Globe, GripVertical, Images, Layers, LayoutTemplate, Lock, Pencil, Shapes, X } from 'lucide-react'
 import { IconButton } from '../ui/OverlayControls.jsx'
 import { useDialogFocus, usePanelInert } from '../ui/EditorAppearance.jsx'
 import { LayersPanel } from './LayersPanel.jsx'
@@ -285,39 +285,20 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
   return (
     <aside ref={panelRef} tabIndex={-1} className="atlas-wb-panel atlas-wb-panel--left" aria-label={es.leftPanel.blocks}>
       <div className="atlas-wb-panel__heading"><strong>Biblioteca</strong><IconButton icon={X} onClick={onClose} label="Cerrar biblioteca" tooltip={false} /></div>
-      <div className="atlas-wb-panel__tabs" role="tablist" aria-label="Biblioteca" onKeyDown={onTabListKeyDown} tabIndex={-1}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'blocks'}
-          className={clsx('atlas-wb-panel__tab', tab === 'blocks' && 'atlas-wb-panel__tab--active')}
-          onClick={() => setTab('blocks')}
-        >
-          {es.leftPanel.blocks}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'templates'}
-          className={clsx(
-            'atlas-wb-panel__tab',
-            tab === 'templates' && 'atlas-wb-panel__tab--active',
-          )}
-          onClick={() => setTab('templates')}
-        >
-          {es.leftPanel.templates}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'pages'}
-          className={clsx('atlas-wb-panel__tab', tab === 'pages' && 'atlas-wb-panel__tab--active')}
-          onClick={() => setTab('pages')}
-        >
-          {es.leftPanel.pages}
-        </button>
-        <button type="button" role="tab" aria-selected={tab === 'layers'} className={clsx('atlas-wb-panel__tab', tab === 'layers' && 'atlas-wb-panel__tab--active')} onClick={() => setTab('layers')}>Capas</button>
-        {assets ? <button type="button" role="tab" aria-selected={tab === 'media'} className={clsx('atlas-wb-panel__tab', tab === 'media' && 'atlas-wb-panel__tab--active')} onClick={() => setTab('media')}>Medios</button> : null}
+      {/* Icon over a short label: five text tabs do not fit the panel width. */}
+      <div className="atlas-wb-panel__tabs atlas-wb-panel__tabs--stacked" role="tablist" aria-label="Biblioteca" onKeyDown={onTabListKeyDown} tabIndex={-1}>
+        {[
+          ['blocks', es.leftPanel.blocks, Shapes],
+          ['templates', es.leftPanel.templates, LayoutTemplate],
+          ['pages', es.leftPanel.pages, Files],
+          ['layers', 'Capas', Layers],
+          ...(assets ? [['media', 'Medios', Images]] : []),
+        ].map(([id, label, Icon]) => (
+          <button key={id} type="button" role="tab" aria-selected={tab === id} className={clsx('atlas-wb-panel__tab', tab === id && 'atlas-wb-panel__tab--active')} onClick={() => setTab(id)}>
+            <Icon aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
       </div>
       <div className="atlas-wb-panel__body">
         {tab === 'blocks'    && <BlocksTab onInserted={compact ? onClose : undefined} />}

@@ -291,6 +291,11 @@
   border-radius: 2px 2px 0 0;
   background: transparent;
 }
+.atlas-wb-panel__tabs--stacked { gap: 0; padding: 0 4px; }
+.atlas-wb-panel__tabs--stacked .atlas-wb-panel__tab { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 50px; padding: 4px 1px; font-size: 10.5px; }
+.atlas-wb-panel__tabs--stacked .atlas-wb-panel__tab svg { width: 16px; height: 16px; flex-shrink: 0; }
+.atlas-wb-panel__tabs--stacked .atlas-wb-panel__tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.atlas-wb-panel__tabs--stacked .atlas-wb-panel__tab::after { left: 6px; right: 6px; }
 .atlas-wb-panel__tab:hover:not(.atlas-wb-panel__tab--active) { color: var(--awb-panel-fg); }
 .atlas-wb-panel__tab--active { color: var(--awb-panel-fg); }
 .atlas-wb-panel__tab--active::after { background: var(--awb-accent); }
