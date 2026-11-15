@@ -7,6 +7,7 @@
 - El campo de imagen del inspector también acepta miniaturas arrastradas desde Medios.
 - `AssetSource` admite, de forma opcional, `list({ query, cursor })` con respuesta `{ items, next }`, `resolve(asset)` para convertir lo listado en el asset que guarda el bloque y `thumbnailUrl` en cada item. Las fuentes que devuelven un arreglo y no implementan `resolve` siguen funcionando igual.
 - La selección en el selector de medios es asíncrona (pasa por `resolve`).
+- Las pestañas del panel izquierdo muestran ícono y etiqueta corta para que quepan las cinco.
 
 ## 0.6.3
 
