@@ -7,9 +7,11 @@
 // CSS side-effect import so Vite emits `dist/style.css` for the
 // `@raulbellosom/atlas-web-builder/styles` sub-path export.
 import './styles/editor.css'
+import './styles/elements.css'
+export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, elementStylePresets } from './blocks/index.js'
 
 /** Package version. Kept in lockstep with package.json. */
-export const version = '0.5.1'
+export const version = '0.6.0-dev.1'
 
 /**
  * @returns {string}

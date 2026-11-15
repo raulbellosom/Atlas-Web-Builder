@@ -28,6 +28,9 @@ import { FooterBlock } from './FooterBlock.jsx'
 import { VideoBlock } from './VideoBlock.jsx'
 import { CounterBlock } from './CounterBlock.jsx'
 import { TypewriterBlock } from './TypewriterBlock.jsx'
+import { elementBlocks } from './elements/ElementBlocks.jsx'
+export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock } from './elements/ElementBlocks.jsx'
+export { elementStylePresets } from './elements/design.js'
 
 export {
   SectionBlock,
@@ -61,6 +64,7 @@ export {
  * @type {import('../registry/createBlockRegistry.js').BlockDefinition[]}
  */
 export const baseBlocks = [
+  ...elementBlocks,
   // Navigation
   NavbarBlock,
   FooterBlock,
@@ -92,6 +96,7 @@ export const baseBlocks = [
  * Spanish labels for each category surfaced by the base library.
  */
 export const baseBlockCategories = {
+  elements: 'Elementos de diseño',
   navigation: 'Navegación',
   hero: 'Hero',
   layout: 'Diseño',

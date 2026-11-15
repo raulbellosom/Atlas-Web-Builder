@@ -67,8 +67,18 @@ export const NavbarBlock = defineBlock({
     sticky: false,
     showBrandName: true,
     mobileBreakpoint: '768px',
+    submenuTrigger: 'hover',
+    submenuAlignment: 'start',
+    mobileCollapse: 'responsive',
+    mobileMenuStyle: 'dropdown',
+    menuAnimation: 'fade',
   },
   fields: {
+    submenuTrigger: { type: 'select', label: 'Abrir submenús', options: [{value:'hover',label:'Al pasar o enfocar'},{value:'click',label:'Con un clic'}] },
+    submenuAlignment: { type: 'select', label: 'Alinear submenús', options: [{value:'start',label:'Al inicio'},{value:'end',label:'Al final'}] },
+    mobileCollapse: { type: 'select', label: 'Colapsar navegación', options: [{value:'responsive',label:'Según el ancho'},{value:'always',label:'Siempre'},{value:'never',label:'Nunca'}] },
+    mobileMenuStyle: { type: 'select', label: 'Presentación del menú móvil', options: [{value:'dropdown',label:'Desplegable'},{value:'drawer',label:'Panel lateral'},{value:'fullscreen',label:'Pantalla completa'}] },
+    menuAnimation: { type: 'select', label: 'Transición de submenús', options: [{value:'none',label:'Sin transición'},{value:'fade',label:'Desvanecer'},{value:'slide',label:'Deslizar'}] },
     variant: { type: 'select', label: 'Estilo', options: VARIANTS },
     brand: { type: 'text', label: 'Nombre de marca' },
     logoSrc: { type: 'image', label: 'Logo (opcional)' },
@@ -142,6 +152,7 @@ export const NavbarBlock = defineBlock({
     },
   },
   groups: [
+    { label: 'Comportamiento', fields: ['submenuTrigger','submenuAlignment','mobileCollapse','mobileMenuStyle','menuAnimation'] },
     { label: 'Marca', fields: ['brand', 'logoSrc', 'logoHeight', 'showBrandName'] },
     { label: 'Navegación', fields: ['links', 'ctaLabel', 'ctaHref', 'ctaVariant'] },
     { label: 'Estilo', fields: ['variant', 'sticky', 'height', 'maxWidth', 'paddingX', 'mobileBreakpoint'] },
@@ -164,9 +175,21 @@ function NavbarView({
     paddingX,
     sticky,
     mobileBreakpoint,
+    submenuTrigger = 'hover', submenuAlignment = 'start', mobileCollapse = 'responsive', mobileMenuStyle = 'dropdown', menuAnimation = 'fade',
   }) {
     const bp = BREAKPOINTS.includes(mobileBreakpoint) ? mobileBreakpoint : '768px'
     const [open, setOpen] = useState(false)
+    const [activeSubmenu, setActiveSubmenu] = useState(null)
+    function submenuKey(event,index) {
+      if (event.key === 'Escape' && activeSubmenu === index) {
+        event.preventDefault(); event.stopPropagation(); setActiveSubmenu(null)
+        event.currentTarget.ownerDocument.getElementById(`${menuId}-toggle-${index}`)?.focus()
+      } else if (event.key === 'ArrowDown' && event.currentTarget.tagName === 'BUTTON') {
+        event.preventDefault(); setActiveSubmenu(index)
+        const owner=event.currentTarget.ownerDocument
+        requestAnimationFrame(() => owner.getElementById(`${menuId}-submenu-${index}`)?.querySelector('a')?.focus())
+      }
+    }
     const menuId = useId()
     const btnRef = useRef(null)
     const menuRef = useRef(null)
@@ -229,6 +252,11 @@ function NavbarView({
       <nav
         className={`atlas-nb-nav atlas-nb-bp-${parseInt(bp, 10)}`}
         data-open={open ? 'true' : 'false'}
+        data-submenu-trigger={submenuTrigger === 'click' ? 'click' : 'hover'}
+        data-submenu-align={submenuAlignment === 'end' ? 'end' : 'start'}
+        data-collapse={['always','never'].includes(mobileCollapse) ? mobileCollapse : 'responsive'}
+        data-menu-style={['drawer','fullscreen'].includes(mobileMenuStyle) ? mobileMenuStyle : 'dropdown'}
+        data-menu-animation={['none','slide'].includes(menuAnimation) ? menuAnimation : 'fade'}
         style={{
           background: bg,
           borderBottom: `1px solid ${border}`,
@@ -236,6 +264,7 @@ function NavbarView({
           top: sticky ? 0 : undefined,
           zIndex: sticky ? 100 : undefined,
           backdropFilter: variant === 'transparent' ? 'blur(12px)' : undefined,
+          '--atlas-nav-height': `${navH}px`,
         }}
         aria-label="Navegación principal"
       >
@@ -293,6 +322,11 @@ function NavbarView({
                   <li
                     key={i}
                     className={`atlas-nb-item${hasChildren ? ' atlas-nb-item--parent' : ''}`}
+                    data-submenu-open={activeSubmenu === i ? 'true' : 'false'}
+                    onMouseEnter={() => { if (submenuTrigger !== 'click' && hasChildren) setActiveSubmenu(i) }}
+                    onMouseLeave={event => { if (submenuTrigger !== 'click' && !event.currentTarget.contains(event.currentTarget.ownerDocument.activeElement)) setActiveSubmenu(null) }}
+                    onFocus={event => { if (submenuTrigger !== 'click' && hasChildren && event.target === event.currentTarget.querySelector('.atlas-nb-link')) setActiveSubmenu(i) }}
+                    onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setActiveSubmenu(null) }}
                   >
                     <a
                       href={safeHref}
@@ -312,7 +346,14 @@ function NavbarView({
                     </a>
 
                     {hasChildren && (
+                      <button type="button" id={`${menuId}-toggle-${i}`} className="atlas-nb-submenu-toggle" aria-label={`Submenú de ${link.label}`}
+                        aria-expanded={activeSubmenu === i} aria-controls={`${menuId}-submenu-${i}`}
+                        style={{color:fgMuted}} onClick={() => setActiveSubmenu(activeSubmenu === i ? null : i)}
+                        onKeyDown={event => submenuKey(event,i)}>⌄</button>
+                    )}
+                    {hasChildren && (
                       <ul
+                        id={`${menuId}-submenu-${i}`}
                         className="atlas-nb-dropdown atlas-nb-dropdown-list"
                         style={{ background: dropdownBg, color: dropdownFg }}
                       >
@@ -321,6 +362,7 @@ function NavbarView({
                             <a
                               href={isSafeHref(child.href) ? child.href : '#'}
                               className="atlas-nb-dropdown-link"
+                              onKeyDown={event => submenuKey(event,i)}
                             >
                               {child.label}
                             </a>

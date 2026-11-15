@@ -1,6 +1,6 @@
 {
   "name": "@raulbellosom/atlas-web-builder",
-  "version": "0.5.1",
+  "version": "0.6.0-dev.1",
   "description": "React-first, controlled website composer for Atlas ERP and reusable React projects.",
   "license": "MIT",
   "author": "raulbellosom",
@@ -39,7 +39,8 @@
     "docs/releases/0.3.5-provenance.md",
     "docs/releases/0.4.0-migration.md",
     "docs/releases/0.5.0-migration.md",
-    "docs/releases/0.5.1-migration.md"
+    "docs/releases/0.5.1-migration.md",
+    "docs/releases/0.6.0-migration.md"
   ],
   "scripts": {
     "dev": "vite build --watch",

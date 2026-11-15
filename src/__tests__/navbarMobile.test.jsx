@@ -6,6 +6,22 @@ import { NavbarBlock } from '../blocks/index.js'
 const Nav = (props) => NavbarBlock.render({ ...NavbarBlock.defaultProps, ...props })
 
 describe('NavbarBlock mobile menu', () => {
+  it('opens click submenus with their own disclosure button and closes with Escape', () => {
+    const { container } = render(<Nav submenuTrigger="click" links={'Servicios | /servicios\n  Consulta | /consulta'} mobileCollapse="always" mobileMenuStyle="drawer" />)
+    const button = screen.getByRole('button', { name: 'Submenú de Servicios' })
+    expect(button.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.mouseEnter(button.closest('li'))
+    expect(button.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(button)
+    expect(button.getAttribute('aria-expanded')).toBe('true')
+    const dropdown = document.getElementById(button.getAttribute('aria-controls'))
+    expect(dropdown.textContent).toContain('Consulta')
+    fireEvent.keyDown(dropdown.querySelector('a'), { key: 'Escape' })
+    expect(button.getAttribute('aria-expanded')).toBe('false')
+    expect(document.activeElement).toBe(button)
+    expect(container.querySelector('nav').dataset.collapse).toBe('always')
+    expect(container.querySelector('nav').dataset.menuStyle).toBe('drawer')
+  })
   it('toggles aria-expanded and links the button to the menu', () => {
     const { container } = render(<Nav />)
     const btn = screen.getByRole('button', { name: 'Abrir menú' })

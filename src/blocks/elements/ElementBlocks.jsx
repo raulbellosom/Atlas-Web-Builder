@@ -1,0 +1,71 @@
+import { defineBlock } from '../../registry/createBlockRegistry.js'
+import { designFields, designGroups, typographyFields, elementSurfaceStyle } from './design.js'
+const field = (label,options) => ({ type:'select',label,options })
+const safeHref = value => typeof value === 'string' && value.length <= 2048 && /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i.test(value) && !Array.from(value).some(c => c.charCodeAt(0) <= 32 || c.charCodeAt(0) === 127) ? value : '#'
+const finite = (value,min,max,fallback) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback
+
+const layouts = ['row','column','grid']
+function layoutVariables(props) {
+  const variables = {}
+  for (const prefix of ['', 'tablet', 'mobile']) {
+    const key = name => prefix ? `${prefix}${name[0].toUpperCase()}${name.slice(1)}` : name
+    const layout = props[key('layout')], columns = props[key('columns')]
+    if (layouts.includes(layout)) {
+      variables[`--ae-${prefix || 'desktop'}-display`] = layout === 'grid' ? 'grid' : 'flex'
+      variables[`--ae-${prefix || 'desktop'}-direction`] = layout === 'row' ? 'row' : 'column'
+    }
+    if (Number.isInteger(columns) && columns >= 1 && columns <= 12) variables[`--ae-${prefix || 'desktop'}-columns`] = `repeat(${columns}, minmax(0, 1fr))`
+  }
+  variables['--ae-gap'] = `${finite(props.gap,0,128,16)}px`
+  variables['--ae-align'] = ['start','center','end','stretch'].includes(props.align) ? props.align : 'stretch'
+  variables['--ae-justify'] = ['start','center','end','space-between','space-around'].includes(props.justify) ? props.justify : 'start'
+  return variables
+}
+function element(definition) {
+  return defineBlock({ category:'elements', kind:'element', ...definition,
+    defaultProps:{stylePreset:'none',widthMode:'auto',...definition.defaultProps},
+    fields:{...definition.fields,...designFields}, groups:[...definition.groups,...designGroups] })
+}
+export const BoxBlock = element({
+  type:'BoxBlock',label:'Contenedor libre',icon:'layout',slots:{children:{}},
+  defaultProps:{widthMode:'fill',layout:'column',columns:2,gap:16,mobileLayout:'column',mobileColumns:1},
+  fields:{layout:field('Distribución',['row','column','grid']),columns:{type:'number',label:'Columnas',min:1,max:12},
+    gap:{type:'number',label:'Separación (px)',min:0,max:128},align:field('Alinear elementos',['start','center','end','stretch']),
+    justify:field('Distribuir espacio',['start','center','end','space-between','space-around']),
+    tabletLayout:field('Distribución en tableta',['inherit',...layouts]),tabletColumns:{type:'number',label:'Columnas en tableta',min:1,max:12},
+    mobileLayout:field('Distribución en móvil',['inherit',...layouts]),mobileColumns:{type:'number',label:'Columnas en móvil',min:1,max:12}},
+  groups:[{label:'Composición',fields:['layout','columns','gap','align','justify']},{label:'Adaptación por pantalla',fields:['tabletLayout','tabletColumns','mobileLayout','mobileColumns']}],
+  render:props=><div className="atlas-element-box" style={{position:'relative',...elementSurfaceStyle(props,props.ctx),...layoutVariables(props)}}>
+    <div className="atlas-element-layout">{props.ctx.slot('children')}</div>
+  </div>,
+})
+export const TextElementBlock = element({
+  type:'TextElementBlock',label:'Texto libre',icon:'text',defaultProps:{text:'Escribe tu texto',tag:'p'},
+  fields:{text:{type:'textarea',label:'Texto'},tag:field('Etiqueta',['p','span','h1','h2','h3','h4']),...typographyFields},
+  groups:[{label:'Contenido',fields:['text','tag']},{label:'Tipografía',fields:Object.keys(typographyFields)}],
+  render:({ctx,...props})=>{
+    const Tag=['p','span','h1','h2','h3','h4'].includes(props.tag)?props.tag:'p'
+    return <Tag className="atlas-element-text" style={{margin:0,whiteSpace:'pre-wrap',...elementSurfaceStyle(props,ctx)}}>{ctx.inlineText?ctx.inlineText({propName:'text',value:props.text,as:'span',multiline:true}):props.text}</Tag>
+  },
+})
+function linkElement(type,label,preset,decoration) {
+  return element({type,label,icon:'button',defaultProps:{label,href:'#',stylePreset:preset},
+    fields:{label:{type:'text',label:'Texto'},href:{type:'link',label:'Destino'},newTab:{type:'toggle',label:'Abrir en otra pestaña'},...typographyFields},
+    groups:[{label:'Contenido',fields:['label','href','newTab']},{label:'Tipografía',fields:Object.keys(typographyFields)}],
+    render:({ctx,...props})=><a className="atlas-element-link" href={safeHref(props.href)} target={props.newTab?'_blank':undefined} rel={props.newTab?'noopener noreferrer':undefined}
+      style={{display:'inline-flex',alignItems:'center',justifyContent:'center',textDecoration:decoration,...elementSurfaceStyle(props,ctx)}}>{ctx.inlineText?ctx.inlineText({propName:'label',value:props.label,as:'span'}):props.label}</a>})
+}
+export const LinkElementBlock=linkElement('LinkElementBlock','Enlace','none','underline')
+export const ButtonElementBlock=linkElement('ButtonElementBlock','Botón libre','pill','none')
+export const ImageElementBlock=element({
+  type:'ImageElementBlock',label:'Imagen libre',icon:'image',defaultProps:{src:'',alt:'',widthMode:'fill',fit:'cover'},
+  fields:{src:{type:'image',label:'Imagen'},alt:{type:'text',label:'Descripción accesible'},fit:field('Ajuste de imagen',['cover','contain']),
+    imageHeight:{type:'number',label:'Alto de imagen (px)',min:1,max:4000}},
+  groups:[{label:'Contenido',fields:['src','alt','fit','imageHeight']}],
+  render:({ctx,...props})=>{
+    const src=typeof props.src==='string'&&/^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|webp|gif);base64,)/i.test(props.src)?props.src:''
+    const style={display:'block',maxWidth:'100%',height:finite(props.imageHeight,1,4000,'auto'),objectFit:props.fit==='contain'?'contain':'cover',...elementSurfaceStyle(props,ctx)}
+    return src?<img src={src} alt={props.alt||''} style={style}/>:<div role="img" aria-label={props.alt||'Imagen sin seleccionar'} style={{minHeight:100,...style}}>Selecciona una imagen</div>
+  },
+})
+export const elementBlocks=[BoxBlock,TextElementBlock,ButtonElementBlock,LinkElementBlock,ImageElementBlock]

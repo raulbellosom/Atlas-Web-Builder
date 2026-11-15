@@ -6,7 +6,9 @@ This document is the canonical reference for the architecture of `@raulbellosom/
 
 A React-first, controlled website composer designed to be embedded in Atlas ERP and reused in any React project. Inspired by Odoo's controlled UX, Puck's JSON tree model, Craft.js's selection ergonomics, and Webstudio's instance model.
 
-The builder is **not** a free-form HTML/CSS editor. Developers register polished blocks, templates, resources, and actions; users compose pages by choosing templates, sections, and safe controlled props.
+The 0.6 development candidate evolves the builder into an element composer: users arrange individual containers, text, images, links and buttons, customize their styles and responsive layouts, and optionally use complete sections. Developers can still register React components, templates, resources and actions. Existing section-based documents remain supported.
+
+The initial implementation uses typed design fields and a reusable preset catalog. It does not yet import author-supplied React bundles, implement a universal CSS editor or provide direct coordinate dragging. Those require their own portable contracts and execution boundary; registering trusted components in a host is a separate capability from shipping code inside a template.
 
 ## Non-goals
 

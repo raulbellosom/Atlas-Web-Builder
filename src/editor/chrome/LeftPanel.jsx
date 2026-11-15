@@ -12,17 +12,32 @@ import { es } from '../i18n/es.js'
 import { BlockIcon } from './BlockIcon.jsx'
 import { newId } from '../../utils/id.js'
 import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
+import { findParent } from '../../utils/tree.js'
 
 /** A single draggable palette item. On narrow screens a tap inserts directly. */
 function PaletteItem({ def, onInserted }) {
   const insertBlock = useEditorStore(state => state.insertBlock)
   const activeRegion = useEditorStore(state => state.activeRegion)
+  const page = useEditorStore(state => state.page)
+  const selectedId = useEditorStore(state => state.selectedId)
+  const { blocks: registry } = useBuilder()
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
     id: `palette:${def.type}`, data: { source: 'palette', blockType: def.type, label: def.label || def.type, defaultProps: def.defaultProps },
   })
   return <div ref={setNodeRef} className={clsx('atlas-wb-palette__item', isDragging && 'atlas-wb-palette__item--dragging')}>
     <button type="button" className="atlas-wb-palette__insert" aria-label={`Insertar ${def.label || def.type}`}
-      onClick={() => { insertBlock(def.type, def, { regionName: activeRegion || 'main' }); onInserted?.() }}>
+      onClick={() => {
+        let target = { regionName: activeRegion || 'main' }
+        if (def.kind === 'element' && selectedId) {
+          const selected = page.blocks[selectedId], selectedDef = selected && registry.get(selected.type)
+          if (selectedDef?.slots?.children) target = { parentId: selectedId, slotName: 'children' }
+          else {
+            const location = findParent(page, selectedId)
+            if (location?.kind === 'slot') target = { parentId: location.parentBlockId, slotName: location.slotName, index: location.index + 1 }
+          }
+        }
+        insertBlock(def.type, def, target); onInserted?.()
+      }}>
       <BlockIcon def={def} /><span className="atlas-wb-palette__name">{def.label || def.type}</span>
     </button>
     <button ref={setActivatorNodeRef} type="button" className="atlas-wb-drag-handle" {...attributes} {...listeners} aria-label={`Arrastrar ${def.label || def.type}`}><GripVertical /></button>
@@ -30,6 +45,7 @@ function PaletteItem({ def, onInserted }) {
 }
 
 const CATEGORY_LABELS = {
+  elements: 'Elementos de diseño',
   navigation: 'Navegación',
   hero: 'Hero',
   layout: 'Diseño',
@@ -42,18 +58,22 @@ const CATEGORY_LABELS = {
 
 function BlocksTab({ onInserted }) {
   const { blocks } = useBuilder()
-  const [query, setQuery] = useState('')
   const allDefs = blocks.list()
+  const [query, setQuery] = useState('')
+  const [kind, setKind] = useState(() => allDefs.some(def => def.kind === 'element') ? 'elements' : 'all')
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return allDefs
-    return allDefs.filter(
+    const hasElements = allDefs.some(def => def.kind === 'element')
+    const isElement = def => def.kind === 'element' || (!hasElements && ['ButtonBlock','HeadingBlock','TextBlock','RichTextBlock','ImageBlock','SpacerBlock','DividerBlock'].includes(def.type))
+    const definitions = allDefs.filter(def => kind === 'all' || (kind === 'elements' ? isElement(def) : !isElement(def)))
+    if (!q) return definitions
+    return definitions.filter(
       (d) =>
         (d.label || d.type).toLowerCase().includes(q) ||
         (d.category || '').toLowerCase().includes(q),
     )
-  }, [allDefs, query])
+  }, [allDefs, query, kind])
 
   if (!allDefs.length) {
     return <p className="atlas-wb-empty">No hay bloques registrados.</p>
@@ -68,6 +88,9 @@ function BlocksTab({ onInserted }) {
 
   return (
     <div className="atlas-wb-palette">
+      <div className="atlas-wb-panel__tabs" role="group" aria-label="Catálogo de construcción">
+        {[['all','Todos'],['elements','Elementos'],['sections','Secciones']].map(([value,label])=><button key={value} type="button" className={clsx('atlas-wb-panel__tab',kind===value&&'atlas-wb-panel__tab--active')} aria-pressed={kind===value} onClick={()=>setKind(value)}>{label}</button>)}
+      </div>
       <input
         type="search"
         className="atlas-wb-palette__search"

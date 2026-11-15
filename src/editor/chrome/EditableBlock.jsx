@@ -8,6 +8,7 @@ import { es } from '../i18n/es.js'
 import { useCallback, useRef } from 'react'
 import { BlockToolbar } from './BlockToolbar.jsx'
 import { ArrowDown, ArrowUp, Copy, GripVertical, Trash2 } from 'lucide-react'
+import { elementItemStyle } from '../../blocks/elements/design.js'
 
 /**
  * Wraps a single block instance with editor chrome: selection outline,
@@ -41,7 +42,8 @@ export function EditableBlock({
     id: blockId,
     data: { source: 'block', blockId, parentId, slotName, regionName, label: blockLabel },
   })
-  const style = { transform: CSS.Transform.toString(transform), transition }
+  const itemStyle = def?.kind === 'element' ? elementItemStyle({...def.defaultProps,...block.props}) : {}
+  const style = { ...itemStyle, transform: [CSS.Transform.toString(transform),itemStyle.transform].filter(Boolean).join(' ') || undefined, transition }
   const elementRef = useRef(null)
   const setElement = useCallback(node => { elementRef.current = node; setNodeRef(node) }, [setNodeRef])
 

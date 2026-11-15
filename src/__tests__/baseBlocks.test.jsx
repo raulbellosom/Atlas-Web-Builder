@@ -35,7 +35,7 @@ function makePage(blocks) {
 describe('baseBlocks', () => {
   it('exposes the base block definitions in the expected order', () => {
     expect(baseBlocks.length).toBeGreaterThanOrEqual(20)
-    expect(baseBlocks.map((b) => b.type).slice(0, 18)).toEqual([
+    expect(baseBlocks.filter(b => b.kind !== 'element').map((b) => b.type).slice(0, 18)).toEqual([
       'NavbarBlock',
       'FooterBlock',
       'HeroBlock',

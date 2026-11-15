@@ -5,7 +5,7 @@
 function isSafeHref(value) {
   if (typeof value !== 'string') return false
   if (value === '') return true
-  return /^(https?:|mailto:|tel:|\/)/i.test(value)
+  return value.length <= 2048 && /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i.test(value) && !Array.from(value).some(c => c.charCodeAt(0) <= 32 || c.charCodeAt(0) === 127)
 }
 
 export function LinkField({ value, onChange, label, spec }) {
@@ -23,7 +23,7 @@ export function LinkField({ value, onChange, label, spec }) {
       />
       {!safe ? (
         <span style={{ color: 'var(--awb-danger)', fontSize: 11 }}>
-          Enlace no permitido (usa https://, mailto:, tel: o /ruta).
+          Enlace no permitido (usa https://, mailto:, tel:, /ruta o #ancla).
         </span>
       ) : null}
     </label>

@@ -2,6 +2,9 @@
 
 Editor visual de páginas web para React. Inspirado en Puck, Webstudio y Plasmic — completamente propio, MIT, sin dependencias de SaaS.
 
+El candidato 0.6 agrega composición por elementos individuales, estilos iniciales
+y navbar configurable. Consulta [alcance, compatibilidad y migración](docs/releases/0.6.0-migration.md).
+
 ---
 
 ## Contenido
