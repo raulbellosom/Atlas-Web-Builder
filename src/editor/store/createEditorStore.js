@@ -135,7 +135,7 @@ export function createEditorStore(initial = {}) {
         },
 
         // ---- Mutations (tracked by undo/redo) ---------------------------
-        insertBlock(type, def, target) {
+        insertBlock(type, def, target, initialProps = {}) {
           const region =
             target && target.regionName ? target.regionName : get().activeRegion || 'main'
           const effective =
@@ -145,7 +145,7 @@ export function createEditorStore(initial = {}) {
           let newBlockId = null
           set((state) => ({
             page: produce(state.page, (draft) => {
-              const insertArgs = { type, defaultProps: (def && def.defaultProps) || {} }
+              const insertArgs = { type, defaultProps: { ...def?.defaultProps, ...initialProps } }
               if (effective.parentId && effective.slotName) {
                 newBlockId = insertBlockInSlot(draft, insertArgs, effective)
               } else {
@@ -169,6 +169,14 @@ export function createEditorStore(initial = {}) {
               draft.updatedAt = new Date().toISOString()
             }),
           }))
+        },
+        resetBlockProps(id, keys) {
+          set(state=>({page:produce(state.page,draft=>{
+            const block=draft.blocks[id]
+            if(!block)return
+            for(const key of keys)delete block.props[key]
+            draft.updatedAt=new Date().toISOString()
+          })}))
         },
         removeBlock(id) {
           set((state) => {

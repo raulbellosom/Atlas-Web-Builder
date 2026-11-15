@@ -8,7 +8,9 @@ import { es } from '../i18n/es.js'
 import { useCallback, useRef } from 'react'
 import { BlockToolbar } from './BlockToolbar.jsx'
 import { ArrowDown, ArrowUp, Copy, GripVertical, Trash2 } from 'lucide-react'
-import { elementItemStyle } from '../../blocks/elements/design.js'
+import { elementOuterStyle } from '../../blocks/elements/design.js'
+import {FreeTransformControls} from './FreeTransformControls.jsx'
+import {resolveGeometry,resolveElementLayout} from '../../blocks/elements/geometry.js'
 
 /**
  * Wraps a single block instance with editor chrome: selection outline,
@@ -25,6 +27,7 @@ export function EditableBlock({
   mode = 'edit',
 }) {
   const selectedId = useEditorStore((s) => s.selectedId)
+  const device = useEditorStore((s) => s.device)
   const select = useEditorStore((s) => s.select)
   const removeBlock = useEditorStore((s) => s.removeBlock)
   const duplicateBlock = useEditorStore((s) => s.duplicateBlock)
@@ -37,13 +40,15 @@ export function EditableBlock({
   const block = blocks[blockId]
   const def = block && registry ? registry.get(block.type) : null
   const blockLabel = def ? (def.label || def.type) : (block ? block.type : blockId)
+  const parentBlock=blocks[parentId],parentDefinition=parentBlock&&registry.get(parentBlock.type)
+  const free=def?.kind==='element'&&(resolveGeometry({...def.defaultProps,...block.props},device).position==='absolute'||resolveElementLayout({...parentDefinition?.defaultProps,...parentBlock?.props},device)==='free')
 
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: blockId,
     data: { source: 'block', blockId, parentId, slotName, regionName, label: blockLabel },
   })
-  const itemStyle = def?.kind === 'element' ? elementItemStyle({...def.defaultProps,...block.props}) : {}
-  const style = { ...itemStyle, transform: [CSS.Transform.toString(transform),itemStyle.transform].filter(Boolean).join(' ') || undefined, transition }
+  const itemStyle = def?.kind === 'element' ? elementOuterStyle({...def.defaultProps,...block.props}) : {}
+  const style = def?.kind === 'element' ? {...itemStyle,'--ae-dnd-transform':CSS.Transform.toString(transform)||'translate(0px,0px)',transition} : {transform:CSS.Transform.toString(transform),transition}
   const elementRef = useRef(null)
   const setElement = useCallback(node => { elementRef.current = node; setNodeRef(node) }, [setNodeRef])
 
@@ -61,6 +66,7 @@ export function EditableBlock({
       data-atlas-inline-editing={inlineEditingHere ? 'true' : undefined}
       className={clsx(
         'atlas-wb-block',
+        def?.kind === 'element' && 'atlas-element-item',
         index === 0 && 'atlas-wb-block--first',
         isSelected && 'atlas-wb-block--selected',
         isDragging && 'atlas-wb-block--dragging',
@@ -132,6 +138,7 @@ export function EditableBlock({
         </BlockToolbar>
       ) : null}
 
+      {isSelected&&def?.kind==='element'&&def.fields.mobilePosition&&(!parentId||blocks[parentId]?.type==='BoxBlock')&&<FreeTransformControls key={device} blockId={blockId} definition={def} elementRef={elementRef} device={device} label={blockLabel} free={!!parentId&&free}/>}
       <BlockRenderer blockId={blockId} blocks={blocks} mode={mode} />
     </div>
   )

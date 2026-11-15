@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0-dev.2 — candidato local
+
+- Movimiento libre y tamaño con tiradores, anclajes y geometría independiente por pantalla; ajuste a bordes/centro del contenedor, cancelación y una acción de deshacer por gesto.
+- Distribución Libre y colocación desde la paleta en el punto de caída. El redimensionado adaptable conserva el flujo; las posiciones se transportan como props declarativas en Website v2.
+- Verificación del destino con el puntero real y tiradores adaptados al tamaño/zoom del elemento. Se conserva el editor claro/oscuro/sistema.
+- Sin publicación ni despliegue. Alcance y controles en la [guía de migración](docs/releases/0.6.0-migration.md).
+
 ## 0.6.0-dev.1 — candidato local
 
 - Composición por elementos individuales con contenedores anidados flex/grid, texto, botón, enlace e imagen; estilos iniciales y controles de diseño compartidos.

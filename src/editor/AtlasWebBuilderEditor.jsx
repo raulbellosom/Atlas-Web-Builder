@@ -33,8 +33,10 @@ import { assertEditorCapabilities, EditorCapabilitiesContext } from './capabilit
 import { EditorAppearanceProvider, EditorPortal, useEditorAppearance } from './ui/EditorAppearance.jsx'
 import { useWorkspaceLayout } from './ui/useWorkspaceLayout.js'
 import { MobileTools } from './chrome/MobileTools.jsx'
-import { editorCollisionDetection } from './dnd/collision.js'
+import { editorCollisionDetection, pointerDropTarget } from './dnd/collision.js'
 import { editorDndAccessibility } from './dnd/accessibility.js'
+import {elementCoordinateSpace} from './dnd/coordinates.js'
+import {geometryPatch,resolveElementLayout,offsetsForRect} from '../blocks/elements/geometry.js'
 
 const unrestrictedCapabilities = Object.freeze({})
 
@@ -53,6 +55,7 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
 
   const store = useEditorStoreInstance()
   const page = useEditorStore((s) => s.page)
+  const device = useEditorStore((s) => s.device)
   const storeTheme = useEditorStore((s) => s.theme)
   const insertBlock = useEditorStore((s) => s.insertBlock)
   const moveBlockTo = useEditorStore((s) => s.moveBlockTo)
@@ -66,6 +69,27 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   const guardPreviewLinks = useMemo(() => createLinkGuard(onLinkClick), [onLinkClick])
   const [previewActive, setPreviewActive] = useState(false)
   const [dragLabel, setDragLabel] = useState(null)
+  const dragPointer=useRef(null)
+  useEffect(()=>{
+    const owner=scopeRef.current?.ownerDocument
+    if(!owner)return
+    const track=event=>{
+      if(!dragPointer.current)return
+      const source=event.touches?.[0]??event.changedTouches?.[0]??event
+      if(Number.isFinite(source.clientX))dragPointer.current={x:source.clientX,y:source.clientY}
+    }
+    const options={capture:true,passive:true}
+    owner.addEventListener('mousemove',track,options)
+    owner.addEventListener('mouseup',track,options)
+    owner.addEventListener('touchmove',track,options)
+    owner.addEventListener('touchend',track,options)
+    return()=>{
+      owner.removeEventListener('mousemove',track,true)
+      owner.removeEventListener('mouseup',track,true)
+      owner.removeEventListener('touchmove',track,true)
+      owner.removeEventListener('touchend',track,true)
+    }
+  },[scopeRef])
   // leftClosed / rightClosed: false = panel visible, true = panel hidden.
   // On mobile (≤960px) panels default to closed; CSS turns them into overlays.
   const isMobile = compact
@@ -146,6 +170,8 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   // ----- DnD handlers ------------------------------------------------------
   const handleDragStart = useCallback(
     (event) => {
+      const source=event.activatorEvent?.touches?.[0]??event.activatorEvent
+      dragPointer.current=Number.isFinite(source?.clientX)?{x:source.clientX,y:source.clientY}:null
       const data = event.active.data.current
       if (!data) return
       if (data.source === 'palette') {
@@ -215,21 +241,35 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
     (event) => {
       setDragLabel(null)
       const { active, over } = event
-      if (!over) return
+      const pointer=dragPointer.current
+      dragPointer.current=null
+      if (!over&&!pointer) return
       const activeData = active.data.current
-      const overData = over.data.current
+      const overData = over?.data.current
       if (!activeData) return
 
       // Palette → Canvas
       if (activeData.source === 'palette') {
         const def = registry.get(activeData.blockType)
         if (!def) return
-        const target = resolveTarget(overData, over.id) || { regionName: 'main' }
-        insertBlock(activeData.blockType, def, target)
+        const target = pointer?pointerDropTarget(scopeRef.current,pointer,page):resolveTarget(overData, over?.id)||{regionName:'main'}
+        if(!target)return
+        let initialProps={}
+        const parent=page.blocks[target.parentId],parentDefinition=parent&&registry.get(parent.type)
+        if(def.kind==='element'&&def.fields.mobilePosition&&parent?.type==='BoxBlock'&&resolveElementLayout({...parentDefinition?.defaultProps,...parent.props},device)==='free'){
+          const slot=[...scopeRef.current.querySelectorAll('[data-parent]')].find(node=>node.dataset.parent===parent.id&&node.dataset.slot===target.slotName)
+          const surface=slot?.closest('.atlas-element-layout'),space=surface&&elementCoordinateSpace(surface)
+          const point=space&&pointer?space.point(pointer.x,pointer.y):{x:0,y:0}
+          initialProps=geometryPatch({position:'absolute',anchorX:'left',anchorY:'top',widthMode:'fixed',width:200,
+            ...offsetsForRect({x:Math.max(0,point.x),y:Math.max(0,point.y),width:200,height:100},{width:surface?.clientWidth??0,height:surface?.clientHeight??0},{anchorX:'left',anchorY:'top'}),
+            ...(def.type==='BoxBlock'?{heightMode:'fixed',height:160}:{})},device)
+        }
+        insertBlock(activeData.blockType, def, target,initialProps)
         return
       }
 
       // Template → Canvas
+      if(!over)return
       if (activeData.source === 'template') {
         const tpl = templateRegistry && templateRegistry.get(activeData.templateId)
         if (!tpl) return
@@ -249,7 +289,7 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         moveBlockTo(activeData.blockId, target)
       }
     },
-    [registry, templateRegistry, insertBlock, moveBlockTo, applyTemplateAction, resolveTarget, page],
+    [registry, templateRegistry, insertBlock, moveBlockTo, applyTemplateAction, resolveTarget, page,device,scopeRef],
   )
 
   // ----- Preview mode bypasses chrome --------------------------------------
@@ -287,7 +327,7 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
       collisionDetection={editorCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setDragLabel(null)}
+      onDragCancel={() => {dragPointer.current=null;setDragLabel(null)}}
     >
       <ThemeProvider
         theme={storeTheme}

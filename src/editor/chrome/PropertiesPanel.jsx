@@ -8,6 +8,8 @@ import { PropertyField as FieldRow } from './PropertyField.jsx'
 import { partitionGroups } from './propertyGroups.js'
 import { BlockIcon } from './BlockIcon.jsx'
 import { es } from '../i18n/es.js'
+import {ResponsiveGeometry} from './ResponsiveGeometry.jsx'
+import {geometryKeys,geometryKey} from '../../blocks/elements/geometry.js'
 
 function CollapseSection({ label, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -65,7 +67,9 @@ export function PropertiesPanel() {
       : {}
 
   const allFields = { ...variantField, ...fields }
-  const entries = Object.entries(allFields)
+  const responsive=def.kind==='element'&&!!fields.mobilePosition
+  const geometryFields=new Set(responsive?['desktop','tablet','mobile'].flatMap(device=>geometryKeys.map(key=>geometryKey(key,device))):[])
+  const entries = Object.entries(allFields).filter(([key])=>!geometryFields.has(key))
 
 
   const sections = partitionGroups(entries, def.groups)
@@ -83,6 +87,8 @@ export function PropertiesPanel() {
         <span className="atlas-wb-props__header-label">{def.label || def.type}</span>
         <span className="atlas-wb-props__header-type">{def.type}</span>
       </div>
+
+      {responsive&&<CollapseSection label="Posición y tamaño por pantalla" defaultOpen={false}><ResponsiveGeometry block={block} definition={def}/></CollapseSection>}
 
       {/* Field sections */}
       {sections.map((section, i) =>

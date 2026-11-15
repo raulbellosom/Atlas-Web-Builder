@@ -1,3 +1,4 @@
+import {geometryKeys,geometryKey,geometryVariables} from './geometry.js'
 const select = (label, options) => ({ type: 'select', label, options })
 const number = (label, min, max) => ({ type: 'number', label, min, max })
 export const elementStylePresets = Object.freeze({
@@ -11,7 +12,9 @@ export const elementStylePresets = Object.freeze({
 
 export const designFields = {
   stylePreset: select('Estilo inicial', Object.entries(elementStylePresets).map(([value, preset]) => ({ value, label: preset.label }))),
-  widthMode: select('Ancho', [{ value: 'auto', label: 'Contenido' }, { value: 'fill', label: 'Llenar espacio' }, { value: 'fixed', label: 'Medida fija' }]),
+  widthMode: select('Ancho', [{ value: 'auto', label: 'Contenido' }, { value: 'fill', label: 'Llenar espacio' }, { value: 'fixed', label: 'Medida fija' }, {value:'percent',label:'Porcentaje'}]),
+  widthPercent: number('Ancho (%)',1,100),
+  heightMode: select('Alto',[{value:'auto',label:'Contenido'},{value:'fixed',label:'Medida fija'}]),height:number('Alto fijo (px)',1,4000),
   width: number('Ancho fijo (px)', 1, 4000), maxWidth: number('Ancho máximo (px)', 0, 4000),
   minHeight: number('Alto mínimo (px)', 0, 4000),
   paddingTop: number('Espacio interior superior', 0, 256), paddingRight: number('Espacio interior derecho', 0, 256),
@@ -22,9 +25,12 @@ export const designFields = {
   borderColor: { type: 'color', label: 'Color del borde' }, borderWidth: number('Grosor del borde', 0, 16),
   cornerRadius: number('Radio de las esquinas', 0, 200),
   position: select('Posición', [{ value: 'flow', label: 'En el flujo' }, { value: 'relative', label: 'Relativa' }, { value: 'absolute', label: 'Superpuesta' }, { value: 'sticky', label: 'Adherida' }]),
+  anchorX:select('Anclaje horizontal',[{value:'left',label:'Izquierda'},{value:'center',label:'Centro'},{value:'right',label:'Derecha'}]),
+  anchorY:select('Anclaje vertical',[{value:'top',label:'Arriba'},{value:'center',label:'Centro'},{value:'bottom',label:'Abajo'}]),
   offsetX: number('Desplazamiento horizontal (px)', -2000, 4000), offsetY: number('Desplazamiento vertical (px)', -2000, 4000),
   layer: number('Orden de capa', 0, 100), rotation: number('Rotación (grados)', -180, 180),
 }
+for(const device of ['tablet','mobile'])for(const key of geometryKeys)designFields[geometryKey(key,device)]={...designFields[key],label:`${designFields[key].label} · ${device==='tablet'?'Tableta':'Teléfono'}`}
 export const typographyFields = {
   fontSize: number('Tamaño del texto (px)', 8, 200), fontWeight: select('Peso del texto', ['400','500','600','700','800','900']),
   lineHeight: { ...number('Interlineado', 0.8, 3), step: 0.1 },
@@ -53,9 +59,9 @@ export function elementItemStyle(props) {
 }
 export function elementSurfaceStyle(props, ctx) {
   const style = { boxSizing: 'border-box', ...elementStylePresets[props.stylePreset]?.style,
-    ...(ctx?.mode === 'edit' ? { width: '100%' } : elementItemStyle(props)) }
+    ...(ctx?.mode === 'edit' ? { width: '100%',height:'100%' } : elementOuterStyle(props)) }
   for (const [key,min,max] of [['paddingTop',0,256],['paddingRight',0,256],['paddingBottom',0,256],['paddingLeft',0,256],
-    ['minHeight',0,4000],['fontSize',8,200],['lineHeight',0.8,3]]) {
+    ['fontSize',8,200],['lineHeight',0.8,3]]) {
     const value = numeric(props,key,min,max)
     if (value !== undefined) style[key] = value
   }
@@ -68,6 +74,14 @@ export function elementSurfaceStyle(props, ctx) {
   if (typographyFields.fontWeight.options.includes(props.fontWeight)) style.fontWeight = props.fontWeight
   if (typographyFields.textAlign.options.includes(props.textAlign)) style.textAlign = props.textAlign
   return style
+}
+// Geometry belongs to the editable wrapper in edit mode and to the element in public mode.
+export const elementClass=(ctx,name='')=>`${name} atlas-element-surface${ctx?.mode==='edit'?'':' atlas-element-item'}`.trim()
+export function elementOuterStyle(props) {
+  const style=elementItemStyle(props)
+  for(const key of ['width','flex','position','left','top','transform'])delete style[key]
+  if(!(props.maxWidth>0))delete style.maxWidth
+  return {...style,...geometryVariables(props)}
 }
 
 export const designGroups = [

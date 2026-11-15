@@ -1,4 +1,21 @@
 import { closestCenter, pointerWithin, rectIntersection } from '@dnd-kit/core'
+import {findParent} from '../../utils/tree.js'
+
+export function pointerDropTarget(scope,point,page) {
+  const elements=scope.ownerDocument.elementsFromPoint(point.x,point.y)
+  for(const element of elements){
+    if(!scope.contains(element))continue
+    const target=element.closest('[data-parent][data-slot], [data-region], [data-block-id]')
+    if(!target||!scope.contains(target))continue
+    if(target.dataset.parent&&target.dataset.slot)return {parentId:target.dataset.parent,slotName:target.dataset.slot}
+    if(target.dataset.region)return {regionName:target.dataset.region}
+    const block=page.blocks[target.dataset.blockId]
+    if(block?.type==='BoxBlock')return {parentId:block.id,slotName:'children'}
+    const location=findParent(page,target.dataset.blockId)
+    if(location)return location.kind==='slot'?{parentId:location.parentBlockId,slotName:location.slotName,index:location.index}:{regionName:location.regionName,index:location.index}
+  }
+  return null
+}
 
 /** Prefer the deepest hit under the finger; intersections also handle keyboard
  * movement between differently sized, scaled blocks without selecting the origin. */

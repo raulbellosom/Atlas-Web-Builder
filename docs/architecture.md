@@ -8,7 +8,7 @@ A React-first, controlled website composer designed to be embedded in Atlas ERP 
 
 The 0.6 development candidate evolves the builder into an element composer: users arrange individual containers, text, images, links and buttons, customize their styles and responsive layouts, and optionally use complete sections. Developers can still register React components, templates, resources and actions. Existing section-based documents remain supported.
 
-The initial implementation uses typed design fields and a reusable preset catalog. It does not yet import author-supplied React bundles, implement a universal CSS editor or provide direct coordinate dragging. Those require their own portable contracts and execution boundary; registering trusted components in a host is a separate capability from shipping code inside a template.
+The implementation uses typed design fields and a reusable preset catalog. The dev.2 candidate supports free positioning inside containers, resize handles, anchors and inherited desktop/tablet/phone geometry. It does not yet import author-supplied React bundles or implement a universal CSS editor. Those require their own portable contracts and execution boundary; registering trusted components in a host is a separate capability from shipping code inside a template.
 
 ## Non-goals
 
