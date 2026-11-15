@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { defineBlock } from '../registry/createBlockRegistry.js'
 import { colorVar, fontSizeVar } from './_tokens.js'
+import {BrandIdentity,brandIdentityFields,brandIdentityHref} from './elements/BrandIdentity.jsx'
 
 const VARIANTS = [
   { value: 'light', label: 'Claro' },
@@ -66,6 +67,7 @@ export const NavbarBlock = defineBlock({
     paddingX: '24px',
     sticky: false,
     showBrandName: true,
+    logoAlt: '',tagline:'',brandDirection:'row',brandGap:8,brandHref:'/',
     mobileBreakpoint: '768px',
     submenuTrigger: 'hover',
     submenuAlignment: 'start',
@@ -74,6 +76,7 @@ export const NavbarBlock = defineBlock({
     menuAnimation: 'fade',
   },
   fields: {
+    ...brandIdentityFields,
     submenuTrigger: { type: 'select', label: 'Abrir submenús', options: [{value:'hover',label:'Al pasar o enfocar'},{value:'click',label:'Con un clic'}] },
     submenuAlignment: { type: 'select', label: 'Alinear submenús', options: [{value:'start',label:'Al inicio'},{value:'end',label:'Al final'}] },
     mobileCollapse: { type: 'select', label: 'Colapsar navegación', options: [{value:'responsive',label:'Según el ancho'},{value:'always',label:'Siempre'},{value:'never',label:'Nunca'}] },
@@ -153,7 +156,7 @@ export const NavbarBlock = defineBlock({
   },
   groups: [
     { label: 'Comportamiento', fields: ['submenuTrigger','submenuAlignment','mobileCollapse','mobileMenuStyle','menuAnimation'] },
-    { label: 'Marca', fields: ['brand', 'logoSrc', 'logoHeight', 'showBrandName'] },
+    { label: 'Marca', fields: Object.keys(brandIdentityFields) },
     { label: 'Navegación', fields: ['links', 'ctaLabel', 'ctaHref', 'ctaVariant'] },
     { label: 'Estilo', fields: ['variant', 'sticky', 'height', 'maxWidth', 'paddingX', 'mobileBreakpoint'] },
   ],
@@ -166,6 +169,7 @@ function NavbarView({
     logoSrc,
     logoHeight,
     showBrandName,
+    logoAlt,tagline,brandDirection,brandGap,brandHref='/',
     links,
     ctaLabel,
     ctaHref,
@@ -213,10 +217,7 @@ function NavbarView({
 
     const parsedLinks = parseLinks(links)
     const safeCta = isSafeHref(ctaHref) ? ctaHref : '#'
-    const safeLogo =
-      typeof logoSrc === 'string' && /^(https?:|\/|data:image\/)/i.test(logoSrc) ? logoSrc : ''
     const navH = Number(height) || 64
-    const lH = Number(logoHeight) || 32
 
     const isDark = variant === 'dark' || variant === 'primary'
     const bg =
@@ -281,34 +282,17 @@ function NavbarView({
         >
           {/* Brand */}
           <a
-            href="/"
+            href={brandIdentityHref(brandHref)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 8,
               textDecoration: 'none',
               flexShrink: 0,
+              fontFamily:'var(--atlas-font-sans)',fontWeight:800,fontSize:fontSizeVar('lg'),color:fg,
             }}
           >
-            {safeLogo ? (
-              <img
-                src={safeLogo}
-                alt={brand || 'Logo'}
-                style={{ height: lH, width: 'auto', objectFit: 'contain' }}
-              />
-            ) : null}
-            {showBrandName !== false && brand ? (
-              <span
-                style={{
-                  fontFamily: 'var(--atlas-font-sans)',
-                  fontWeight: 800,
-                  fontSize: fontSizeVar('lg'),
-                  color: fg,
-                }}
-              >
-                {brand}
-              </span>
-            ) : null}
+            <BrandIdentity {...{brand,logoSrc,logoAlt,logoHeight,showBrandName,tagline,brandDirection,brandGap}}/>
           </a>
 
           {/* Nav links with optional dropdown support */}

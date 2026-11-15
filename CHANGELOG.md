@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1
+
+- Elemento básico Logo y marca: imagen sin recorte, nombre opcional, texto adicional, disposición horizontal/vertical, separación y enlace. Mantiene los controles de estilo y geometría por pantalla.
+- Navbar comparte esa presentación y agrega texto adicional, descripción accesible, separación, distribución y enlace de marca. Conserva las páginas anteriores de texto o logo.
+- Se exportan BrandIdentity y sus campos/defaults para que los navbar del host utilicen el mismo contrato. Los consumidores deben conservar los catálogos históricos y adoptar el catálogo nuevo junto con el paquete.
+
 ## 0.6.0
 
 - Publicación de la composición por elementos y geometría responsive validada en dev.2, sin cambios del esquema Page v1.

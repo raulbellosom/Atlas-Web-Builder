@@ -29,7 +29,7 @@ import { VideoBlock } from './VideoBlock.jsx'
 import { CounterBlock } from './CounterBlock.jsx'
 import { TypewriterBlock } from './TypewriterBlock.jsx'
 import { elementBlocks } from './elements/ElementBlocks.jsx'
-export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock } from './elements/ElementBlocks.jsx'
+export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, LogoElementBlock } from './elements/ElementBlocks.jsx'
 export { elementStylePresets } from './elements/design.js'
 
 export {
@@ -135,3 +135,5 @@ export const commerceBlocks = [
   CartBlock,
   CheckoutSummaryBlock,
 ]
+
+export { BrandIdentity, brandIdentityFields, brandIdentityDefaults, brandIdentityHref } from './elements/BrandIdentity.jsx'

@@ -1,5 +1,6 @@
 import { defineBlock } from '../../registry/createBlockRegistry.js'
 import { designFields, designGroups, typographyFields, elementSurfaceStyle, elementClass } from './design.js'
+import {BrandIdentity,brandIdentityDefaults,brandIdentityFields} from './BrandIdentity.jsx'
 const field = (label,options) => ({ type:'select',label,options })
 const safeHref = value => typeof value === 'string' && value.length <= 2048 && /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i.test(value) && !Array.from(value).some(c => c.charCodeAt(0) <= 32 || c.charCodeAt(0) === 127) ? value : '#'
 const finite = (value,min,max,fallback) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback
@@ -69,4 +70,9 @@ export const ImageElementBlock=element({
     return src?<img className={elementClass(ctx)} src={src} alt={props.alt||''} style={style}/>:<div className={elementClass(ctx)} role="img" aria-label={props.alt||'Imagen sin seleccionar'} style={style}>Selecciona una imagen</div>
   },
 })
-export const elementBlocks=[BoxBlock,TextElementBlock,ButtonElementBlock,LinkElementBlock,ImageElementBlock]
+export const LogoElementBlock=element({
+  type:'LogoElementBlock',label:'Logo y marca',icon:'image',defaultProps:{...brandIdentityDefaults,fontSize:24,fontWeight:'700'},
+  fields:{...brandIdentityFields,...typographyFields},groups:[{label:'Marca',fields:Object.keys(brandIdentityFields)},{label:'Tipografía',fields:Object.keys(typographyFields)}],
+  render:({ctx,...props})=><a className={elementClass(ctx,'atlas-element-brand')} href={safeHref(props.brandHref)} style={{display:'inline-flex',alignItems:'center',fontFamily:'var(--atlas-font-sans)',textDecoration:'none',color:'inherit',...elementSurfaceStyle(props,ctx)}}><BrandIdentity {...props}/></a>,
+})
+export const elementBlocks=[BoxBlock,TextElementBlock,ButtonElementBlock,LinkElementBlock,ImageElementBlock,LogoElementBlock]

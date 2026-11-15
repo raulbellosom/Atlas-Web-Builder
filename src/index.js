@@ -8,10 +8,10 @@
 // `@raulbellosom/atlas-web-builder/styles` sub-path export.
 import './styles/editor.css'
 import './styles/elements.css'
-export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, elementStylePresets } from './blocks/index.js'
+export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, LogoElementBlock, elementStylePresets } from './blocks/index.js'
 
 /** Package version. Kept in lockstep with package.json. */
-export const version = '0.6.0'
+export const version = '0.6.1'
 
 /**
  * @returns {string}
@@ -191,3 +191,5 @@ export {
   localStorageAdapter,
   useCart,
 } from './commerce/index.js'
+
+export { BrandIdentity, brandIdentityFields, brandIdentityDefaults, brandIdentityHref } from './blocks/index.js'
