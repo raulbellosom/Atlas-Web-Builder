@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- Publicación de la composición por elementos y geometría responsive validada en dev.2, sin cambios del esquema Page v1.
+- Contenedores libres/adaptables, texto, botones, enlaces e imágenes; movimiento, tamaño, anclajes, herencia por pantalla y controles de navbar.
+- Mantiene todas las exportaciones públicas anteriores. Los consumidores deben adoptar el paquete y el catálogo 0.6.0 juntos; el catálogo histórico 0.3.5 se conserva.
+- Alcance, límites y migración en la [guía](docs/releases/0.6.0-migration.md).
+
 ## 0.6.0-dev.2 — candidato local
 
 - Movimiento libre y tamaño con tiradores, anclajes y geometría independiente por pantalla; ajuste a bordes/centro del contenedor, cancelación y una acción de deshacer por gesto.
