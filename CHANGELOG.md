@@ -3,7 +3,7 @@
 ## 0.7.0
 
 - Pestaña **Medios** en el panel izquierdo cuando el host da un `AssetSource`: buscador, subida (botón o soltar archivos), "Cargar más" y miniaturas arrastrables.
-- Soltar una miniatura (o un archivo del escritorio) sobre un bloque con imagen la reemplaza; con un bloque con imagen seleccionado, un clic en la miniatura hace lo mismo (teclado y táctil). Los bloques sin campo de imagen dejan pasar la acción al bloque que los contiene.
+- Soltar una miniatura (o un archivo del escritorio) sobre un bloque con imagen la reemplaza; con un bloque con imagen seleccionado, un clic en la miniatura hace lo mismo (teclado y táctil). Los bloques sin campo de imagen dejan pasar la acción al bloque que los contiene. En bloques con varias imágenes (galerías) se llena el primer espacio vacío; si todos están llenos, se reemplaza el primero.
 - El campo de imagen del inspector también acepta miniaturas arrastradas desde Medios.
 - `AssetSource` admite, de forma opcional, `list({ query, cursor })` con respuesta `{ items, next }`, `resolve(asset)` para convertir lo listado en el asset que guarda el bloque y `thumbnailUrl` en cada item. Las fuentes que devuelven un arreglo y no implementan `resolve` siguen funcionando igual.
 - La selección en el selector de medios es asíncrona (pasa por `resolve`).

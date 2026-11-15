@@ -18,6 +18,9 @@ describe('asset source helpers', () => {
     expect(assetProps(plain, { url: 'u', width: 10 })).toEqual({ imageSrc: 'u' })
     expect(assetProps(meta, { url: 'u', width: 10, height: 5 })).toMatchObject({ src: 'u', naturalWidth: 10, naturalHeight: 5, dominantColor: '' })
     expect(assetProps({ fields: { text: { type: 'text' } } }, { url: 'u' })).toBeNull()
+    const gallery = { fields: { image1: { type: 'image' }, image2: { type: 'image' } } }
+    expect(assetProps(gallery, { url: 'u' }, { image1: 'a' })).toEqual({ image2: 'u' })
+    expect(assetProps(gallery, { url: 'u' }, { image1: 'a', image2: 'b' })).toEqual({ image1: 'u' })
   })
 })
 

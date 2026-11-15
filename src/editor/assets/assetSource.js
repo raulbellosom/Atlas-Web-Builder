@@ -22,20 +22,24 @@ export async function uploadAsset(assets, file) {
   return assets.upload(file)
 }
 
-/** First top-level image field of a block definition (the one a dropped image replaces). */
-export function imageFieldKey(definition) {
-  return Object.entries(definition?.fields ?? {}).find(([, field]) => field?.type === 'image')?.[0] ?? null
+/**
+ * Image field a dropped image goes to: the first empty one (so galleries fill slot by slot),
+ * otherwise the first. Null when the block has no top-level image field.
+ */
+export function imageFieldKey(definition, props = {}) {
+  const keys = Object.entries(definition?.fields ?? {}).filter(([, field]) => field?.type === 'image').map(([key]) => key)
+  return keys.find((key) => !props[key]) ?? keys[0] ?? null
 }
 
 /** Props patch that puts `asset` into the block's image field, or null when it has none. */
-export function assetProps(definition, asset) {
-  const key = imageFieldKey(definition)
+export function assetProps(definition, asset, current = {}) {
+  const key = imageFieldKey(definition, current)
   if (!key || !asset?.url) return null
-  const props = { [key]: asset.url }
+  const patch = { [key]: asset.url }
   if (definition.fields[key].withAssetMeta) {
-    Object.assign(props, { variants: asset.variants, dominantColor: asset.dominantColor || '', naturalWidth: asset.width, naturalHeight: asset.height })
+    Object.assign(patch, { variants: asset.variants, dominantColor: asset.dominantColor || '', naturalWidth: asset.width, naturalHeight: asset.height })
   }
-  return props
+  return patch
 }
 
 export function isMediaDrag(event) {

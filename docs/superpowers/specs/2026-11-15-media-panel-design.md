@@ -15,7 +15,8 @@ Atlas (generic, any host with an `AssetSource`):
   block has an image field (keyboard and touch path).
 - Canvas: every `EditableBlock` whose definition has an image field accepts a
   dropped thumbnail (`application/x-atlas-asset`) or an image file. The first
-  top-level `type: 'image'` field receives the URL; `withAssetMeta` fields also
+  empty top-level `type: 'image'` field receives the URL (galleries with
+  `image1..n` fill slot by slot), otherwise the first; `withAssetMeta` fields also
   get variants and natural size. Blocks without an image field let the event
   bubble to their parent.
 - Inspector `ImageField` also accepts dropped thumbnails.
@@ -37,8 +38,9 @@ Runly Developer Hub (host, separate repo):
 
 ## Out of scope
 
-- Images inside list fields (galleries, repeated cards) and background images:
-  only the first top-level image field is a drop target.
+- Choosing a specific filled slot by dropping on the canvas (drop on that
+  field in the inspector instead), images inside list fields, and background
+  images.
 - Server-side collection/tag facets for the library.
 
 ## Verification
