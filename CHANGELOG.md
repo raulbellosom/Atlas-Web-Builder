@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.2
+
+- Footer admite imagen de logo, nombre opcional, texto adicional, tamaño, distribución, separación y enlace de marca. Conserva columnas, copyright, variantes y el interruptor para ocultar toda la marca.
+- Se preservan los valores y la apariencia del footer anterior sin imagen.
+
 ## 0.6.1
 
 - Elemento básico Logo y marca: imagen sin recorte, nombre opcional, texto adicional, disposición horizontal/vertical, separación y enlace. Mantiene los controles de estilo y geometría por pantalla.

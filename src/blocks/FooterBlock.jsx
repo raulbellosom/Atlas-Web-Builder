@@ -1,5 +1,6 @@
 import { defineBlock } from '../registry/createBlockRegistry.js'
 import { colorVar, fontSizeVar, spacingVar } from './_tokens.js'
+import { BrandIdentity, brandIdentityDefaults, brandIdentityFields, brandIdentityHref } from './elements/BrandIdentity.jsx'
 
 const VARIANTS = [
   { value: 'light', label: 'Claro' },
@@ -39,6 +40,7 @@ export const FooterBlock = defineBlock({
   category: 'navigation',
   icon: 'footer',
   defaultProps: {
+    ...brandIdentityDefaults,
     variant: 'dark',
     brand: 'Mi sitio',
     tagline: 'Construido con pasión.',
@@ -47,6 +49,7 @@ export const FooterBlock = defineBlock({
     showBrand: true,
   },
   fields: {
+    ...brandIdentityFields,
     variant: { type: 'select', label: 'Variante', options: VARIANTS },
     brand: { type: 'text', label: 'Nombre de marca' },
     tagline: { type: 'text', label: 'Tagline' },
@@ -54,7 +57,7 @@ export const FooterBlock = defineBlock({
     copyright: { type: 'text', label: 'Copyright' },
     showBrand: { type: 'toggle', label: 'Mostrar marca' },
   },
-  render: ({ variant, brand, tagline, columns, copyright, showBrand }) => {
+  render: ({ variant, brand, tagline, columns, copyright, showBrand, ...identity }) => {
     const cols = parseColumns(columns)
     const isDark = variant === 'dark' || variant === 'primary'
     const bg = variant === 'light' ? 'white'
@@ -78,11 +81,11 @@ export const FooterBlock = defineBlock({
             gap: spacingVar('8'),
             marginBottom: spacingVar('12'),
           }}>
-            {showBrand && brand ? (
+            {showBrand && (brand || identity.logoSrc || tagline) ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: spacingVar('3') }}>
-                <span style={{ fontFamily: 'var(--atlas-font-sans)', fontWeight: 800, fontSize: fontSizeVar('xl'), color: fg }}>
-                  {brand}
-                </span>
+                <a href={brandIdentityHref(identity.brandHref)} style={{ fontFamily: 'var(--atlas-font-sans)', fontWeight: 800, fontSize: fontSizeVar('xl'), color: fg, textDecoration: 'none' }}>
+                  <BrandIdentity {...identity} brand={brand}/>
+                </a>
                 {tagline ? (
                   <p style={{ margin: 0, color: fgMuted, fontFamily: 'var(--atlas-font-sans)', fontSize: fontSizeVar('sm'), lineHeight: 1.6 }}>
                     {tagline}
