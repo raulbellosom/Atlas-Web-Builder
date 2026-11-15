@@ -402,6 +402,18 @@ const myTheme = defineTheme({
 
 El editor incluye un modal de medios con tres pestañas: **URL**, **Biblioteca** y **Subir**. Para usar la Biblioteca y Subir debes proporcionar un `AssetSource`.
 
+Con un `AssetSource`, el panel izquierdo muestra además la pestaña **Medios**: las miniaturas se arrastran sobre cualquier bloque con imagen para reemplazarla (también se pueden soltar archivos del escritorio), y con un bloque con imagen seleccionado basta un clic en la miniatura.
+
+Contrato del `AssetSource` (solo `list` es obligatorio):
+
+| Método | Descripción |
+| --- | --- |
+| `list({ query, cursor })` | Arreglo de assets, o `{ items, next }` para paginar. `query` y `cursor` son opcionales. |
+| `upload(file)` / `uploadVariants(file, optimized)` | Sube un archivo y devuelve el asset. |
+| `resolve(asset)` | Opcional. Convierte un asset listado (por ejemplo, solo con miniatura) en el que guarda el bloque (`url`, `variants`, `width`, `height`). |
+
+Cada asset: `{ id, kind: 'image', name, url, thumbnailUrl?, alt?, width?, height?, variants? }`.
+
 ### AssetSource en memoria (desarrollo / demos)
 
 ```jsx

@@ -5,7 +5,10 @@ import { BlockRenderer } from '../../renderer/BlockRenderer.jsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { isMediaDrag, readDraggedAsset } from '../assets/assetSource.js'
+import { useAssetActions } from '../assets/useAssetActions.js'
+import { useOptionalNotifications } from '../notifications/NotificationsProvider.jsx'
 import { BlockToolbar } from './BlockToolbar.jsx'
 import { ArrowDown, ArrowUp, Copy, GripVertical, Trash2 } from 'lucide-react'
 import { elementOuterStyle } from '../../blocks/elements/design.js'
@@ -51,6 +54,32 @@ export function EditableBlock({
   const style = def?.kind === 'element' ? {...itemStyle,'--ae-dnd-transform':CSS.Transform.toString(transform)||'translate(0px,0px)',transition} : {transform:CSS.Transform.toString(transform),transition}
   const elementRef = useRef(null)
   const setElement = useCallback(node => { elementRef.current = node; setNodeRef(node) }, [setNodeRef])
+  // Images dragged from the Medios panel (or the desktop) replace this block's image.
+  // Blocks without an image field let the event bubble to an enclosing one.
+  const media = useAssetActions()
+  const notifications = useOptionalNotifications()
+  const [mediaOver, setMediaOver] = useState(false)
+  const acceptsMedia = mode === 'edit' && media.accepts(blockId)
+  const mediaHandlers = acceptsMedia ? {
+    onDragOver: (e) => {
+      if (!isMediaDrag(e)) return
+      e.preventDefault(); e.stopPropagation()
+      e.dataTransfer.dropEffect = 'copy'
+      setMediaOver(true)
+    },
+    onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setMediaOver(false) },
+    onDrop: (e) => {
+      if (!isMediaDrag(e)) return
+      e.preventDefault(); e.stopPropagation()
+      setMediaOver(false)
+      select(blockId)
+      const asset = readDraggedAsset(e)
+      const file = e.dataTransfer.files?.[0]
+      ;(asset ? media.apply(blockId, asset) : media.applyFile(blockId, file))
+        .then(applied => { if (!applied) notifications?.notify('warning', 'Solo se pueden soltar imágenes en este bloque.') })
+        .catch(error => notifications?.notify('error', error?.message || String(error)))
+    },
+  } : {}
 
   const isSelected = selectedId === blockId
   const index = siblings.indexOf(blockId)
@@ -71,7 +100,9 @@ export function EditableBlock({
         isSelected && 'atlas-wb-block--selected',
         isDragging && 'atlas-wb-block--dragging',
         inlineEditingHere && 'atlas-wb-block--editing',
+        mediaOver && 'atlas-wb-block--media-over',
       )}
+      {...mediaHandlers}
       onClickCapture={(e) => {
         if (e.target.closest('[data-block-id]') !== e.currentTarget) return
         if (inlineEditingHere) return

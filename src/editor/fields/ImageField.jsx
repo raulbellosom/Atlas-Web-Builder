@@ -4,6 +4,7 @@ import { useBuilder } from '../../provider/BuilderContext.js'
 import { AssetPicker } from '../assets/AssetPicker.jsx'
 import { useOptionalEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useEditorCapabilities } from '../capabilities.jsx'
+import { readDraggedAsset, resolveAsset, uploadAsset } from '../assets/assetSource.js'
 
 function isSafeUrl(value) {
   if (typeof value !== 'string') return false
@@ -45,7 +46,7 @@ export function ImageField({ value, onChange, label, spec }) {
     if (canUpload) {
       try {
         setUploading(true)
-        const asset = await assets.upload(file)
+        const asset = await resolveAsset(assets, await uploadAsset(assets, file))
         if (asset?.url) setSrc(asset.url, asset)
       } catch { /* surface nothing — user can use URL tab instead */ }
       finally { setUploading(false) }
@@ -60,6 +61,12 @@ export function ImageField({ value, onChange, label, spec }) {
   function onDrop(e) {
     e.preventDefault()
     setIsDragOver(false)
+    const listed = assets && readDraggedAsset(e)
+    if (listed) {
+      setUploading(true)
+      resolveAsset(assets, listed).then(asset => { if (asset?.url) setSrc(asset.url, asset) }).catch(() => {}).finally(() => setUploading(false))
+      return
+    }
     const file = e.dataTransfer?.files?.[0]
     if (file) handleDroppedFile(file)
   }

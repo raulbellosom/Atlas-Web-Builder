@@ -27,6 +27,11 @@ export function useNotifications() {
   return ctx
 }
 
+/** Same as useNotifications, but null outside the provider (blocks also render in bare canvases). */
+export function useOptionalNotifications() {
+  return useContext(NotificationsContext)
+}
+
 /**
  * Sequential id generator local to the notification system. Stable enough
  * for React keys; we don't need cryptographic randomness here.

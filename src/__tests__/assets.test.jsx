@@ -74,7 +74,7 @@ describe('AssetPicker', () => {
     fireEvent.click(screen.getByRole('tab', { name: /biblioteca/i }))
     await waitFor(() => expect(screen.getByTitle('foto.png')).toBeInTheDocument())
     fireEvent.click(screen.getByTitle('foto.png'))
-    expect(picks).toHaveLength(1)
+    await waitFor(() => expect(picks).toHaveLength(1))
     expect(picks[0].id).toBe('a1')
   })
 
@@ -125,6 +125,6 @@ describe('ImageField + assets', () => {
     fireEvent.click(screen.getByRole('tab', { name: /biblioteca/i }))
     await waitFor(() => expect(screen.getByTitle('x.png')).toBeInTheDocument())
     fireEvent.click(screen.getByTitle('x.png'))
-    expect(last).toBe('https://cdn/x.png')
+    await waitFor(() => expect(last).toBe('https://cdn/x.png'))
   })
 })

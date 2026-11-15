@@ -6,8 +6,8 @@ import { onTabListKeyDown } from '../ui/keyboard.js'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
-import { optimizeImageFile } from '../../media/optimizeImage.js'
 import { useEditorCapabilities } from '../capabilities.jsx'
+import { normalizeAssetList, resolveAsset, uploadAsset } from './assetSource.js'
 
 function isSafeUrl(v) {
   if (typeof v !== 'string' || !v.trim()) return false
@@ -49,8 +49,7 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
   const loadAssets = useCallback(async () => {
     if (!assets) return
     try { setLoading(true); setLibError(null)
-      const list = await assets.list()
-      setItems(Array.isArray(list) ? list : [])
+      setItems(normalizeAssetList(await assets.list()).items)
     } catch (err) { setLibError(err?.message || String(err))
     } finally { setLoading(false) }
   }, [assets])
@@ -72,18 +71,15 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
   async function handleFile(file) {
     if (!file || !canUpload) return
     try { setUploading(true); setUpError(null)
-      let asset
-      if (typeof assets.uploadVariants === 'function') {
-        const optimized = await optimizeImageFile(file)
-        asset = optimized.variants.length
-          ? await assets.uploadVariants(file, optimized)
-          : await assets.upload(file)
-      } else {
-        asset = await assets.upload(file)
-      }
-      if (asset) onPick(asset)
+      const asset = await uploadAsset(assets, file)
+      if (asset) onPick(await resolveAsset(assets, asset))
     } catch (err) { setUpError(err?.message || String(err))
     } finally { setUploading(false) }
+  }
+
+  async function pickListed(asset) {
+    try { setLibError(null); onPick(await resolveAsset(assets, asset)) }
+    catch (err) { setLibError(err?.message || String(err)) }
   }
 
   function onDropZone(e) {
@@ -195,11 +191,11 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
                         role="option"
                         aria-selected={false}
                         className="atlas-wb-media-modal__asset-item"
-                        onClick={() => onPick(a)}
+                        onClick={() => pickListed(a)}
                         title={a.name}
                       >
                         {a.kind === 'image' || !a.kind ? (
-                          <img src={a.url} alt={a.alt || a.name} loading="lazy" />
+                          <img src={a.thumbnailUrl || a.url} alt={a.alt || a.name} loading="lazy" />
                         ) : (
                           <div className="atlas-wb-media-modal__asset-icon"><Film /></div>
                         )}

@@ -13,6 +13,7 @@ import { BlockIcon } from './BlockIcon.jsx'
 import { newId } from '../../utils/id.js'
 import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
 import { findParent } from '../../utils/tree.js'
+import { MediaTab } from '../assets/MediaTab.jsx'
 
 /** A single draggable palette item. On narrow screens a tap inserts directly. */
 function PaletteItem({ def, onInserted }) {
@@ -278,6 +279,7 @@ function PagesTab() {
 
 export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChange: setTab, returnFocusRef }) {
   const panelRef = useRef(null)
+  const { assets } = useBuilder()
   usePanelInert(panelRef, closed)
   useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
@@ -315,11 +317,13 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
           {es.leftPanel.pages}
         </button>
         <button type="button" role="tab" aria-selected={tab === 'layers'} className={clsx('atlas-wb-panel__tab', tab === 'layers' && 'atlas-wb-panel__tab--active')} onClick={() => setTab('layers')}>Capas</button>
+        {assets ? <button type="button" role="tab" aria-selected={tab === 'media'} className={clsx('atlas-wb-panel__tab', tab === 'media' && 'atlas-wb-panel__tab--active')} onClick={() => setTab('media')}>Medios</button> : null}
       </div>
       <div className="atlas-wb-panel__body">
         {tab === 'blocks'    && <BlocksTab onInserted={compact ? onClose : undefined} />}
         {tab === 'templates' && <CapabilityBoundary name="templates"><TemplatesTab onInserted={compact ? onClose : undefined} /></CapabilityBoundary>}
         {tab === 'layers' && <LayersPanel />}
+        {tab === 'media' && assets && <MediaTab />}
         {tab === 'pages'     && <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>}
       </div>
     </aside>

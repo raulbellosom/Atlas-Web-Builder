@@ -566,6 +566,24 @@
 .atlas-wb-block.atlas-wb-block--editing {
   --awb-block-outline: var(--awb-selection);
 }
+.atlas-wb-block.atlas-wb-block--media-over {
+  --awb-block-outline: var(--awb-ring);
+}
+.atlas-wb-block.atlas-wb-block--media-over::after {
+  background: color-mix(in srgb, var(--awb-ring) 14%, transparent);
+}
+
+/* Medios tab of the left panel */
+.atlas-wb-media-tab { display: flex; flex-direction: column; gap: 10px; }
+.atlas-wb-media-tab__hint { margin: 0; font-size: 11px; color: var(--awb-muted); }
+.atlas-wb-media-tab__error { margin: 0; font-size: 12px; color: var(--awb-danger); }
+.atlas-wb-media-tab__drop { border: 1px dashed var(--awb-border); border-radius: var(--awb-radius-sm); padding: 6px; display: flex; justify-content: center; }
+.atlas-wb-media-tab__drop--over { border-color: var(--awb-focus); background: var(--awb-accent-soft); }
+.atlas-wb-media-tab__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px; }
+.atlas-wb-media-tab__item { width: 100%; appearance: none; border: 1px solid var(--awb-border); background: var(--awb-bg); border-radius: var(--awb-radius-sm); padding: 4px; display: flex; flex-direction: column; gap: 4px; font: inherit; color: inherit; cursor: grab; }
+.atlas-wb-media-tab__item:hover, .atlas-wb-media-tab__item:focus-visible { border-color: var(--awb-focus); background: var(--awb-accent-soft); }
+.atlas-wb-media-tab__item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 4px; display: block; }
+.atlas-wb-media-tab__item span { font-size: 10px; color: var(--awb-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 11. Breadcrumb ─────────────────────────────────────────────────────────── */
 .atlas-wb-breadcrumb {
