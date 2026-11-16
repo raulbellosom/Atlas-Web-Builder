@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.2
+
+- El adaptador opcional `pages` del editor muestra y selecciona las páginas gestionadas por el host, sin reemplazar el documento con una página local.
+- La pestaña Plantillas se oculta cuando el host declara `templates: false`. Los editores independientes conservan sus controles.
+
 ## 0.8.1
 
 - Guardar una composición usa un botón y Enter, sin enviar formularios. Funciona dentro de iframes con sandbox sin habilitar allow-forms.

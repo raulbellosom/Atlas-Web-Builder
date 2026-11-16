@@ -27,6 +27,21 @@ function mount(props = {}) {
 }
 
 describe('editor capabilities v1', () => {
+  it('shows host pages without replacing the open document and hides disabled templates', () => {
+    const onSelect = vi.fn()
+    mount({ pages: { items: [{ path: '/', title: 'Inicio' }, { path: '/services', title: 'Servicios' }], activePath: '/', onSelect } })
+    expect(screen.queryByRole('tab', { name: 'Plantillas', exact: true })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Páginas', exact: true }))
+    const navigation = screen.getByRole('navigation', { name: 'Páginas del sitio' })
+    expect(within(navigation).getByRole('button', { name: 'Inicio /' })).toHaveAttribute('aria-current', 'page')
+    fireEvent.click(within(navigation).getByRole('button', { name: 'Inicio /' }))
+    expect(onSelect).not.toHaveBeenCalled()
+    fireEvent.click(within(navigation).getByRole('button', { name: 'Servicios /services' }))
+    expect(onSelect).toHaveBeenCalledWith('/services')
+    expect(store.getState().page).toEqual(page())
+    expect(screen.queryByRole('button', { name: '+ Nueva', exact: true })).not.toBeInTheDocument()
+  })
+
   it('edits a supported field and preserves historical unsupported values on save', () => {
     const save = vi.fn()
     const { container } = mount({ onSaveDraft: save })

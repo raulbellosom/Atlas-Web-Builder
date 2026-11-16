@@ -1022,3 +1022,9 @@ insertar copias independientes, con IDs nuevos y propiedades editables.
 `extractComposition(page, rootId)` extrae el subárbol sin alterar la página.
 Los fragmentos son datos declarativos del catálogo; no contienen código React.
 
+
+El adaptador opcional `pages` conecta el panel **Páginas** con el sitio del host:
+`{items: [{path, title}], activePath, onSelect(path)}`. La selección solo solicita
+el cambio; el host conserva las ediciones pendientes antes de abrir otra página.
+Sin adaptador se conserva el comportamiento de página individual.
+`capabilities.templates: false` oculta la pestaña Plantillas.

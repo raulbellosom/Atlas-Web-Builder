@@ -278,9 +278,28 @@ function PagesTab() {
   )
 }
 
+function HostPagesTab({ pages, onSelected }) {
+  return <div className="atlas-wb-pages">
+    <div className="atlas-wb-pages__header"><h3>Páginas</h3></div>
+    <nav aria-label="Páginas del sitio">
+      {pages.items.map(page => <button type="button" key={page.path}
+        className={clsx('atlas-wb-page-item', page.path === pages.activePath && 'atlas-wb-page-item--active')}
+        aria-current={page.path === pages.activePath ? 'page' : undefined}
+        onClick={() => { if (page.path !== pages.activePath) { pages.onSelect(page.path); onSelected?.() } }}>
+        <span style={{ flex: 1, minWidth: 0, textAlign: 'start' }}>
+          <span className="atlas-wb-page-item__title" style={{ display: 'block' }}>{page.title}</span>
+          <span className="atlas-wb-page-item__slug" style={{ display: 'block' }}>{page.path}</span>
+        </span>
+      </button>)}
+    </nav>
+    <p className="atlas-wb-empty">Puedes crear páginas desde el menú de páginas del sitio.</p>
+  </div>
+}
+
 export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChange: setTab, returnFocusRef }) {
   const panelRef = useRef(null)
-  const { assets, compositions } = useBuilder()
+  const { assets, compositions, pages } = useBuilder()
+  const capabilities = useEditorCapabilities()
   usePanelInert(panelRef, closed)
   useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
@@ -290,7 +309,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
       <div className="atlas-wb-panel__tabs atlas-wb-panel__tabs--stacked" role="tablist" aria-label="Biblioteca" onKeyDown={onTabListKeyDown} tabIndex={-1}>
         {[
           ['blocks', es.leftPanel.blocks, Shapes],
-          ['templates', es.leftPanel.templates, LayoutTemplate],
+          ...(capabilities.templates !== false ? [['templates', es.leftPanel.templates, LayoutTemplate]] : []),
           ...(compositions ? [['compositions', 'Mis bloques', Shapes]] : []),
           ['pages', es.leftPanel.pages, Files],
           ['layers', 'Capas', Layers],
@@ -308,7 +327,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
         {tab === 'compositions' && compositions && <CompositionsPanel onInserted={compact ? onClose : undefined} />}
         {tab === 'layers' && <LayersPanel />}
         {tab === 'media' && assets && <MediaTab />}
-        {tab === 'pages'     && <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>}
+        {tab === 'pages' && (pages ? <HostPagesTab pages={pages} onSelected={compact ? onClose : undefined} /> : <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>)}
       </div>
     </aside>
   )
