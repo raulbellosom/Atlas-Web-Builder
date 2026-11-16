@@ -26,10 +26,10 @@ export function CompositionsPanel({ onInserted }) {
   return <section aria-label="Mis bloques reutilizables" className="atlas-wb-palette">
     <h3>Mis bloques</h3>
     <p>Guarda la selección con sus elementos y estilos. Cada inserción crea una copia editable.</p>
-    {compositions.save && <form onSubmit={event => { event.preventDefault(); action(() => save()) }}>
-      <TextField label="Nombre del bloque" value={name} onChange={value => setName(value.slice(0,100))} />
-      <button className="atlas-wb-btn" type="submit" disabled={busy || !selectedId || !name.trim()}>Guardar selección</button>
-    </form>}
+    {compositions.save && <div role="group" aria-label="Guardar bloque propio">
+      <TextField label="Nombre del bloque" value={name} onChange={value => setName(value.slice(0,100))} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); if (!busy && selectedId && name.trim()) action(() => save()) } }} />
+      <button className="atlas-wb-btn" type="button" disabled={busy || !selectedId || !name.trim()} onClick={() => action(() => save())}>Guardar selección</button>
+    </div>}
     {error && <p role="alert">{error}</p>}
     {!items.length && <p className="atlas-wb-empty">Aún no hay bloques guardados.</p>}
     {items.map(item => <article key={item.id} className="atlas-wb-palette__item-body" style={{ display: 'grid', gap: 8, padding: 12, borderBottom: '1px solid var(--awb-border, #888)' }}>

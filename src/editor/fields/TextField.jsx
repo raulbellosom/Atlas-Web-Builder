@@ -1,4 +1,4 @@
-export function TextField({ value, onChange, label, spec }) {
+export function TextField({ value, onChange, label, spec, onKeyDown }) {
   return (
     <label className="atlas-wb-field">
       <span className="atlas-wb-field__label">{label}</span>
@@ -8,6 +8,7 @@ export function TextField({ value, onChange, label, spec }) {
         value={value ?? ''}
         placeholder={spec?.placeholder || ''}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
       />
     </label>
   )

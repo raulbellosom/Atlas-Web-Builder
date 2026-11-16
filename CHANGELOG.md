@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1
+
+- Guardar una composición usa un botón y Enter, sin enviar formularios. Funciona dentro de iframes con sandbox sin habilitar allow-forms.
+
 ## 0.8.0
 
 - Acordeón y pregunta desplegable como elementos de composición. Apertura individual/múltiple, indicador, colores de cada estado, tamaño, separación y radios configurables. Las respuestas admiten elementos anidados y permanecen visibles al editar.
