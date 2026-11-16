@@ -1,6 +1,7 @@
 import { defineBlock } from '../../registry/createBlockRegistry.js'
 import { designFields, designGroups, typographyFields, elementSurfaceStyle, elementClass } from './design.js'
 import {BrandIdentity,brandIdentityDefaults,brandIdentityFields} from './BrandIdentity.jsx'
+import {AccordionBlock,AccordionItemBlock} from './AccordionBlocks.jsx'
 const field = (label,options) => ({ type:'select',label,options })
 const safeHref = value => typeof value === 'string' && value.length <= 2048 && /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i.test(value) && !Array.from(value).some(c => c.charCodeAt(0) <= 32 || c.charCodeAt(0) === 127) ? value : '#'
 const finite = (value,min,max,fallback) => typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : fallback
@@ -75,4 +76,4 @@ export const LogoElementBlock=element({
   fields:{...brandIdentityFields,...typographyFields},groups:[{label:'Marca',fields:Object.keys(brandIdentityFields)},{label:'Tipografía',fields:Object.keys(typographyFields)}],
   render:({ctx,...props})=><a className={elementClass(ctx,'atlas-element-brand')} href={safeHref(props.brandHref)} style={{display:'inline-flex',alignItems:'center',fontFamily:'var(--atlas-font-sans)',textDecoration:'none',color:'inherit',...elementSurfaceStyle(props,ctx)}}><BrandIdentity {...props}/></a>,
 })
-export const elementBlocks=[BoxBlock,TextElementBlock,ButtonElementBlock,LinkElementBlock,ImageElementBlock,LogoElementBlock]
+export const elementBlocks=[BoxBlock,TextElementBlock,ButtonElementBlock,LinkElementBlock,ImageElementBlock,LogoElementBlock,AccordionBlock,AccordionItemBlock]

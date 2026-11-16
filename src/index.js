@@ -56,6 +56,8 @@ export {
 // Templates (Phase 6)
 export { defineTemplate, createTemplateRegistry } from './templates/defineTemplate.js'
 export { applyTemplate } from './templates/applyTemplate.js'
+export { extractComposition } from './templates/compositions.js'
+export { AccordionBlock, AccordionItemBlock } from './blocks/index.js'
 
 // Layouts (Phase 8A)
 export { defineLayout, createLayoutRegistry, applyLayoutToDraft } from './layouts/defineLayout.js'

@@ -14,6 +14,7 @@ import { newId } from '../../utils/id.js'
 import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
 import { findParent } from '../../utils/tree.js'
 import { MediaTab } from '../assets/MediaTab.jsx'
+import { CompositionsPanel } from './CompositionsPanel.jsx'
 
 /** A single draggable palette item. On narrow screens a tap inserts directly. */
 function PaletteItem({ def, onInserted }) {
@@ -279,7 +280,7 @@ function PagesTab() {
 
 export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChange: setTab, returnFocusRef }) {
   const panelRef = useRef(null)
-  const { assets } = useBuilder()
+  const { assets, compositions } = useBuilder()
   usePanelInert(panelRef, closed)
   useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
   return (
@@ -290,6 +291,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
         {[
           ['blocks', es.leftPanel.blocks, Shapes],
           ['templates', es.leftPanel.templates, LayoutTemplate],
+          ...(compositions ? [['compositions', 'Mis bloques', Shapes]] : []),
           ['pages', es.leftPanel.pages, Files],
           ['layers', 'Capas', Layers],
           ...(assets ? [['media', 'Medios', Images]] : []),
@@ -303,6 +305,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
       <div className="atlas-wb-panel__body">
         {tab === 'blocks'    && <BlocksTab onInserted={compact ? onClose : undefined} />}
         {tab === 'templates' && <CapabilityBoundary name="templates"><TemplatesTab onInserted={compact ? onClose : undefined} /></CapabilityBoundary>}
+        {tab === 'compositions' && compositions && <CompositionsPanel onInserted={compact ? onClose : undefined} />}
         {tab === 'layers' && <LayersPanel />}
         {tab === 'media' && assets && <MediaTab />}
         {tab === 'pages'     && <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>}

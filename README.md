@@ -1005,3 +1005,20 @@ pnpm playground:lan
 Abrir en el teléfono la URL privada que imprime el comando (puerto 5173). Usar la misma red Wi-Fi, sin túneles ni publicación pública. El playground carga las fuentes locales, incluye imagen y bloques anidados y permite guardar/reabrir en localStorage; no se conecta con ERP/Hub ni publica contenido. Ctrl+C detiene el servidor. El teléfono no necesita instalar Atlas.
 
 Véase el [checklist físico iPhone/Android](docs/releases/ATLAS_0_5_0_MOBILE_ACCEPTANCE.md). Las pruebas automatizadas emuladas no certifican hardware real.
+# Composiciones y acordeones (0.8)
+
+`baseBlocks` y `elementBlocks` incluyen `AccordionBlock` y `AccordionItemBlock`.
+Cada pregunta usa un slot `children`: admite textos, imágenes, botones y otros
+elementos editables. El grupo configura apertura individual/múltiple, estado
+inicial, indicador, posición, colores, espaciado y radios. En edición todas las
+respuestas permanecen visibles; preview/public usan la interacción accesible.
+
+El editor acepta un adaptador opcional `compositions` con `list()`, `get(id)`,
+`save({id?, expectedRevision?, name, fragment})` y `remove(id, revision)`.
+`list` devuelve `{id,name,revision}`; `get` añade `fragment: {rootIds,blocks}`.
+El host conserva la biblioteca y autoriza sus operaciones. Omite `save/remove`
+para lectura. La pestaña **Mis bloques** permite guardar la selección y luego
+insertar copias independientes, con IDs nuevos y propiedades editables.
+`extractComposition(page, rootId)` extrae el subárbol sin alterar la página.
+Los fragmentos son datos declarativos del catálogo; no contienen código React.
+

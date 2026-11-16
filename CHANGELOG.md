@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+- Acordeón y pregunta desplegable como elementos de composición. Apertura individual/múltiple, indicador, colores de cada estado, tamaño, separación y radios configurables. Las respuestas admiten elementos anidados y permanecen visibles al editar.
+- Biblioteca **Mis bloques** con adaptador del host `compositions`: listar, leer, guardar selección, reemplazar y eliminar. Las inserciones generan IDs nuevos y copias independientes, editables con los controles habituales.
+- `extractComposition(page, rootId)` exporta un subárbol sin mutar la página. `ctx.childIds(slotName)` permite consultar los hijos de un slot sin acceder al documento del host.
+- Los bloques React aportados por código del host siguen usando el registro existente; la biblioteca guarda datos declarativos y no ejecuta código de una plantilla.
+
 ## 0.7.0
 
 - Pestaña **Medios** en el panel izquierdo cuando el host da un `AssetSource`: buscador, subida (botón o soltar archivos), "Cargar más" y miniaturas arrastrables.

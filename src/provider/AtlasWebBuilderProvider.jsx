@@ -33,6 +33,7 @@ export function AtlasWebBuilderProvider({
   blockRegistry,
   blocks = [],
   templates,
+  compositions,
   layouts,
   assets,
   imageUrlBuilder,
@@ -55,6 +56,7 @@ export function AtlasWebBuilderProvider({
     () => ({
       blocks: registry,
       templates: templateRegistry,
+      compositions,
       layouts: layoutRegistry,
       assets: assets || null,
       imageUrlBuilder,
@@ -66,6 +68,7 @@ export function AtlasWebBuilderProvider({
     [
       registry,
       templateRegistry,
+      compositions,
       layoutRegistry,
       assets,
       imageUrlBuilder,

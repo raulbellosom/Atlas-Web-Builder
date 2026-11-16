@@ -92,6 +92,7 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
     actions,
     permissions,
     slot,
+    childIds: slotName => [...(instance.children?.[slotName] ?? [])],
     blockId,
     parent,
     nested: parent !== null,
