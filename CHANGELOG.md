@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+- Propiedades responsive por contenedor, con herencia desktop → tablet → mobile y conservación de valores explícitos.
+- Contenedores XL/2XL, full-bleed, límites personalizados, fondos e imágenes por dispositivo y visibilidad visible/hidden/collapsed.
+- Inspector con copia, reset y undo/redo; diagnóstico de overflow con medidas y corrección configurable explícita.
+- Se conserva Page schema 1 y la semántica histórica de hidden. La adopción en hosts requiere un catálogo nuevo; no sustituye snapshots anteriores.
+- Verificación automatizada en Chromium/WebKit y consumidores React 18/19; la aceptación de sitios y dispositivos físicos corresponde al host. Véase la migración a 0.9.0.
+
 ## 0.8.2
 
 - El adaptador opcional `pages` del editor muestra y selecciona las páginas gestionadas por el host, sin reemplazar el documento con una página local.

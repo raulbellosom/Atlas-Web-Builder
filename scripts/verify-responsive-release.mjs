@@ -1,0 +1,90 @@
+/* global window, document */
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { createServer } from 'node:http'
+import { once } from 'node:events'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+// Installs the tarball in independent npm consumers. No sibling package aliases.
+const root = process.cwd(), tarball = resolve(process.argv[2])
+const sha = (bytes, algorithm = 'sha256') => createHash(algorithm).update(bytes).digest('hex')
+const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+const report = { source, tarballSha256: sha(readFileSync(tarball)), consumers: [] }
+const listing = execFileSync('tar', ['-tzf', tarball], { encoding: 'utf8' }).trim().split(/\r?\n/)
+assert(listing.every(p => /^package\/(dist\/|docs\/|package.json$|README.md$|CHANGELOG.md$|LICENSE$)/.test(p)))
+assert(!listing.some(p => /(?:node_modules|\.env|\.npmrc|\.artifacts|tests)\//.test(p)))
+const hubRequire = createRequire(resolve('../runly-developer-hub/package.json'))
+const { build } = createRequire(createRequire(resolve('package.json')).resolve('vite/package.json'))('esbuild')
+const { chromium, webkit } = hubRequire('@playwright/test')
+const page = { schemaVersion: 1, id: 'packed', slug: '/', title: 'Packed', visibility: 'public',
+  regions: { main: { children: ['legacy', 'text', 'collapsed', 'hidden'] } }, seo: { title: 'SEO preserved' }, blocks: {
+    legacy: { id: 'legacy', type: 'HeadingBlock', props: { text: 'Historical heading', customHistorical: 'preserved' } },
+    text: { id: 'text', type: 'TextElementBlock', props: { text: 'Responsive release', fontSize: 64, tabletFontSize: 40, mobileFontSize: 28, mobilePaddingLeft: 0 } },
+    collapsed: { id: 'collapsed', type: 'TextElementBlock', props: { text: 'Collapsed', mobileVisibility: 'collapsed' } },
+    hidden: { id: 'hidden', type: 'TextElementBlock', props: { text: 'Hidden', mobileVisibility: 'hidden' } },
+  } }
+for (const react of ['18.3.1', '19.3.0']) {
+  const dir = mkdtempSync(join(tmpdir(), 'atlas-responsive-consumer-'))
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'packed-consumer', private: true, type: 'module' }))
+  execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarball, `react@${react}`, `react-dom@${react}`], { cwd: dir, stdio: 'pipe', shell: process.platform === 'win32' })
+  const require = createRequire(join(dir, 'package.json')), pkg = require.resolve('@raulbellosom/atlas-web-builder/package.json')
+  const atlas = require('@raulbellosom/atlas-web-builder')
+  const esm = await import(pathToFileURL(join(pkg, '../dist/atlas-web-builder.js')))
+  assert.equal(atlas.version, '0.9.0'); assert.equal(atlas.getVersion(), '0.9.0')
+  assert.deepEqual(Object.keys(atlas).sort(), Object.keys(esm).sort())
+  assert.equal(typeof atlas.inspectOverflowDetails, 'function')
+  const legacy = createRequire(resolve('../runly-developer-hub/package.json'))('@raulbellosom/atlas-web-builder')
+  assert(Object.keys(legacy).every(key => key in atlas))
+  const map = JSON.parse(readFileSync(join(pkg, '../dist/atlas-web-builder.js.map')))
+  let verifiedSources = 0
+  for (const [i, name] of map.sources.entries()) {
+    if (!name.includes('/src/')) continue
+    const file = `src/${name.split('/src/')[1]}`
+    const expected = execFileSync('git', ['show', `${source}:${file}`], { cwd: root, encoding: 'utf8' })
+    assert.equal(map.sourcesContent[i].replaceAll('\r\n', '\n'), expected.replaceAll('\r\n', '\n'), file)
+    verifiedSources++
+  }
+  assert(verifiedSources > 100)
+  const { updatedAt, ...reopened } = atlas.parsePage(atlas.serializePage(page))
+  assert.equal(typeof updatedAt, 'string'); assert.deepEqual(reopened, page)
+  const React = require('react'), { renderToString } = require('react-dom/server')
+  const html = renderToString(React.createElement(atlas.AtlasWebBuilderProvider, { blocks: atlas.baseBlocks }, React.createElement(atlas.AtlasWebRenderer, { page })))
+  assert(html.includes('Historical heading')); assert(html.includes('--ar-mobile-fontSize:28px'))
+  const entry = join(dir, 'entry.js')
+  writeFileSync(entry, `import React from 'react'; import {hydrateRoot} from 'react-dom/client'; import {AtlasWebBuilderProvider,AtlasWebRenderer,baseBlocks} from '@raulbellosom/atlas-web-builder'; import '@raulbellosom/atlas-web-builder/styles'; hydrateRoot(document.getElementById('root'),React.createElement(AtlasWebBuilderProvider,{blocks:baseBlocks},React.createElement(AtlasWebRenderer,{page:${JSON.stringify(page)}}))); window.ready=true;`)
+  const bundled = await build({ entryPoints: [entry], bundle: true, write: false, outfile: join(dir, 'app.js'), format: 'esm', define: { 'process.env.NODE_ENV': '"production"' }, logLevel: 'silent' })
+  const js = bundled.outputFiles.find(f => f.path.endsWith('.js')).text, css = bundled.outputFiles.find(f => f.path.endsWith('.css')).text
+  const server = createServer((req, res) => {
+    res.setHeader('Content-Type', req.url === '/app.js' ? 'text/javascript' : req.url === '/app.css' ? 'text/css' : 'text/html')
+    res.end(req.url === '/app.js' ? js : req.url === '/app.css' ? css : `<html><head><link rel="stylesheet" href="/app.css"></head><body style="margin:0"><div id="canvas" style="width:390px"><div id="root">${html}</div></div><script type="module" src="/app.js"></script></body></html>`)
+  })
+  server.listen(0, '127.0.0.1'); await once(server, 'listening')
+  const browserCases = []
+  try {
+    for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
+      const browser = await engine.launch()
+      try {
+        const tab = await browser.newPage({ viewport: { width: 1920, height: 1000 } }), errors = []
+        tab.on('pageerror', e => errors.push(e.message)); tab.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
+        await tab.goto(`http://127.0.0.1:${server.address().port}`); await tab.waitForFunction(() => window.ready)
+        for (const [width, font] of [[390, '28px'], [820, '40px'], [1440, '64px']]) {
+          await tab.locator('#canvas').evaluate((node, width) => { node.style.width = `${width}px` }, width)
+          await tab.waitForFunction(font => getComputedStyle(document.querySelector('[data-atlas-block="text"]')).fontSize === font, font)
+          assert.equal(await tab.locator('[data-atlas-block="collapsed"]').evaluate(n => getComputedStyle(n).display === 'none'), width < 640)
+          assert.equal(await tab.locator('[data-atlas-block="hidden"]').evaluate(n => getComputedStyle(n).visibility), width < 640 ? 'hidden' : 'visible')
+          browserCases.push({ browser: name, width, font, ssrHydration: true })
+        }
+        assert.deepEqual(errors, [])
+      } finally { await browser.close() }
+    }
+  } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }
+  report.consumers.push({ react, verifiedSources, exports: Object.keys(atlas).length, browserCases, roundtrip: true })
+}
+mkdirSync('.artifacts/responsive-0.9.0', { recursive: true })
+writeFileSync('.artifacts/responsive-0.9.0/verification.json', JSON.stringify(report, null, 2) + '\n')
+console.log(JSON.stringify(report))
