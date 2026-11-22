@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "package": "@raulbellosom/atlas-web-builder",
+  "version": "0.9.0",
+  "registry": "https://registry.npmjs.org",
+  "sourceRevision": "c65d7192576886e64351be8a181327b110b75e99",
+  "sourceTag": "v0.9.0",
+  "tarball": "https://registry.npmjs.org/@raulbellosom/atlas-web-builder/-/atlas-web-builder-0.9.0.tgz",
+  "sha256": "37be733063a502497d020b2c13a5dd8532d9db322e42101ff6022f8e97a8de69",
+  "integrity": "sha512-qqN0xoSaS+8m2O4i3LC2otA1lI+hgx0kY8IniLzx753p/WZy1eFiQj0bc1YtelGls9cmhvSW4VpDKtmnSN2x7Q==",
+  "registryGitHead": null,
+  "verification": {
+    "publishedBytesEqualTestedTarball": true,
+    "sourceMapSourcesVerifiedAgainstGit": 144,
+    "unitTestsPassed": 250,
+    "lint": "passed",
+    "build": "passed",
+    "packedFilesPrivacyFindings": 0,
+    "exports": 158,
+    "reactConsumers": ["18.3.1", "19.3.0"],
+    "browserEngines": ["chromium", "webkit"],
+    "canvasWidths": [390, 820, 1440],
+    "viewportWidth": 1920,
+    "browserCases": 12,
+    "historicalFieldsRoundtrip": "passed",
+    "ssrHydration": "passed",
+    "registryInstallWithFreshCache": "passed"
+  },
+  "hostAdoption": "separate release; not implied by package publication"
+}
