@@ -1,4 +1,5 @@
-import {geometryKeys,geometryKey,geometryVariables} from './geometry.js'
+import { responsiveFields, responsiveStyle } from './responsive.js'
+import {geometryKeys,geometryVariables} from './geometry.js'
 const select = (label, options) => ({ type: 'select', label, options })
 const number = (label, min, max) => ({ type: 'number', label, min, max })
 export const elementStylePresets = Object.freeze({
@@ -10,7 +11,7 @@ export const elementStylePresets = Object.freeze({
   pill: { label: 'Píldora', style: { background: 'var(--atlas-color-primary, #f97316)', color: 'var(--atlas-color-primaryFg, #fff)', borderRadius: 999, padding: '12px 24px' } },
 })
 
-export const designFields = {
+const baseDesignFields = {
   stylePreset: select('Estilo inicial', Object.entries(elementStylePresets).map(([value, preset]) => ({ value, label: preset.label }))),
   widthMode: select('Ancho', [{ value: 'auto', label: 'Contenido' }, { value: 'fill', label: 'Llenar espacio' }, { value: 'fixed', label: 'Medida fija' }, {value:'percent',label:'Porcentaje'}]),
   widthPercent: number('Ancho (%)',1,100),
@@ -30,12 +31,32 @@ export const designFields = {
   offsetX: number('Desplazamiento horizontal (px)', -2000, 4000), offsetY: number('Desplazamiento vertical (px)', -2000, 4000),
   layer: number('Orden de capa', 0, 100), rotation: number('Rotación (grados)', -180, 180),
 }
-for(const device of ['tablet','mobile'])for(const key of geometryKeys)designFields[geometryKey(key,device)]={...designFields[key],label:`${designFields[key].label} · ${device==='tablet'?'Tableta':'Teléfono'}`}
-export const typographyFields = {
+const baseTypographyFields = {
   fontSize: number('Tamaño del texto (px)', 8, 200), fontWeight: select('Peso del texto', ['400','500','600','700','800','900']),
   lineHeight: { ...number('Interlineado', 0.8, 3), step: 0.1 },
   textAlign: select('Alineación del texto', ['left','center','right']),
 }
+const surfaceProperties = Object.fromEntries(['paddingTop','paddingRight','paddingBottom','paddingLeft','fontSize','fontWeight','lineHeight','letterSpacing','textAlign','fontFamily','fontStyle','whiteSpace','overflowWrap','borderWidth','borderColor','boxShadow','objectPosition'].map(key=>[key,key]))
+Object.assign(surfaceProperties,{backgroundColor:'background',textColor:'color',cornerRadius:'borderRadius',fit:'objectFit'})
+const outerProperties = Object.fromEntries(['maxWidth','minWidth','maxHeight','aspectRatio','overflow','order','marginTop','marginRight','marginBottom','marginLeft'].map(key=>[key,key]))
+Object.assign(outerProperties,{layer:'zIndex',visibility:'visibility'})
+Object.assign(baseDesignFields,{
+  minWidth:number('Ancho mínimo (px)',0,4000),maxHeight:number('Alto máximo (px)',0,4000),
+  aspectRatio:select('Proporción',['auto','1','1.333333','1.777778','0.75']),
+  overflow:select('Contenido desbordado',['visible','hidden','clip','auto']),
+  order:number('Orden en la distribución',-100,100),visibility:select('Visibilidad',['visible','hidden']),
+  boxShadow:select('Sombra',['none','0 4px 16px #0000001a','0 12px 32px #00000026']),
+  objectPosition:select('Posición de imagen',['center','top','bottom','left','right']),
+})
+Object.assign(baseTypographyFields,{
+  letterSpacing:{...number('Espaciado entre letras (px)',-10,40),step:0.1},
+  fontFamily:select('Familia',['inherit','var(--atlas-font-sans)','var(--atlas-font-serif)','system-ui','serif','monospace']),
+  fontStyle:select('Estilo de texto',['normal','italic']),
+  whiteSpace:select('Ajuste de líneas',['normal','pre-wrap','nowrap']),
+  overflowWrap:select('Palabras largas',['normal','anywhere','break-word']),
+})
+export const designFields=responsiveFields(baseDesignFields,[...geometryKeys,...Object.keys(surfaceProperties),...Object.keys(outerProperties)])
+export const typographyFields=responsiveFields(baseTypographyFields,Object.keys(baseTypographyFields))
 const numeric = (props, key, min, max) => typeof props[key] === 'number' && Number.isFinite(props[key]) && props[key] >= min && props[key] <= max ? props[key] : undefined
 const color = value => typeof value === 'string' && /^#[a-f\d]{6}([a-f\d]{2})?$/i.test(value) ? value : undefined
 
@@ -57,11 +78,11 @@ export function elementItemStyle(props) {
   if (rotation) style.transform = `rotate(${rotation}deg)`
   return style
 }
-export function elementSurfaceStyle(props, ctx) {
+function surfaceStyle(props, ctx) {
   const style = { boxSizing: 'border-box', ...elementStylePresets[props.stylePreset]?.style,
-    ...(ctx?.mode === 'edit' ? { width: '100%',height:'100%' } : elementOuterStyle(props)) }
+    ...(ctx?.mode === 'edit' ? { width: '100%',height:'var(--ae-height, auto)' } : elementOuterStyle(props)) }
   for (const [key,min,max] of [['paddingTop',0,256],['paddingRight',0,256],['paddingBottom',0,256],['paddingLeft',0,256],
-    ['fontSize',8,200],['lineHeight',0.8,3]]) {
+    ['fontSize',8,200],['lineHeight',0.8,3],['letterSpacing',-10,40]]) {
     const value = numeric(props,key,min,max)
     if (value !== undefined) style[key] = value
   }
@@ -73,19 +94,36 @@ export function elementSurfaceStyle(props, ctx) {
   if (radius !== undefined) style.borderRadius = radius
   if (typographyFields.fontWeight.options.includes(props.fontWeight)) style.fontWeight = props.fontWeight
   if (typographyFields.textAlign.options.includes(props.textAlign)) style.textAlign = props.textAlign
+  for(const key of ['fontFamily','fontStyle','whiteSpace','overflowWrap'])
+    if(baseTypographyFields[key].options.includes(props[key]))style[key]=props[key]
+  for(const key of ['boxShadow','objectPosition'])
+    if(baseDesignFields[key].options.includes(props[key]))style[key]=props[key]
+  if(['cover','contain','fill','scale-down','none'].includes(props.fit))style.objectFit=props.fit
   return style
+}
+export function elementSurfaceStyle(props,ctx) {
+  return {...responsiveStyle(props,value=>surfaceStyle(value,ctx),surfaceProperties),...(ctx?.mode==='edit'?{}:elementOuterStyle(props))}
 }
 // Geometry belongs to the editable wrapper in edit mode and to the element in public mode.
 export const elementClass=(ctx,name='')=>`${name} atlas-element-surface${ctx?.mode==='edit'?'':' atlas-element-item'}`.trim()
 export function elementOuterStyle(props) {
-  const style=elementItemStyle(props)
-  for(const key of ['width','flex','position','left','top','transform'])delete style[key]
-  if(!(props.maxWidth>0))delete style.maxWidth
-  return {...style,...geometryVariables(props)}
+  const factory=value=>{
+    const style=elementItemStyle(value)
+    for(const key of ['width','flex','position','left','top','transform'])delete style[key]
+    if(!(value.maxWidth>0))delete style.maxWidth
+    for(const key of ['minWidth','maxHeight','order']) {
+      const n=numeric(value,key,key==='order'?-100:0,key==='order'?100:4000)
+      if(n!==undefined)style[key]=n
+    }
+    for(const key of ['aspectRatio','overflow','visibility'])
+      if(baseDesignFields[key].options.includes(value[key]))style[key]=value[key]
+    return style
+  }
+  return {...responsiveStyle(props,factory,outerProperties),...geometryVariables(props)}
 }
 
 export const designGroups = [
-  { label: 'Estilo', fields: ['stylePreset','backgroundColor','textColor','borderColor','borderWidth','cornerRadius'] },
-  { label: 'Tamaño y espacio', fields: ['widthMode','width','maxWidth','minHeight','paddingTop','paddingRight','paddingBottom','paddingLeft','marginTop','marginRight','marginBottom','marginLeft'] },
-  { label: 'Posición y capas', fields: ['position','offsetX','offsetY','layer','rotation'] },
+  { label: 'Estilo', fields: ['stylePreset','backgroundColor','textColor','borderColor','borderWidth','cornerRadius','boxShadow','visibility'] },
+  { label: 'Tamaño y espacio', fields: ['widthMode','width','maxWidth','minHeight','paddingTop','paddingRight','paddingBottom','paddingLeft','marginTop','marginRight','marginBottom','marginLeft','minWidth','maxHeight','aspectRatio','overflow','objectPosition'] },
+  { label: 'Posición y capas', fields: ['position','offsetX','offsetY','layer','rotation','order'] },
 ]

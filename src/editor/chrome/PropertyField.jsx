@@ -2,7 +2,7 @@ import { defaultFields } from '../fields/index.js'
 import { RotateCcw } from 'lucide-react'
 
 export function PropertyField({ propName, spec, value, onChange, defaultValue, hasValue, onReset }) {
-  const Field = defaultFields[spec.type], label = spec.label || propName
+  const Field = defaultFields[spec.type], label = `${spec.responsive?'◇ ':''}${spec.label || propName}`
   const readOnly = !!spec.readOnly || !Field
   const hasDefault = defaultValue !== undefined
   const modified = hasValue && JSON.stringify(value) !== JSON.stringify(defaultValue)

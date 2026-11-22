@@ -1,3 +1,4 @@
+import { responsiveFields, resolveResponsive } from './responsive.js'
 import { defineBlock } from '../../registry/createBlockRegistry.js'
 import { designFields, designGroups, typographyFields, elementSurfaceStyle, elementClass } from './design.js'
 import {BrandIdentity,brandIdentityDefaults,brandIdentityFields} from './BrandIdentity.jsx'
@@ -11,8 +12,12 @@ const layoutOptions=values=>values.map(value=>({value,label:{inherit:'Heredar',r
 function layoutVariables(props) {
   const variables = {}
   for (const prefix of ['', 'tablet', 'mobile']) {
-    const key = name => prefix ? `${prefix}${name[0].toUpperCase()}${name.slice(1)}` : name
-    const layout = props[key('layout')], columns = props[key('columns')]
+    const resolved=resolveResponsive(props,prefix||'desktop')
+    const layout = resolved.layout, columns = resolved.columns
+    variables[`--ae-${prefix||'desktop'}-gap`]=`${finite(resolved.gap,0,128,16)}px`
+    variables[`--ae-${prefix||'desktop'}-align`]=['start','center','end','stretch'].includes(resolved.align)?resolved.align:'stretch'
+    variables[`--ae-${prefix||'desktop'}-justify`]=['start','center','end','space-between','space-around'].includes(resolved.justify)?resolved.justify:'start'
+    variables[`--ae-${prefix||'desktop'}-wrap`]=resolved.wrap==='wrap'?'wrap':'nowrap'
     if (layouts.includes(layout)) {
       variables[`--ae-${prefix || 'desktop'}-display`] = layout === 'grid' ? 'grid' : layout==='free'?'block':'flex'
       variables[`--ae-${prefix || 'desktop'}-direction`] = layout === 'row' ? 'row' : 'column'
@@ -27,7 +32,7 @@ function layoutVariables(props) {
 function element(definition) {
   return defineBlock({ category:'elements', kind:'element', ...definition,
     defaultProps:{stylePreset:'none',widthMode:'auto',...definition.defaultProps},
-    fields:{...definition.fields,...designFields}, groups:[...definition.groups,...designGroups] })
+    fields:responsiveFields({...definition.fields,...designFields},['layout','columns','gap','align','justify','wrap','fit','objectPosition']), groups:[...definition.groups,...designGroups] })
 }
 export const BoxBlock = element({
   type:'BoxBlock',label:'Contenedor libre',icon:'layout',slots:{children:{}},
@@ -37,7 +42,7 @@ export const BoxBlock = element({
     justify:field('Distribuir espacio',['start','center','end','space-between','space-around']),
     tabletLayout:field('Distribución en tableta',layoutOptions(['inherit',...layouts])),tabletColumns:{type:'number',label:'Columnas en tableta',min:1,max:12},
     mobileLayout:field('Distribución en móvil',layoutOptions(['inherit',...layouts])),mobileColumns:{type:'number',label:'Columnas en móvil',min:1,max:12}},
-  groups:[{label:'Composición',fields:['layout','columns','gap','align','justify']},{label:'Adaptación por pantalla',fields:['tabletLayout','tabletColumns','mobileLayout','mobileColumns']}],
+  groups:[{label:'Composición',fields:['layout','columns','gap','align','justify','wrap']},{label:'Adaptación por pantalla',fields:['tabletLayout','tabletColumns','mobileLayout','mobileColumns']}],
   render:props=><div className={elementClass(props.ctx,'atlas-element-box')} style={{...elementSurfaceStyle(props,props.ctx),...layoutVariables(props)}}>
     <div className="atlas-element-layout">{props.ctx.slot('children')}</div>
   </div>,

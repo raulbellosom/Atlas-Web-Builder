@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { OverflowDiagnostics } from './OverflowDiagnostics.jsx'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useTheme } from '../../theme/ThemeProvider.jsx'
@@ -136,6 +137,7 @@ function RegionTabs({ regionNames, activeRegion, onSelect, layout }) {
 }
 
 export function Canvas({ onLinkClick }) {
+  const canvasRef=useRef(null)
   const page = useEditorStore((s) => s.page)
   const device = useEditorStore((s) => s.device)
   const clearSelection = useEditorStore((s) => s.clearSelection)
@@ -153,8 +155,9 @@ export function Canvas({ onLinkClick }) {
   return (
     <div
       className="atlas-wb-canvas"
+      ref={canvasRef}
       role="presentation"
-      onClick={event => { if (!event.target.closest('.atlas-wb-canvas-tools, [data-block-id]')) clearSelection() }}
+      onClick={event => { if (!event.target.closest('.atlas-wb-canvas-tools, .atlas-wb-overflow-diagnostics, [data-block-id]')) clearSelection() }}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && !e.target.closest('.atlas-wb-canvas-tools')) clearSelection()
       }}
@@ -169,9 +172,10 @@ export function Canvas({ onLinkClick }) {
       />
       <CanvasViewport device={device} frameProps={{ 'data-atlas-theme': theme.id, 'data-active-region': safeActive, onClickCapture: guardLinks }}>
         <EditorRenderContext.Provider value={editorRenderValue}>
-          <RegionTree page={page} regionName={safeActive} />
+        <RegionTree page={page} regionName={safeActive} />
         </EditorRenderContext.Provider>
       </CanvasViewport>
+      <OverflowDiagnostics canvasRef={canvasRef}/>
     </div>
   )
 }

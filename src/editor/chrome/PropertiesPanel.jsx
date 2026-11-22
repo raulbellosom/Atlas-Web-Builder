@@ -1,3 +1,4 @@
+import { devices, responsiveKey, resolveResponsive } from '../../blocks/elements/responsive.js'
 import { UniversalEffects } from './UniversalEffects.jsx'
 import { useId, useState } from 'react'
 import clsx from 'clsx'
@@ -42,6 +43,8 @@ export function PropertiesPanel() {
   const selectedId = useEditorStore((s) => s.selectedId)
   const page = useEditorStore((s) => s.page)
   const updateBlockProps = useEditorStore((s) => s.updateBlockProps)
+  const resetBlockProps = useEditorStore(s=>s.resetBlockProps)
+  const device=useEditorStore(s=>s.device),setDevice=useEditorStore(s=>s.setDevice)
 
   if (!selectedId) {
     return (
@@ -69,11 +72,23 @@ export function PropertiesPanel() {
   const allFields = { ...variantField, ...fields }
   const responsive=def.kind==='element'&&!!fields.mobilePosition
   const geometryFields=new Set(responsive?['desktop','tablet','mobile'].flatMap(device=>geometryKeys.map(key=>geometryKey(key,device))):[])
-  const entries = Object.entries(allFields).filter(([key])=>!geometryFields.has(key))
+  const entries = Object.entries(allFields).filter(([key])=>!geometryFields.has(key)&&!allFields[key].responsiveBase)
 
 
   const sections = partitionGroups(entries, def.groups)
-  const onChange = (propName) => (next) => updateBlockProps(selectedId, { [propName]: next })
+  const resolved=resolveResponsive(merged,device)
+  const inherited=resolveResponsive(merged,device==='mobile'?'tablet':'desktop')
+  const responsiveKeys=Object.keys(allFields).filter(key=>allFields[key].responsive&&!geometryFields.has(key))
+  const fieldRow=(propName,spec)=>{
+    const active=spec.responsive?responsiveKey(propName,device):propName
+    const isResponsive=spec.responsive&&device!=='desktop'&&allFields[active]
+    return <FieldRow key={active} propName={active} spec={spec}
+      value={isResponsive?resolved[propName]:merged[propName]}
+      defaultValue={isResponsive?inherited[propName]:def.defaultProps?.[propName]}
+      hasValue={Object.hasOwn(block.props||{},active)}
+      onChange={next=>updateBlockProps(selectedId,{[active]:next})}
+      onReset={isResponsive?()=>resetBlockProps(selectedId,[active]):undefined}/>
+  }
 
 
 
@@ -88,37 +103,25 @@ export function PropertiesPanel() {
         <span className="atlas-wb-props__header-type">{def.type}</span>
       </div>
 
+      {responsiveKeys.length>0&&<div className="atlas-wb-responsive-controls">
+        <div role="group" aria-label="Pantalla de propiedades">
+          {devices.map(value=><button key={value} type="button" className="atlas-wb-btn atlas-wb-btn--secondary" aria-pressed={device===value} onClick={()=>setDevice(value)}>{value==='desktop'?'Escritorio':value==='tablet'?'Tableta':'Teléfono'}</button>)}
+        </div>
+        <p className="atlas-wb-field__hint">Los campos con ◇ admiten ajustes por pantalla. Restablecer recupera la herencia.</p>
+        {device!=='desktop'&&<button type="button" className="atlas-wb-btn atlas-wb-btn--secondary" onClick={()=>updateBlockProps(selectedId,Object.fromEntries(responsiveKeys.filter(key=>inherited[key]!==undefined).map(key=>[responsiveKey(key,device),inherited[key]])))}>Copiar estilos de {device==='mobile'?'tableta':'escritorio'}</button>}
+      </div>}
+
       {responsive&&<CollapseSection label="Posición y tamaño por pantalla" defaultOpen={false}><ResponsiveGeometry block={block} definition={def}/></CollapseSection>}
 
       {/* Field sections */}
       {sections.map((section, i) =>
         section.label ? (
           <CollapseSection key={section.label} label={section.label} defaultOpen={i === 0}>
-            {section.entries.map(([propName, spec]) => (
-              <FieldRow
-                key={propName}
-                propName={propName}
-                spec={spec}
-                value={merged[propName]}
-                defaultValue={def.defaultProps?.[propName]}
-                hasValue={Object.prototype.hasOwnProperty.call(block.props || {}, propName)}
-                onChange={onChange(propName)}
-              />
-            ))}
+            {section.entries.map(([propName,spec])=>fieldRow(propName,spec))}
           </CollapseSection>
         ) : (
           <div key={i} className="atlas-wb-props__ungrouped">
-            {section.entries.map(([propName, spec]) => (
-              <FieldRow
-                key={propName}
-                propName={propName}
-                spec={spec}
-                value={merged[propName]}
-                defaultValue={def.defaultProps?.[propName]}
-                hasValue={Object.prototype.hasOwnProperty.call(block.props || {}, propName)}
-                onChange={onChange(propName)}
-              />
-            ))}
+            {section.entries.map(([propName,spec])=>fieldRow(propName,spec))}
           </div>
         ),
       )}
