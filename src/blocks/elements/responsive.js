@@ -5,7 +5,7 @@ export function resolveResponsive(props, device = 'desktop') {
   const result = { ...props }
   for (const current of devices.slice(1, devices.indexOf(device) + 1)) {
     for (const [key, value] of Object.entries(props)) {
-      if (key.startsWith(current) && /[A-Z]/.test(key[current.length] ?? '') && value !== undefined && value !== 'inherit') {
+      if (key.startsWith(current) && /[A-Z]/.test(key[current.length] ?? '') && value !== undefined && value !== 'inherit' && props[`${key}Inherit`] !== true) {
         const base = key[current.length].toLowerCase() + key.slice(current.length + 1)
         result[base] = value
       }
@@ -29,10 +29,12 @@ const cssValue = (key, value) => value === undefined ? 'revert' : typeof value =
 export function responsiveStyle(props, factory, properties) {
   const result = factory(props)
   const styles = devices.map(device => factory(resolveResponsive(props, device)))
-  for (const [key, cssKey] of Object.entries(properties)) {
+  for (const [key, cssKeys] of Object.entries(properties)) {
     if (!devices.slice(1).some(device => props[responsiveKey(key, device)] !== undefined)) continue
-    result[cssKey] = `var(--ar-${cssKey})`
-    devices.forEach((device, index) => { result[`--ar-${device}-${cssKey}`] = cssValue(cssKey, styles[index][cssKey]) })
+    for(const cssKey of [cssKeys].flat()) {
+      result[cssKey] = `var(--ar-${cssKey})`
+      devices.forEach((device, index) => { result[`--ar-${device}-${cssKey}`] = cssValue(cssKey, styles[index][cssKey]) })
+    }
   }
   return result
 }

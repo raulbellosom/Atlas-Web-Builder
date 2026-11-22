@@ -37,14 +37,17 @@ const baseTypographyFields = {
   textAlign: select('Alineación del texto', ['left','center','right']),
 }
 const surfaceProperties = Object.fromEntries(['paddingTop','paddingRight','paddingBottom','paddingLeft','fontSize','fontWeight','lineHeight','letterSpacing','textAlign','fontFamily','fontStyle','whiteSpace','overflowWrap','borderWidth','borderColor','boxShadow','objectPosition'].map(key=>[key,key]))
-Object.assign(surfaceProperties,{backgroundColor:'background',textColor:'color',cornerRadius:'borderRadius',fit:'objectFit'})
+Object.assign(surfaceProperties,{backgroundColor:'background',backgroundImage:'backgroundImage',backgroundSize:'backgroundSize',backgroundPosition:'backgroundPosition',textColor:'color',cornerRadius:'borderRadius',fit:'objectFit'})
 const outerProperties = Object.fromEntries(['maxWidth','minWidth','maxHeight','aspectRatio','overflow','order','marginTop','marginRight','marginBottom','marginLeft'].map(key=>[key,key]))
-Object.assign(outerProperties,{layer:'zIndex',visibility:'visibility'})
+Object.assign(outerProperties,{layer:'zIndex',visibility:['visibility','display'],containerPreset:['maxWidth','marginInline'],fullBleed:['maxWidth','marginInline'],contentMaxWidth:'maxWidth'})
 Object.assign(baseDesignFields,{
   minWidth:number('Ancho mínimo (px)',0,4000),maxHeight:number('Alto máximo (px)',0,4000),
   aspectRatio:select('Proporción',['auto','1','1.333333','1.777778','0.75']),
   overflow:select('Contenido desbordado',['visible','hidden','clip','auto']),
-  order:number('Orden en la distribución',-100,100),visibility:select('Visibilidad',['visible','hidden']),
+  order:number('Orden en la distribución',-100,100),visibility:select('Visibilidad',[{value:'visible',label:'Visible'},{value:'hidden',label:'Oculto conservando espacio'},{value:'collapsed',label:'Oculto sin ocupar espacio'}]),
+  backgroundImage:{type:'image',label:'Imagen de fondo'},
+  backgroundSize:select('Ajuste del fondo',['cover','contain','auto']),
+  backgroundPosition:select('Posición del fondo',['center','top','bottom','left','right']),
   boxShadow:select('Sombra',['none','0 4px 16px #0000001a','0 12px 32px #00000026']),
   objectPosition:select('Posición de imagen',['center','top','bottom','left','right']),
 })
@@ -87,6 +90,10 @@ function surfaceStyle(props, ctx) {
     if (value !== undefined) style[key] = value
   }
   if (color(props.backgroundColor)) style.background = color(props.backgroundColor)
+  if(props.backgroundImage==='')style.backgroundImage='none'
+  else if(typeof props.backgroundImage==='string'&&/^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|webp|gif);base64,)/i.test(props.backgroundImage)&&!/["'\\<>]/.test(props.backgroundImage)&&!Array.from(props.backgroundImage).some(char=>char.charCodeAt(0)<32))style.backgroundImage=`url("${props.backgroundImage}")`
+  if(baseDesignFields.backgroundSize.options.includes(props.backgroundSize))style.backgroundSize=props.backgroundSize
+  if(baseDesignFields.backgroundPosition.options.includes(props.backgroundPosition))style.backgroundPosition=props.backgroundPosition
   if (color(props.textColor)) style.color = color(props.textColor)
   if (color(props.borderColor)) style.borderColor = color(props.borderColor)
   const border = numeric(props,'borderWidth',0,16), radius = numeric(props,'cornerRadius',0,200)
@@ -115,15 +122,23 @@ export function elementOuterStyle(props) {
       const n=numeric(value,key,key==='order'?-100:0,key==='order'?100:4000)
       if(n!==undefined)style[key]=n
     }
-    for(const key of ['aspectRatio','overflow','visibility'])
+    for(const key of ['aspectRatio','overflow'])
       if(baseDesignFields[key].options.includes(value[key]))style[key]=value[key]
+    if(['visible','hidden','collapsed'].includes(value.visibility))style.visibility=value.visibility==='hidden'?'hidden':'visible'
+    if(['visibility','tabletVisibility','mobileVisibility'].some(key=>props[key]==='collapsed'))style.display=value.visibility==='collapsed'?'none':'var(--ar-natural-display, revert)'
+    const limit=containerLimit(value)
+    if(limit&&value.fullBleed!==true) {style.maxWidth=numeric(value,'maxWidth',0,4000)??limit;style.marginInline='auto'}
     return style
   }
   return {...responsiveStyle(props,factory,outerProperties),...geometryVariables(props)}
 }
 
+export function containerLimit(props) {
+  return {full:'100%',xl:'1280px','2xl':'1536px',custom:`${numeric(props,'contentMaxWidth',1,4000)??1280}px`}[props.containerPreset]
+}
+
 export const designGroups = [
-  { label: 'Estilo', fields: ['stylePreset','backgroundColor','textColor','borderColor','borderWidth','cornerRadius','boxShadow','visibility'] },
+  { label: 'Estilo', fields: ['stylePreset','backgroundColor','backgroundImage','backgroundSize','backgroundPosition','textColor','borderColor','borderWidth','cornerRadius','boxShadow','visibility'] },
   { label: 'Tamaño y espacio', fields: ['widthMode','width','maxWidth','minHeight','paddingTop','paddingRight','paddingBottom','paddingLeft','marginTop','marginRight','marginBottom','marginLeft','minWidth','maxHeight','aspectRatio','overflow','objectPosition'] },
   { label: 'Posición y capas', fields: ['position','offsetX','offsetY','layer','rotation','order'] },
 ]

@@ -170,11 +170,12 @@ export function createEditorStore(initial = {}) {
             }),
           }))
         },
-        resetBlockProps(id, keys) {
+        resetBlockProps(id, keys, replacements = {}) {
           set(state=>({page:produce(state.page,draft=>{
             const block=draft.blocks[id]
             if(!block)return
             for(const key of keys)delete block.props[key]
+            Object.assign(block.props,replacements)
             draft.updatedAt=new Date().toISOString()
           })}))
         },

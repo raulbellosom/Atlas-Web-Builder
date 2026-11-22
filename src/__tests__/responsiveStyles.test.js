@@ -1,11 +1,39 @@
 import { describe, it, expect } from 'vitest'
 import { resolveResponsive } from '../blocks/elements/responsive.js'
-import { elementSurfaceStyle, elementOuterStyle } from '../blocks/elements/design.js'
+import { elementSurfaceStyle, elementOuterStyle, containerLimit } from '../blocks/elements/design.js'
 import { BoxBlock, TextElementBlock } from '../blocks/elements/ElementBlocks.jsx'
 import { createEditorStore } from '../editor/store/createEditorStore.js'
 import { parsePage, serializePage } from '../persistence/serializePage.js'
 
 describe('responsive styles use the existing portable property format', () => {
+  it('supports container presets, full bleed, background clearing and collapsed visibility',()=>{
+    expect(containerLimit({containerPreset:'xl'})).toBe('1280px')
+    expect(containerLimit({containerPreset:'2xl'})).toBe('1536px')
+    expect(elementOuterStyle({containerPreset:'xl'})).toMatchObject({maxWidth:'1280px',marginInline:'auto'})
+    expect(elementOuterStyle({containerPreset:'xl',fullBleed:true}).maxWidth).toBeUndefined()
+    expect(elementOuterStyle({visibility:'hidden'})).toMatchObject({visibility:'hidden'})
+    const visibility=elementOuterStyle({visibility:'visible',mobileVisibility:'collapsed'})
+    expect(visibility['--ar-mobile-display']).toBe('none')
+    expect(visibility['--ar-desktop-display']).not.toBe('none')
+    const surface=elementSurfaceStyle({backgroundImage:'https://example.test/photo.webp',mobileBackgroundImage:''},{mode:'edit'})
+    expect(surface['--ar-mobile-backgroundImage']).toBe('none')
+    expect(surface['--ar-desktop-backgroundImage']).toBe('url("https://example.test/photo.webp")')
+    expect(elementSurfaceStyle({backgroundImage:'javascript:alert(1)'},{}).backgroundImage).toBeUndefined()
+  })
+  it('keeps historical mobile defaults until an explicit inheritance reset, including after reopen',()=>{
+    const props={...BoxBlock.defaultProps,layout:'grid',columns:3,tabletColumns:2}
+    expect(resolveResponsive(props,'mobile').columns).toBe(1)
+    const store=createEditorStore()
+    store.getState().insertBlock('BoxBlock',BoxBlock)
+    const id=store.getState().selectedId
+    store.getState().updateBlockProps(id,props)
+    store.getState().resetBlockProps(id,['mobileColumns'],{mobileColumnsInherit:true})
+    const saved=parsePage(serializePage(store.getState().page)).blocks[id].props
+    expect(resolveResponsive({...BoxBlock.defaultProps,...saved},'mobile').columns).toBe(2)
+    expect(resolveResponsive({...BoxBlock.defaultProps,...saved,tabletColumns:4},'mobile').columns).toBe(4)
+    store.temporal.getState().undo()
+    expect(resolveResponsive({...BoxBlock.defaultProps,...store.getState().page.blocks[id].props},'mobile').columns).toBe(1)
+  })
   it('inherits independently and keeps zero, false and explicit resets', () => {
     const props = { fontSize: 64, paddingLeft: 24, tabletFontSize: 40, mobilePaddingLeft: 0, mobileFontSize: 'inherit' }
     expect(resolveResponsive(props, 'mobile')).toMatchObject({ fontSize: 40, paddingLeft: 0 })

@@ -11,6 +11,7 @@ import { BlockIcon } from './BlockIcon.jsx'
 import { es } from '../i18n/es.js'
 import {ResponsiveGeometry} from './ResponsiveGeometry.jsx'
 import {geometryKeys,geometryKey} from '../../blocks/elements/geometry.js'
+import {OverflowCorrection} from './OverflowDiagnostics.jsx'
 
 function CollapseSection({ label, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -72,7 +73,7 @@ export function PropertiesPanel() {
   const allFields = { ...variantField, ...fields }
   const responsive=def.kind==='element'&&!!fields.mobilePosition
   const geometryFields=new Set(responsive?['desktop','tablet','mobile'].flatMap(device=>geometryKeys.map(key=>geometryKey(key,device))):[])
-  const entries = Object.entries(allFields).filter(([key])=>!geometryFields.has(key)&&!allFields[key].responsiveBase)
+  const entries = Object.entries(allFields).filter(([key])=>!geometryFields.has(key)&&!allFields[key].responsiveBase&&!allFields[key].internalResponsive)
 
 
   const sections = partitionGroups(entries, def.groups)
@@ -82,12 +83,14 @@ export function PropertiesPanel() {
   const fieldRow=(propName,spec)=>{
     const active=spec.responsive?responsiveKey(propName,device):propName
     const isResponsive=spec.responsive&&device!=='desktop'&&allFields[active]
-    return <FieldRow key={active} propName={active} spec={spec}
+    const flag=allFields[active]?.inheritanceFlag
+    const reset=()=>resetBlockProps(selectedId,[active],flag?{[flag]:true}:def.defaultProps?.[active]!==undefined&&allFields[active]?.options?.some(option=>(option.value??option)==='inherit')?{[active]:'inherit'}:{})
+    return <FieldRow key={active} propName={active} spec={{...allFields[active],...spec,options:isResponsive?allFields[active].options:spec.options}}
       value={isResponsive?resolved[propName]:merged[propName]}
       defaultValue={isResponsive?inherited[propName]:def.defaultProps?.[propName]}
-      hasValue={Object.hasOwn(block.props||{},active)}
-      onChange={next=>updateBlockProps(selectedId,{[active]:next})}
-      onReset={isResponsive?()=>resetBlockProps(selectedId,[active]):undefined}/>
+      hasValue={(Object.hasOwn(block.props||{},active)||(isResponsive&&def.defaultProps?.[active]!==undefined))&&merged[active]!=='inherit'&&merged[flag]!==true}
+      onChange={next=>updateBlockProps(selectedId,{[active]:next,...(flag?{[flag]:false}:{})})}
+      onReset={isResponsive?reset:undefined}/>
   }
 
 
@@ -103,12 +106,13 @@ export function PropertiesPanel() {
         <span className="atlas-wb-props__header-type">{def.type}</span>
       </div>
 
+      <OverflowCorrection key={selectedId+device} blockId={selectedId} definition={def}/>
       {responsiveKeys.length>0&&<div className="atlas-wb-responsive-controls">
         <div role="group" aria-label="Pantalla de propiedades">
           {devices.map(value=><button key={value} type="button" className="atlas-wb-btn atlas-wb-btn--secondary" aria-pressed={device===value} onClick={()=>setDevice(value)}>{value==='desktop'?'Escritorio':value==='tablet'?'Tableta':'Teléfono'}</button>)}
         </div>
         <p className="atlas-wb-field__hint">Los campos con ◇ admiten ajustes por pantalla. Restablecer recupera la herencia.</p>
-        {device!=='desktop'&&<button type="button" className="atlas-wb-btn atlas-wb-btn--secondary" onClick={()=>updateBlockProps(selectedId,Object.fromEntries(responsiveKeys.filter(key=>inherited[key]!==undefined).map(key=>[responsiveKey(key,device),inherited[key]])))}>Copiar estilos de {device==='mobile'?'tableta':'escritorio'}</button>}
+        {device!=='desktop'&&<button type="button" className="atlas-wb-btn atlas-wb-btn--secondary" onClick={()=>updateBlockProps(selectedId,Object.fromEntries(responsiveKeys.filter(key=>inherited[key]!==undefined).flatMap(key=>{const active=responsiveKey(key,device),flag=allFields[active]?.inheritanceFlag;return [[active,inherited[key]],...(flag?[[flag,false]]:[])]})))}>Copiar estilos de {device==='mobile'?'tableta':'escritorio'}</button>}
       </div>}
 
       {responsive&&<CollapseSection label="Posición y tamaño por pantalla" defaultOpen={false}><ResponsiveGeometry block={block} definition={def}/></CollapseSection>}

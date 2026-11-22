@@ -1,6 +1,6 @@
 import { responsiveFields, resolveResponsive } from './responsive.js'
 import { defineBlock } from '../../registry/createBlockRegistry.js'
-import { designFields, designGroups, typographyFields, elementSurfaceStyle, elementClass } from './design.js'
+import { designFields, designGroups, typographyFields, elementSurfaceStyle, elementClass, containerLimit } from './design.js'
 import {BrandIdentity,brandIdentityDefaults,brandIdentityFields} from './BrandIdentity.jsx'
 import {AccordionBlock,AccordionItemBlock} from './AccordionBlocks.jsx'
 const field = (label,options) => ({ type:'select',label,options })
@@ -18,6 +18,7 @@ function layoutVariables(props) {
     variables[`--ae-${prefix||'desktop'}-align`]=['start','center','end','stretch'].includes(resolved.align)?resolved.align:'stretch'
     variables[`--ae-${prefix||'desktop'}-justify`]=['start','center','end','space-between','space-around'].includes(resolved.justify)?resolved.justify:'start'
     variables[`--ae-${prefix||'desktop'}-wrap`]=resolved.wrap==='wrap'?'wrap':'nowrap'
+    variables[`--ac-${prefix||'desktop'}-inner-limit`]=resolved.fullBleed===true?(containerLimit(resolved)??'none'):'none'
     if (layouts.includes(layout)) {
       variables[`--ae-${prefix || 'desktop'}-display`] = layout === 'grid' ? 'grid' : layout==='free'?'block':'flex'
       variables[`--ae-${prefix || 'desktop'}-direction`] = layout === 'row' ? 'row' : 'column'
@@ -32,18 +33,21 @@ function layoutVariables(props) {
 function element(definition) {
   return defineBlock({ category:'elements', kind:'element', ...definition,
     defaultProps:{stylePreset:'none',widthMode:'auto',...definition.defaultProps},
-    fields:responsiveFields({...definition.fields,...designFields},['layout','columns','gap','align','justify','wrap','fit','objectPosition']), groups:[...definition.groups,...designGroups] })
+    fields:responsiveFields({...definition.fields,...designFields},['layout','columns','gap','align','justify','wrap','fit','objectPosition','containerPreset','fullBleed','contentMaxWidth']), groups:[...definition.groups,...designGroups] })
 }
 export const BoxBlock = element({
   type:'BoxBlock',label:'Contenedor libre',icon:'layout',slots:{children:{}},
   defaultProps:{widthMode:'fill',layout:'column',columns:2,gap:16,mobileLayout:'column',mobileColumns:1},
   fields:{layout:field('Distribución',layoutOptions(layouts)),columns:{type:'number',label:'Columnas',min:1,max:12},
+    wrap:field('Salto de línea',['nowrap','wrap']),
+    containerPreset:field('Ancho del contenedor',[{value:'none',label:'Sin límite adicional'},{value:'full',label:'Ancho completo'},{value:'xl',label:'XL · 1280 px'},{value:'2xl',label:'2XL · 1536 px'},{value:'custom',label:'Ancho personalizado'}]),
+    contentMaxWidth:{type:'number',label:'Límite personalizado (px)',min:1,max:4000},fullBleed:{type:'toggle',label:'Fondo completo y contenido centrado'},
     gap:{type:'number',label:'Separación (px)',min:0,max:128},align:field('Alinear elementos',['start','center','end','stretch']),
     justify:field('Distribuir espacio',['start','center','end','space-between','space-around']),
     tabletLayout:field('Distribución en tableta',layoutOptions(['inherit',...layouts])),tabletColumns:{type:'number',label:'Columnas en tableta',min:1,max:12},
-    mobileLayout:field('Distribución en móvil',layoutOptions(['inherit',...layouts])),mobileColumns:{type:'number',label:'Columnas en móvil',min:1,max:12}},
-  groups:[{label:'Composición',fields:['layout','columns','gap','align','justify','wrap']},{label:'Adaptación por pantalla',fields:['tabletLayout','tabletColumns','mobileLayout','mobileColumns']}],
-  render:props=><div className={elementClass(props.ctx,'atlas-element-box')} style={{...elementSurfaceStyle(props,props.ctx),...layoutVariables(props)}}>
+    mobileLayout:field('Distribución en móvil',layoutOptions(['inherit',...layouts])),mobileColumns:{type:'number',label:'Columnas en móvil',min:1,max:12,inheritanceFlag:'mobileColumnsInherit'},mobileColumnsInherit:{type:'toggle',label:'Heredar columnas móviles',internalResponsive:true}},
+  groups:[{label:'Composición',fields:['layout','columns','gap','align','justify','wrap']},{label:'Contenedor',fields:['containerPreset','contentMaxWidth','fullBleed']},{label:'Adaptación por pantalla',fields:['tabletLayout','tabletColumns','mobileLayout','mobileColumns']}],
+  render:props=><div data-atlas-block={props.ctx?.blockId} className={elementClass(props.ctx,'atlas-element-box')} style={{...elementSurfaceStyle(props,props.ctx),...layoutVariables(props)}}>
     <div className="atlas-element-layout">{props.ctx.slot('children')}</div>
   </div>,
 })
@@ -53,14 +57,14 @@ export const TextElementBlock = element({
   groups:[{label:'Contenido',fields:['text','tag']},{label:'Tipografía',fields:Object.keys(typographyFields)}],
   render:({ctx,...props})=>{
     const Tag=['p','span','h1','h2','h3','h4'].includes(props.tag)?props.tag:'p'
-    return <Tag className={elementClass(ctx,'atlas-element-text')} style={{margin:0,whiteSpace:'pre-wrap',...elementSurfaceStyle(props,ctx)}}>{ctx.inlineText?ctx.inlineText({propName:'text',value:props.text,as:'span',multiline:true}):props.text}</Tag>
+    return <Tag data-atlas-block={ctx?.blockId} className={elementClass(ctx,'atlas-element-text')} style={{margin:0,whiteSpace:'pre-wrap',...elementSurfaceStyle(props,ctx)}}>{ctx.inlineText?ctx.inlineText({propName:'text',value:props.text,as:'span',multiline:true}):props.text}</Tag>
   },
 })
 function linkElement(type,label,preset,decoration) {
   return element({type,label,icon:'button',defaultProps:{label,href:'#',stylePreset:preset},
     fields:{label:{type:'text',label:'Texto'},href:{type:'link',label:'Destino'},newTab:{type:'toggle',label:'Abrir en otra pestaña'},...typographyFields},
     groups:[{label:'Contenido',fields:['label','href','newTab']},{label:'Tipografía',fields:Object.keys(typographyFields)}],
-    render:({ctx,...props})=><a className={elementClass(ctx,'atlas-element-link')} href={safeHref(props.href)} target={props.newTab?'_blank':undefined} rel={props.newTab?'noopener noreferrer':undefined}
+    render:({ctx,...props})=><a data-atlas-block={ctx?.blockId} className={elementClass(ctx,'atlas-element-link')} href={safeHref(props.href)} target={props.newTab?'_blank':undefined} rel={props.newTab?'noopener noreferrer':undefined}
       style={{display:'inline-flex',alignItems:'center',justifyContent:'center',textDecoration:decoration,...elementSurfaceStyle(props,ctx)}}>{ctx.inlineText?ctx.inlineText({propName:'label',value:props.label,as:'span'}):props.label}</a>})
 }
 export const LinkElementBlock=linkElement('LinkElementBlock','Enlace','none','underline')
@@ -73,12 +77,12 @@ export const ImageElementBlock=element({
   render:({ctx,...props})=>{
     const src=typeof props.src==='string'&&/^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|webp|gif);base64,)/i.test(props.src)?props.src:''
     const style={display:'block',objectFit:props.fit==='contain'?'contain':'cover',...elementSurfaceStyle(props,ctx)}
-    return src?<img className={elementClass(ctx)} src={src} alt={props.alt||''} style={style}/>:<div className={elementClass(ctx)} role="img" aria-label={props.alt||'Imagen sin seleccionar'} style={style}>Selecciona una imagen</div>
+    return src?<img data-atlas-block={ctx?.blockId} className={elementClass(ctx)} src={src} alt={props.alt||''} style={style}/>:<div data-atlas-block={ctx?.blockId} className={elementClass(ctx)} role="img" aria-label={props.alt||'Imagen sin seleccionar'} style={style}>Selecciona una imagen</div>
   },
 })
 export const LogoElementBlock=element({
   type:'LogoElementBlock',label:'Logo y marca',icon:'image',defaultProps:{...brandIdentityDefaults,fontSize:24,fontWeight:'700'},
   fields:{...brandIdentityFields,...typographyFields},groups:[{label:'Marca',fields:Object.keys(brandIdentityFields)},{label:'Tipografía',fields:Object.keys(typographyFields)}],
-  render:({ctx,...props})=><a className={elementClass(ctx,'atlas-element-brand')} href={safeHref(props.brandHref)} style={{display:'inline-flex',alignItems:'center',fontFamily:'var(--atlas-font-sans)',textDecoration:'none',color:'inherit',...elementSurfaceStyle(props,ctx)}}><BrandIdentity {...props}/></a>,
+  render:({ctx,...props})=><a data-atlas-block={ctx?.blockId} className={elementClass(ctx,'atlas-element-brand')} href={safeHref(props.brandHref)} style={{display:'inline-flex',alignItems:'center',fontFamily:'var(--atlas-font-sans)',textDecoration:'none',color:'inherit',...elementSurfaceStyle(props,ctx)}}><BrandIdentity {...props}/></a>,
 })
 export const elementBlocks=[BoxBlock,TextElementBlock,ButtonElementBlock,LinkElementBlock,ImageElementBlock,LogoElementBlock,AccordionBlock,AccordionItemBlock]
