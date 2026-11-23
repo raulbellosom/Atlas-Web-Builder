@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar
+## 0.9.2
 
 - Iconografía nativa: nuevo elemento libre `IconElementBlock` con 49 iconos de trazo (`lucide-react`, ya dependencia) que siguen `currentColor` o un token del tema, con tamaño, grosor y descripción accesible (sin descripción = decorativo). El registro `ICONS`/`iconFor` se exporta; los documentos guardan el nombre estable del icono, no el componente.
 - Estados interactivos de enlaces y botones libres: hover y active por `filter` (no pisan el `transform` de la colocación) y transición solo con `prefers-reduced-motion: no-preference`.

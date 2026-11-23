@@ -22,11 +22,13 @@ const hubRequire = createRequire(resolve('../runly-developer-hub/package.json'))
 const { build } = createRequire(createRequire(resolve('package.json')).resolve('vite/package.json'))('esbuild')
 const { chromium, webkit } = hubRequire('@playwright/test')
 const page = { schemaVersion: 1, id: 'packed', slug: '/', title: 'Packed', visibility: 'public',
-  regions: { main: { children: ['legacy', 'text', 'collapsed', 'hidden'] } }, seo: { title: 'SEO preserved' }, blocks: {
+  regions: { main: { children: ['legacy', 'text', 'collapsed', 'hidden', 'icon', 'button'] } }, seo: { title: 'SEO preserved' }, blocks: {
     legacy: { id: 'legacy', type: 'HeadingBlock', props: { text: 'Historical heading', customHistorical: 'preserved' } },
     text: { id: 'text', type: 'TextElementBlock', props: { text: 'Responsive release', fontSize: 64, tabletFontSize: 40, mobileFontSize: 28, mobilePaddingLeft: 0 } },
     collapsed: { id: 'collapsed', type: 'TextElementBlock', props: { text: 'Collapsed', mobileVisibility: 'collapsed' } },
     hidden: { id: 'hidden', type: 'TextElementBlock', props: { text: 'Hidden', mobileVisibility: 'hidden' } },
+    icon: { id: 'icon', type: 'IconElementBlock', props: { icon: 'heart', label: 'Favorito', size: 48, strokeWidth: 1.5, tone: 'primary' } },
+    button: { id: 'button', type: 'ButtonElementBlock', props: { label: 'Acción', href: '#accion' } },
   } }
 for (const react of ['18.3.1', '19.3.0']) {
   const dir = mkdtempSync(join(tmpdir(), 'atlas-responsive-consumer-'))
@@ -39,6 +41,7 @@ for (const react of ['18.3.1', '19.3.0']) {
   assert.equal(atlas.version, expectedVersion); assert.equal(atlas.getVersion(), expectedVersion)
   assert.deepEqual(Object.keys(atlas).sort(), Object.keys(esm).sort())
   assert.equal(typeof atlas.inspectOverflowDetails, 'function')
+  assert.equal(typeof atlas.iconFor, 'function'); assert(atlas.ICONS.heart)
   const legacy = createRequire(resolve('../runly-developer-hub/package.json'))('@raulbellosom/atlas-web-builder')
   assert(Object.keys(legacy).every(key => key in atlas))
   const map = JSON.parse(readFileSync(join(pkg, '../dist/atlas-web-builder.js.map')))
@@ -73,6 +76,15 @@ for (const react of ['18.3.1', '19.3.0']) {
         const tab = await browser.newPage({ viewport: { width: 1920, height: 1000 } }), errors = []
         tab.on('pageerror', e => errors.push(e.message)); tab.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
         await tab.goto(`http://127.0.0.1:${server.address().port}`); await tab.waitForFunction(() => window.ready)
+        assert.equal(await tab.getByRole('img', { name: 'Favorito' }).locator('svg').getAttribute('width'), '48')
+        const button = tab.locator('[data-atlas-block="button"]')
+        await button.hover()
+        await tab.waitForFunction(() => getComputedStyle(document.querySelector('[data-atlas-block="button"]')).filter === 'brightness(0.94)')
+        await tab.mouse.down()
+        await tab.waitForFunction(() => getComputedStyle(document.querySelector('[data-atlas-block="button"]')).filter === 'brightness(0.86)')
+        await tab.mouse.move(0, 0); await tab.mouse.up()
+        await tab.emulateMedia({ reducedMotion: 'reduce' })
+        assert.equal(await button.evaluate(node => getComputedStyle(node).transitionDuration), '0s')
         for (const [width, font] of [[390, '28px'], [820, '40px'], [1440, '64px']]) {
           await tab.locator('#canvas').evaluate((node, width) => { node.style.width = `${width}px` }, width)
           await tab.waitForFunction(font => getComputedStyle(document.querySelector('[data-atlas-block="text"]')).fontSize === font, font)
@@ -86,6 +98,7 @@ for (const react of ['18.3.1', '19.3.0']) {
   } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }
   report.consumers.push({ react, verifiedSources, exports: Object.keys(atlas).length, browserCases, roundtrip: true })
 }
-mkdirSync('.artifacts/responsive-0.9.0', { recursive: true })
-writeFileSync('.artifacts/responsive-0.9.0/verification.json', JSON.stringify(report, null, 2) + '\n')
+const output = `.artifacts/responsive-${JSON.parse(readFileSync('package.json')).version}`
+mkdirSync(output, { recursive: true })
+writeFileSync(`${output}/verification.json`, JSON.stringify(report, null, 2) + '\n')
 console.log(JSON.stringify(report))
