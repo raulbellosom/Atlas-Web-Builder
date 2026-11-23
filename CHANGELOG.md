@@ -1,9 +1,21 @@
 # Changelog
 
-## Sin publicar
+## 0.10.0
 
-- Corrección verificada en navegador (Chromium y WebKit): un SVG recoloreado desde otro origen sin CORS ya no se ve vacío. Se muestra como imagen normal y pasa a máscara solo si el navegador confirma que puede leerlo; las URLs relativas y `data:` usan máscara directamente.
-- Nuevo `scripts/verify-phase2-browser.mjs` (aceptación real de componentes sincronizados, SVG con CORS e iconos) y `scripts/lib/browser.mjs` (empaquetado de la fuente actual + Playwright), base de la matriz de movimiento y responsive.
+Motion Engine y Responsive Pro (Fase 3). Cambia el catálogo: hay que registrar los catálogos nuevos en el host antes de adoptarla.
+
+- **Contrato de efectos portable.** Los props universales `_animation`, `_scrollReveal`, `_kenburns`, `_pressed`, `_stagger`, `_parallax`, `_hover`, `_transform`, `_filter`, `_opacity`, `_cursor`, `_zIndex`, `_sticky`, `_lazy` y `_lazyMinHeight` tienen ahora una tabla declarativa (`UNIVERSAL_PROPS`, `UNIVERSAL_CAPABILITIES`, `validateUniversalProp`). El catálogo de bloques la incluye (`universalProps`, `capabilities`) para que las plantillas Website conserven el movimiento al exportar e importar.
+- **Entrada animada sin contenido invisible.** El HTML del servidor siempre es visible: nada se oculta por marcado. Tras montar, solo se ocultan (solo opacidad, sin mover el layout) los elementos que empiezan bajo el pliegue y se revelan al entrar en pantalla; los que ya se ven no parpadean. Sin JavaScript, con scripts lentos o con movimiento reducido todo se ve de inmediato. Un solo `IntersectionObserver` compartido sirve a toda la página.
+- **`_animation` ampliado:** distancia, escala inicial, desenfoque y repetir al volver a entrar, sin cambiar el aspecto de los documentos anteriores.
+- **Ken Burns (`_kenburns`):** zoom y desplazamiento lentos dentro de un marco recortado que no cambia el tamaño del bloque; se detiene con movimiento reducido, en el editor y al imprimir.
+- **Estados táctiles:** el hover solo se aplica con puntero (`(hover: hover) and (pointer: fine)`), nuevo estado al presionar (`_pressed`) para táctil y mouse, y sin transiciones con movimiento reducido. Parallax acotado y recorte horizontal en deslizamientos para que la página nunca haga scroll lateral.
+- **Tipografía fluida:** `fluidType`, `fontSizeMin/Max`, `fluidMinViewport/MaxViewport` en elementos de texto (`clamp()` sobre el ancho de la página, no de la ventana) y escala fluida de tema (`tokens.fluid`) para los tamaños grandes. Los tamaños por dispositivo siguen ganando.
+- **Punto focal por dispositivo** (`focalX/Y`, `tabletFocalX/Y`, `mobileFocalX/Y`) en `ImageBlock` y `ImageElementBlock`.
+- **Editor:** controles de intensidad por preset, Ken Burns, estado al presionar, "Reproducir entrada", tamaño fluido y "Escala fluida" en el tema; todo en español, accesible y con reinicio.
+- **Verificación real:** `scripts/verify-motion-responsive.mjs` (Chromium y WebKit: HTML de servidor visible, sin JavaScript, movimiento reducido, CLS, barrido de desbordamiento de 320 a 1920 px, táctil, tipografía fluida, punto focal, Ken Burns e hidratación) y `scripts/audit-overflow.mjs` reutilizable.
+- Los keyframes de entrada pasaron de `editor.css` a `motion.css` (misma hoja `style.css`).
+- Corrección: un SVG recoloreado desde otro origen sin CORS ya no se ve vacío; se muestra como imagen normal y pasa a máscara solo si el navegador confirma que puede leerlo.
+- Nuevos `scripts/verify-phase2-browser.mjs` y `scripts/lib/browser.mjs`.
 
 ## 0.9.3
 
