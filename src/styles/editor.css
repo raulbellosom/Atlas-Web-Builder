@@ -588,6 +588,8 @@
 .atlas-wb-media-tab__item { width: 100%; appearance: none; border: 1px solid var(--awb-border); background: var(--awb-bg); border-radius: var(--awb-radius-sm); padding: 4px; display: flex; flex-direction: column; gap: 4px; font: inherit; color: inherit; cursor: grab; }
 .atlas-wb-media-tab__item:hover, .atlas-wb-media-tab__item:focus-visible { border-color: var(--awb-focus); background: var(--awb-accent-soft); }
 .atlas-wb-media-tab__item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 4px; display: block; }
+.atlas-wb-media-tab__icon { display: grid; place-items: center; width: 100%; aspect-ratio: 1/1; border-radius: 4px; background: var(--awb-surface-2, rgba(127,127,127,.12)); }
+.atlas-wb-media-tab__icon svg { width: 28px; height: 28px; opacity: .7; }
 .atlas-wb-media-tab__item span { font-size: 10px; color: var(--awb-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 11. Breadcrumb ─────────────────────────────────────────────────────────── */

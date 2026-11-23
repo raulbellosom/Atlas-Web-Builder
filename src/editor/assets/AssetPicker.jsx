@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { Film, Upload, X } from 'lucide-react'
+import { Film, Upload, X, Music } from 'lucide-react'
 import { OverlayPortal } from '../ui/EditorAppearance.jsx'
 import { onTabListKeyDown } from '../ui/keyboard.js'
 import clsx from 'clsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { es } from '../i18n/es.js'
 import { useEditorCapabilities } from '../capabilities.jsx'
-import { normalizeAssetList, resolveAsset, uploadAsset } from './assetSource.js'
+import { assetKind, normalizeAssetList, resolveAsset, uploadAsset } from './assetSource.js'
 
 function isSafeUrl(v) {
   if (typeof v !== 'string' || !v.trim()) return false
@@ -20,9 +20,10 @@ function isSafeUrl(v) {
  *   2. Biblioteca — grid of uploaded assets (requires AssetSource)
  *   3. Subir   — file upload / drag-drop (requires AssetSource.upload)
  *
- * @param {{ onPick: (asset: any) => void, onClose: () => void, accept?: string }} props
+ * @param {{ onPick: (asset: any) => void, onClose: () => void, accept?: string, kind?: 'image'|'video'|'audio' }} props
+ * `kind` limits the library to that media kind (a video field never lists images).
  */
-export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRef }) {
+export function AssetPicker({ onPick, onClose, accept = 'image/*', kind, returnFocusRef }) {
   const capabilities = useEditorCapabilities()
   const { assets } = useBuilder()
   const hasAssets  = !!assets
@@ -58,9 +59,10 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
     if (tab === 'library') loadAssets()
   }, [tab, loadAssets])
 
+  const ofKind = kind ? items.filter((a) => assetKind(a) === kind) : items
   const filtered = search.trim()
-    ? items.filter((a) => (a.name || '').toLowerCase().includes(search.trim().toLowerCase()))
-    : items
+    ? ofKind.filter((a) => (a.name || '').toLowerCase().includes(search.trim().toLowerCase()))
+    : ofKind
 
   // ── Subir tab ──────────────────────────────────────────────────────────────
   const fileRef     = useRef(null)
@@ -194,10 +196,10 @@ export function AssetPicker({ onPick, onClose, accept = 'image/*', returnFocusRe
                         onClick={() => pickListed(a)}
                         title={a.name}
                       >
-                        {a.kind === 'image' || !a.kind ? (
+                        {assetKind(a) === 'image' || (assetKind(a) === 'video' && a.thumbnailUrl) ? (
                           <img src={a.thumbnailUrl || a.url} alt={a.alt || a.name} loading="lazy" />
                         ) : (
-                          <div className="atlas-wb-media-modal__asset-icon"><Film /></div>
+                          <div className="atlas-wb-media-modal__asset-icon">{assetKind(a) === 'audio' ? <Music /> : <Film />}</div>
                         )}
                         <span className="atlas-wb-media-modal__asset-name">{a.name}</span>
                       </button>

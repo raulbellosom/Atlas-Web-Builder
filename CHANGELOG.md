@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.0
+
+Audio y video de biblioteca (Fase B de Runly). Cambia el catálogo: hay que registrar los catálogos nuevos en el host antes de adoptarla.
+
+- **`VideoBlock.file`** (tipo de campo `video`): un video de la biblioteca del host. Gana sobre `src` y se reproduce en un `<video>` nativo (`preload="metadata"`, `playsInline`, controles visibles salvo autoplay silenciado), nunca como embed. Sin `file`, `src` (YouTube, Vimeo o URL) funciona igual que antes.
+- **`AudioBlock`** (nuevo, categoría media): `file` (tipo `audio`), título, descripción, ancho, alineación y bucle. Reproductor nativo con controles siempre visibles y `aria-label`.
+- **Campos `video` y `audio`** (`MediaField`): solo aceptan archivos de la biblioteca (nunca una URL escrita), para que una plantilla pueda empaquetarlos. Elegir, arrastrar un archivo listado o subir uno si el host lo permite.
+- **Biblioteca por tipo:** `assetKind(asset)` (por `kind` o MIME) y `mediaFieldKey(definition, kind)`. Un archivo solo entra en un campo de su tipo: un audio nunca reemplaza una imagen. `AssetPicker` acepta `kind`, la pestaña Medios muestra el póster del video o un ícono de audio y sube imágenes, video y audio (solo las imágenes generan variantes en el navegador).
+- `imageFieldKey` se mantiene como atajo de `mediaFieldKey(definition, 'image')`.
+
 ## 0.10.0
 
 Motion Engine y Responsive Pro (Fase 3). Cambia el catálogo: hay que registrar los catálogos nuevos en el host antes de adoptarla.

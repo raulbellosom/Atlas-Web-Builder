@@ -126,6 +126,7 @@ export {
   NavbarBlock,
   FooterBlock,
   VideoBlock,
+  AudioBlock,
   CounterBlock,
   TypewriterBlock,
 } from './blocks/index.js'

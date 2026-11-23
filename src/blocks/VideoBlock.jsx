@@ -54,6 +54,7 @@ export const VideoBlock = defineBlock({
   category: 'media',
   icon: 'video',
   defaultProps: {
+    file: '',
     src: '',
     poster: '',
     caption: '',
@@ -68,6 +69,7 @@ export const VideoBlock = defineBlock({
     muted: false,
   },
   fields: {
+    file:        { type: 'video',  label: 'Archivo de video (biblioteca)' },
     src:         { type: 'link',   label: 'URL del video (YouTube, Vimeo o .mp4)' },
     poster:      { type: 'image',  label: 'Imagen de portada (MP4, opcional)' },
     caption:     { type: 'text',   label: 'Pie de video (opcional)' },
@@ -82,13 +84,14 @@ export const VideoBlock = defineBlock({
     muted:       { type: 'toggle', label: 'Silenciado' },
   },
   groups: [
-    { label: 'Video',        fields: ['src', 'poster', 'caption'] },
+    { label: 'Video',        fields: ['file', 'src', 'poster', 'caption'] },
     { label: 'Presentación', fields: ['aspectRatio', 'width', 'align'] },
     { label: 'Estilo',       fields: ['radius', 'shadow'] },
     { label: 'Reproducción', fields: ['autoplay', 'controls', 'loop', 'muted'] },
   ],
-  render: ({ src, poster, caption, aspectRatio, width, align, radius, shadow, autoplay, controls, loop, muted }) => {
-    const kind     = detectKind(src)
+  render: ({ file, src, poster, caption, aspectRatio, width, align, radius, shadow, autoplay, controls, loop, muted }) => {
+    // A library/package file always wins over a URL; it plays in a native <video>, never an embed.
+    const kind     = file && isSafeUrl(file) ? 'file' : detectKind(src)
     const safeRatio = aspectRatio && aspectRatio !== 'auto' ? aspectRatio : '16 / 9'
     const radiusVal = radius && radius !== 'none' ? radiusVar(radius) : undefined
     const shadowVal = shadow && shadow !== 'none' ? shadowVar(shadow) : undefined
@@ -138,6 +141,22 @@ export const VideoBlock = defineBlock({
           title={caption || 'Vimeo video'}
         />
       )
+    } else if (kind === 'file') {
+      media = (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <video
+          src={file}
+          poster={isSafeUrl(poster) ? poster : undefined}
+          style={frameStyle}
+          autoPlay={autoplay}
+          controls={controls || !autoplay}
+          loop={loop}
+          muted={autoplay || muted}
+          preload="metadata"
+          playsInline
+          aria-label={caption || 'Video'}
+        />
+      )
     } else if (kind === 'mp4' || (kind === 'unknown' && isSafeUrl(src))) {
       media = (
         // eslint-disable-next-line jsx-a11y/media-has-caption
@@ -157,7 +176,7 @@ export const VideoBlock = defineBlock({
       media = (
         <div style={{ ...frameStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#888', fontFamily: 'var(--atlas-font-sans)', fontSize: 'var(--atlas-fontSize-sm)' }}>
           <span style={{ fontSize: 32, opacity: 0.4 }}>▶</span>
-          <span>Añade una URL de YouTube, Vimeo o .mp4</span>
+          <span>Elige un video de la biblioteca o añade una URL de YouTube, Vimeo o .mp4</span>
         </div>
       )
     }

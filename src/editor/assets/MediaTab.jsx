@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { LoaderCircle, Upload } from 'lucide-react'
+import { Film, LoaderCircle, Music, Upload } from 'lucide-react'
 import clsx from 'clsx'
 import { useEditorStore } from '../store/EditorStoreProvider.jsx'
-import { ASSET_DRAG_TYPE, normalizeAssetList, uploadAsset } from './assetSource.js'
+import { ASSET_DRAG_TYPE, assetKind, normalizeAssetList, uploadAsset } from './assetSource.js'
 import { useAssetActions } from './useAssetActions.js'
 
 const message = (error) => error?.message || String(error)
@@ -16,6 +16,7 @@ export function MediaTab() {
   const { assets, accepts, apply } = useAssetActions()
   const selectedId = useEditorStore((s) => s.selectedId)
   const target = selectedId && accepts(selectedId) ? selectedId : null
+  const fits = (asset) => !!target && accepts(target, asset)
   const canUpload = typeof assets?.upload === 'function'
   const [query, setQuery] = useState('')
   const [items, setItems] = useState([])
@@ -50,12 +51,12 @@ export function MediaTab() {
   }
 
   function use(asset) {
-    if (!target || busy) return
+    if (!fits(asset) || busy) return
     run(() => apply(target, asset))
   }
 
   function upload(fileList) {
-    const files = Array.from(fileList ?? []).filter((file) => file.type.startsWith('image/'))
+    const files = Array.from(fileList ?? []).filter((file) => /^(image|video|audio)\//.test(file.type))
     if (!files.length || !canUpload) return
     run(async () => {
       let first = null
@@ -63,7 +64,7 @@ export function MediaTab() {
         const asset = await uploadAsset(assets, file)
         first ??= asset
       }
-      if (target && first) await apply(target, first)
+      if (first && fits(first)) await apply(target, first)
       await load()
     })
   }
@@ -77,13 +78,13 @@ export function MediaTab() {
       <input
         type="search"
         className="atlas-wb-field__input"
-        placeholder="Buscar imágenes..."
-        aria-label="Buscar imágenes"
+        placeholder="Buscar medios..."
+        aria-label="Buscar medios"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
       <p className="atlas-wb-media-tab__hint" role="status">
-        {target ? 'Haz clic en una imagen para usarla en el bloque seleccionado, o arrástrala a otro bloque.' : 'Arrastra una imagen sobre un bloque, o selecciona un bloque con imagen y haz clic en ella.'}
+        {target ? 'Haz clic en un archivo para usarlo en el bloque seleccionado, o arrástralo a otro bloque.' : 'Arrastra un archivo sobre un bloque, o selecciona un bloque con imagen, video o audio y haz clic en él.'}
       </p>
       {canUpload ? (
         <div
@@ -94,18 +95,18 @@ export function MediaTab() {
         >
           <button type="button" className="atlas-wb-btn atlas-wb-btn--ghost" disabled={busy} onClick={() => fileRef.current?.click()}>
             {busy ? <LoaderCircle className="atlas-wb-spin" aria-hidden="true" /> : <Upload aria-hidden="true" />}
-            {busy ? 'Procesando...' : 'Subir imágenes'}
+            {busy ? 'Procesando...' : 'Subir archivos'}
           </button>
-          <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => { upload(e.target.files); e.target.value = '' }} />
+          <input ref={fileRef} type="file" accept="image/*,video/*,audio/*" multiple hidden onChange={(e) => { upload(e.target.files); e.target.value = '' }} />
         </div>
       ) : null}
       {error ? <p className="atlas-wb-media-tab__error" role="alert">{error}</p> : null}
       {loading && !items.length ? (
-        <p className="atlas-wb-empty">Cargando imágenes...</p>
+        <p className="atlas-wb-empty">Cargando medios...</p>
       ) : !visible.length ? (
-        <p className="atlas-wb-empty">{needle ? 'Sin resultados.' : 'Todavía no hay imágenes en la biblioteca.'}</p>
+        <p className="atlas-wb-empty">{needle ? 'Sin resultados.' : 'Todavía no hay archivos en la biblioteca.'}</p>
       ) : (
-        <ul className="atlas-wb-media-tab__grid" aria-label="Imágenes de la biblioteca">
+        <ul className="atlas-wb-media-tab__grid" aria-label="Archivos de la biblioteca">
           {visible.map((asset) => (
             <li key={asset.id}>
               <button
@@ -113,15 +114,17 @@ export function MediaTab() {
                 draggable
                 className="atlas-wb-media-tab__item"
                 title={asset.name}
-                aria-label={target ? `Usar ${asset.name || 'imagen'} en el bloque seleccionado` : `${asset.name || 'Imagen'} (arrastra a un bloque)`}
-                aria-disabled={!target || busy}
+                aria-label={fits(asset) ? `Usar ${asset.name || 'archivo'} en el bloque seleccionado` : `${asset.name || 'Archivo'} (arrastra a un bloque)`}
+                aria-disabled={!fits(asset) || busy}
                 onClick={() => use(asset)}
                 onDragStart={(e) => {
                   e.dataTransfer.setData(ASSET_DRAG_TYPE, JSON.stringify(asset))
                   e.dataTransfer.effectAllowed = 'copy'
                 }}
               >
-                <img src={asset.thumbnailUrl || asset.url} alt={asset.alt || ''} loading="lazy" draggable={false} />
+                {assetKind(asset) === 'image' || (assetKind(asset) === 'video' && asset.thumbnailUrl)
+                  ? <img src={asset.thumbnailUrl || asset.url} alt={asset.alt || ''} loading="lazy" draggable={false} />
+                  : <span className="atlas-wb-media-tab__icon" aria-hidden="true">{assetKind(asset) === 'audio' ? <Music /> : <Film />}</span>}
                 <span>{asset.name}</span>
               </button>
             </li>

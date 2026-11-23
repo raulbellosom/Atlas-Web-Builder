@@ -4,7 +4,7 @@
  *
  * Built-in field types:
  *   text, textarea, number, toggle, select, color-token, spacing,
- *   image, link, rich-text
+ *   image, video, audio, link, rich-text
  *
  * Hosts can register custom field types via `defineField()` later (Phase 7+).
  */
@@ -16,6 +16,7 @@ import { SelectField } from './SelectField.jsx'
 import { ColorTokenField } from './ColorTokenField.jsx'
 import { SpacingField } from './SpacingField.jsx'
 import { ImageField } from './ImageField.jsx'
+import { MediaField } from './MediaField.jsx'
 import { LinkField } from './LinkField.jsx'
 import { RichTextField } from './RichTextField.jsx'
 import { BackgroundField } from './BackgroundField.jsx'
@@ -35,6 +36,8 @@ export const defaultFields = {
   'color-token': ColorTokenField,
   spacing: SpacingField,
   image: ImageField,
+  video: MediaField,
+  audio: MediaField,
   link: LinkField,
   'rich-text': RichTextField,
   background: BackgroundField,
