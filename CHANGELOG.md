@@ -1,5 +1,9 @@
 # Changelog
 
+## Sin publicar
+
+- Componentes sincronizados (motor, sin interfaz): `AtlasWebRenderer` acepta `components` (mapa a nivel de sitio `{ id: { name, section } }`) y expande los bloques `ComponentRefBlock` antes de renderizar. Los overrides solo cambian campos de contenido (texto, enlace, imagen) por ruta `root/<slot>/<índice>`; una referencia inválida se descarta, nunca se renderiza a medias. Exporta `resolveComponents`, `overridableFromRegistry`, `COMPONENT_REF_TYPE` y `COMPONENT_LIMITS`. No cambia el catálogo de bloques: `ComponentRefBlock` se registra en la etapa 2B-2 junto con el formato portable.
+
 ## 0.9.2
 
 - Iconografía nativa: nuevo elemento libre `IconElementBlock` con 49 iconos de trazo (`lucide-react`, ya dependencia) que siguen `currentColor` o un token del tema, con tamaño, grosor y descripción accesible (sin descripción = decorativo). El registro `ICONS`/`iconFor` se exporta; los documentos guardan el nombre estable del icono, no el componente.

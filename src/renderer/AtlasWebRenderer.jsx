@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { BlockRenderer } from './BlockRenderer.jsx'
 import { migrateContent } from '../schema/migrate.js'
+import { useBuilder } from '../provider/BuilderContext.js'
+import { overridableFromRegistry, resolveComponents } from '../components/resolve.js'
 
 /**
  * Render a Page document. Walks the page's regions and renders each root
@@ -13,6 +15,7 @@ import { migrateContent } from '../schema/migrate.js'
  *   regionAs?: keyof JSX.IntrinsicElements,
  *   className?: string,
  *   eagerBlocks?: number,  // first N root blocks never lazy-mount (above the fold)
+ *   components?: Object<string, { name: string, section: object }>, // site-level synced components referenced by ComponentRefBlock
  * }} props
  */
 export function AtlasWebRenderer({
@@ -21,8 +24,13 @@ export function AtlasWebRenderer({
   regionAs: RegionTag = 'section',
   className,
   eagerBlocks = 2,
+  components,
 }) {
-  const safePage = useMemo(() => migrateContent(page), [page])
+  const { blocks: registry } = useBuilder()
+  const safePage = useMemo(() => {
+    const migrated = migrateContent(page)
+    return components ? resolveComponents(migrated, components, { overridable: overridableFromRegistry(registry) }).page : migrated
+  }, [page, components, registry])
 
   if (!safePage || !safePage.regions || !safePage.blocks) {
     return null
