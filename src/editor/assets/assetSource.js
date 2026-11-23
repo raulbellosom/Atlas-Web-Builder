@@ -1,4 +1,5 @@
 import { optimizeImageFile } from '../../media/optimizeImage.js'
+import { vectorImageDefaults } from '../../media/vector.js'
 
 // MIME type carried by a library thumbnail dragged onto a block or image field.
 export const ASSET_DRAG_TYPE = 'application/x-atlas-asset'
@@ -37,7 +38,7 @@ export function assetProps(definition, asset, current = {}) {
   if (!key || !asset?.url) return null
   const patch = { [key]: asset.url }
   if (definition.fields[key].withAssetMeta) {
-    Object.assign(patch, { variants: asset.variants, dominantColor: asset.dominantColor || '', naturalWidth: asset.width, naturalHeight: asset.height })
+    Object.assign(patch, { variants: asset.variants, dominantColor: asset.dominantColor || '', naturalWidth: asset.width, naturalHeight: asset.height, ...vectorImageDefaults(asset) })
   }
   return patch
 }

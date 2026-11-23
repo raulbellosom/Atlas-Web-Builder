@@ -8,7 +8,10 @@ import {
   ALIGN_OPTIONS,
   ASPECT_RATIO_OPTIONS,
   IMAGE_WIDTH_OPTIONS,
+  COLOR_TOKENS,
+  colorVar,
 } from './_tokens.js'
+import { cssUrl, isVectorAsset } from '../media/vector.js'
 
 const OBJECT_FIT_OPTIONS = [
   { value: 'cover',   label: 'Cubrir (recortar)' },
@@ -22,6 +25,8 @@ const LOADING_OPTIONS = [
   { value: 'eager', label: 'Inmediata' },
   { value: 'priority', label: 'Prioritaria (imagen principal)' },
 ]
+
+const TINT_OPTIONS = [{ value: 'none', label: 'Color original' }, ...COLOR_TOKENS.map((value) => ({ value, label: value }))]
 
 function isSafeImageUrl(url) {
   if (typeof url !== 'string' || url === '') return false
@@ -49,6 +54,9 @@ export const ImageBlock = defineBlock({
     link: '',
     loading: 'lazy',
     draggable: false,
+    // Vector (SVG) assets: the picker sets `vector`; `tint` recolors it with a theme token.
+    vector: false,
+    tint: 'none',
     // Filled by the asset picker when the asset carries responsive variants.
     variants: undefined,
     dominantColor: '',
@@ -68,13 +76,14 @@ export const ImageBlock = defineBlock({
     shadow:      { type: 'select', label: 'Sombra', options: SHADOW_TOKENS },
     loading:     { type: 'select', label: 'Carga', options: LOADING_OPTIONS },
     draggable:   { type: 'toggle', label: 'Arrastrable por el usuario' },
+    tint:        { type: 'select', label: 'Color (solo SVG; requiere CORS en el origen de la imagen)', options: TINT_OPTIONS },
   },
   groups: [
     { label: 'Imagen',        fields: ['src', 'alt', 'caption', 'link', 'loading'] },
     { label: 'Presentación',  fields: ['aspectRatio', 'objectFit', 'width', 'align'] },
-    { label: 'Estilo',        fields: ['radius', 'shadow'] },
+    { label: 'Estilo',        fields: ['radius', 'shadow', 'tint'] },
   ],
-  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, variants, dominantColor, naturalWidth, naturalHeight, ctx }) => {
+  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, vector, tint, variants, dominantColor, naturalWidth, naturalHeight, ctx }) => {
     if (!isSafeImageUrl(src) && ctx?.mode !== 'edit') return null
     const safeRatio = aspectRatio && aspectRatio !== 'auto' ? aspectRatio : undefined
     const safeLink  = isSafeHref(link) ? link : ''
@@ -119,7 +128,28 @@ export const ImageBlock = defineBlock({
       </div>
     )
 
-    const img = isSafeImageUrl(src)
+    // Recolored vector: the SVG is a CSS mask over a token-colored box (an <img> cannot be recolored).
+    // The mask is fetched with CORS, so the asset origin must allow it; untinted SVGs stay a plain <img>.
+    const tinted = isVectorAsset({ vector, src }) && tint && tint !== 'none' && COLOR_TOKENS.includes(tint) && isSafeImageUrl(src)
+    const maskUrl = tinted ? cssUrl(src) : undefined
+    const img = tinted
+      ? (
+        <div
+          role="img"
+          aria-label={alt || undefined}
+          aria-hidden={alt ? undefined : true}
+          style={{
+            width: '100%',
+            aspectRatio: safeRatio || (naturalWidth && naturalHeight ? `${naturalWidth} / ${naturalHeight}` : '1 / 1'),
+            backgroundColor: colorVar(tint),
+            WebkitMask: `${maskUrl} center / contain no-repeat`,
+            mask: `${maskUrl} center / contain no-repeat`,
+            borderRadius: radiusVal,
+            boxShadow: shadowVal,
+          }}
+        />
+      )
+      : isSafeImageUrl(src)
       ? (
         <AtlasImage
           src={src}

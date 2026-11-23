@@ -5,6 +5,7 @@ import { AssetPicker } from '../assets/AssetPicker.jsx'
 import { useOptionalEditorStore } from '../store/EditorStoreProvider.jsx'
 import { useEditorCapabilities } from '../capabilities.jsx'
 import { readDraggedAsset, resolveAsset, uploadAsset } from '../assets/assetSource.js'
+import { vectorImageDefaults } from '../../media/vector.js'
 
 function isSafeUrl(value) {
   if (typeof value !== 'string') return false
@@ -35,6 +36,7 @@ export function ImageField({ value, onChange, label, spec }) {
       dominantColor: asset?.dominantColor || '',
       naturalWidth: asset?.width,
       naturalHeight: asset?.height,
+      ...vectorImageDefaults(asset ?? { url }),
     })
   }
 

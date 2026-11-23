@@ -1,5 +1,10 @@
 # Changelog
 
+## Sin publicar
+
+- `ImageBlock` admite SVG: al elegir un SVG se muestra completo (`aspectRatio: auto`, `objectFit: contain`) y se marca `vector`. El nuevo campo `tint` (token del tema) lo recolorea con una máscara CSS; sin `tint` sigue siendo un `<img>` normal. La máscara se descarga con CORS, así que el origen de la imagen debe permitirlo.
+- Nuevas props `vector` y `tint` cambian el catálogo de bloques: publicar como versión nueva y registrar su catálogo en el host antes de adoptarla.
+
 ## 0.9.0
 
 - Propiedades responsive por contenedor, con herencia desktop → tablet → mobile y conservación de valores explícitos.
