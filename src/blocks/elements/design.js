@@ -1,4 +1,5 @@
 import { responsiveFields, responsiveStyle } from './responsive.js'
+import { fluidFields, fluidFontSize, hasDeviceFontSize } from './fluidType.js'
 import {geometryKeys,geometryVariables} from './geometry.js'
 const select = (label, options) => ({ type: 'select', label, options })
 const number = (label, min, max) => ({ type: 'number', label, min, max })
@@ -37,7 +38,7 @@ const baseTypographyFields = {
   textAlign: select('Alineación del texto', ['left','center','right']),
 }
 const surfaceProperties = Object.fromEntries(['paddingTop','paddingRight','paddingBottom','paddingLeft','fontSize','fontWeight','lineHeight','letterSpacing','textAlign','fontFamily','fontStyle','whiteSpace','overflowWrap','borderWidth','borderColor','boxShadow','objectPosition'].map(key=>[key,key]))
-Object.assign(surfaceProperties,{backgroundColor:'background',backgroundImage:'backgroundImage',backgroundSize:'backgroundSize',backgroundPosition:'backgroundPosition',textColor:'color',cornerRadius:'borderRadius',fit:'objectFit'})
+Object.assign(surfaceProperties,{focalX:'objectPosition',focalY:'objectPosition',backgroundColor:'background',backgroundImage:'backgroundImage',backgroundSize:'backgroundSize',backgroundPosition:'backgroundPosition',textColor:'color',cornerRadius:'borderRadius',fit:'objectFit'})
 const outerProperties = Object.fromEntries(['maxWidth','minWidth','maxHeight','aspectRatio','overflow','order','marginTop','marginRight','marginBottom','marginLeft'].map(key=>[key,key]))
 Object.assign(outerProperties,{layer:'zIndex',visibility:['visibility','display'],containerPreset:['maxWidth','marginInline'],fullBleed:['maxWidth','marginInline'],contentMaxWidth:'maxWidth'})
 Object.assign(baseDesignFields,{
@@ -50,6 +51,7 @@ Object.assign(baseDesignFields,{
   backgroundPosition:select('Posición del fondo',['center','top','bottom','left','right']),
   boxShadow:select('Sombra',['none','0 4px 16px #0000001a','0 12px 32px #00000026']),
   objectPosition:select('Posición de imagen',['center','top','bottom','left','right']),
+  focalX:number('Punto focal horizontal (%)',0,100),focalY:number('Punto focal vertical (%)',0,100),
 })
 Object.assign(baseTypographyFields,{
   letterSpacing:{...number('Espaciado entre letras (px)',-10,40),step:0.1},
@@ -59,7 +61,8 @@ Object.assign(baseTypographyFields,{
   overflowWrap:select('Palabras largas',['normal','anywhere','break-word']),
 })
 export const designFields=responsiveFields(baseDesignFields,[...geometryKeys,...Object.keys(surfaceProperties),...Object.keys(outerProperties)])
-export const typographyFields=responsiveFields(baseTypographyFields,Object.keys(baseTypographyFields))
+// Fluid sizing is one setting per element (not per device): per-device sizes simply override it on that device.
+export const typographyFields={...responsiveFields(baseTypographyFields,Object.keys(baseTypographyFields)),...fluidFields}
 const numeric = (props, key, min, max) => typeof props[key] === 'number' && Number.isFinite(props[key]) && props[key] >= min && props[key] <= max ? props[key] : undefined
 const color = value => typeof value === 'string' && /^#[a-f\d]{6}([a-f\d]{2})?$/i.test(value) ? value : undefined
 
@@ -106,10 +109,18 @@ function surfaceStyle(props, ctx) {
   for(const key of ['boxShadow','objectPosition'])
     if(baseDesignFields[key].options.includes(props[key]))style[key]=props[key]
   if(['cover','contain','fill','scale-down','none'].includes(props.fit))style.objectFit=props.fit
+  const focalX=numeric(props,'focalX',0,100),focalY=numeric(props,'focalY',0,100)
+  if(focalX!==undefined||focalY!==undefined)style.objectPosition=`${focalX??50}% ${focalY??50}%`
   return style
 }
 export function elementSurfaceStyle(props,ctx) {
-  return {...responsiveStyle(props,value=>surfaceStyle(value,ctx),surfaceProperties),...(ctx?.mode==='edit'?{}:elementOuterStyle(props))}
+  const fluid=fluidFontSize(props).value
+  const factory=(value,device)=>{
+    const style=surfaceStyle(value,ctx)
+    if(fluid&&!hasDeviceFontSize(props,device))style.fontSize=fluid
+    return style
+  }
+  return {...responsiveStyle(props,factory,surfaceProperties),...(ctx?.mode==='edit'?{}:elementOuterStyle(props))}
 }
 // Geometry belongs to the editable wrapper in edit mode and to the element in public mode.
 export const elementClass=(ctx,name='')=>`${name} atlas-element-surface${ctx?.mode==='edit'?'':' atlas-element-item'}`.trim()

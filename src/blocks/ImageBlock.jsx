@@ -12,6 +12,8 @@ import {
   colorVar,
 } from './_tokens.js'
 import { cssUrl, isVectorAsset, useMaskReadable } from '../media/vector.js'
+import { responsiveFields } from './elements/responsive.js'
+import { focalVars, hasFocal } from './elements/focalPoint.js'
 
 const OBJECT_FIT_OPTIONS = [
   { value: 'cover',   label: 'Cubrir (recortar)' },
@@ -80,7 +82,7 @@ export const ImageBlock = defineBlock({
     naturalWidth: undefined,
     naturalHeight: undefined,
   },
-  fields: {
+  fields: responsiveFields({
     src:         { type: 'image',  label: 'Imagen', withAssetMeta: true },
     alt:         { type: 'text',   label: 'Texto alternativo (SEO / accesibilidad)' },
     caption:     { type: 'text',   label: 'Pie de foto (opcional)' },
@@ -94,13 +96,15 @@ export const ImageBlock = defineBlock({
     loading:     { type: 'select', label: 'Carga', options: LOADING_OPTIONS },
     draggable:   { type: 'toggle', label: 'Arrastrable por el usuario' },
     tint:        { type: 'select', label: 'Color (solo SVG; requiere CORS en el origen de la imagen)', options: TINT_OPTIONS },
-  },
+    focalX:      { type: 'number', label: 'Punto focal horizontal (%)', min: 0, max: 100 },
+    focalY:      { type: 'number', label: 'Punto focal vertical (%)', min: 0, max: 100 },
+  }, ['focalX', 'focalY']),
   groups: [
     { label: 'Imagen',        fields: ['src', 'alt', 'caption', 'link', 'loading'] },
-    { label: 'Presentación',  fields: ['aspectRatio', 'objectFit', 'width', 'align'] },
+    { label: 'Presentación',  fields: ['aspectRatio', 'objectFit', 'width', 'align', 'focalX', 'focalY', 'tabletFocalX', 'tabletFocalY', 'mobileFocalX', 'mobileFocalY'] },
     { label: 'Estilo',        fields: ['radius', 'shadow', 'tint'] },
   ],
-  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, vector, tint, variants, dominantColor, naturalWidth, naturalHeight, ctx }) => {
+  render: ({ src, alt, aspectRatio, objectFit, width, align, radius, shadow, caption, link, loading, draggable, vector, tint, variants, dominantColor, naturalWidth, naturalHeight, ctx, ...rest }) => {
     if (!isSafeImageUrl(src) && ctx?.mode !== 'edit') return null
     const safeRatio = aspectRatio && aspectRatio !== 'auto' ? aspectRatio : undefined
     const safeLink  = isSafeHref(link) ? link : ''
@@ -123,6 +127,7 @@ export const ImageBlock = defineBlock({
       borderRadius: radiusVal,
       boxShadow: shadowVal,
       draggable: draggable ? undefined : 'false',
+      ...focalVars(rest),
     }
 
     const placeholder = (
@@ -161,6 +166,7 @@ export const ImageBlock = defineBlock({
           height={naturalHeight}
           sizes={width && width !== '100%' ? width : '100vw'}
           style={imgStyle}
+          className={hasFocal(rest) ? 'atlas-focal' : undefined}
         />
       )
       : placeholder
