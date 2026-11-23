@@ -64,7 +64,7 @@ for (const react of ['18.3.1', '19.3.0']) {
   const bundled = await build({ entryPoints: [entry], bundle: true, write: false, outfile: join(dir, 'app.js'), format: 'esm', define: { 'process.env.NODE_ENV': '"production"' }, logLevel: 'silent' })
   const js = bundled.outputFiles.find(f => f.path.endsWith('.js')).text, css = bundled.outputFiles.find(f => f.path.endsWith('.css')).text
   const server = createServer((req, res) => {
-    res.setHeader('Content-Type', req.url === '/app.js' ? 'text/javascript' : req.url === '/app.css' ? 'text/css' : 'text/html')
+    res.setHeader('Content-Type', req.url === '/app.js' ? 'text/javascript' : req.url === '/app.css' ? 'text/css' : 'text/html; charset=utf-8')
     res.end(req.url === '/app.js' ? js : req.url === '/app.css' ? css : `<html><head><link rel="stylesheet" href="/app.css"></head><body style="margin:0"><div id="canvas" style="width:390px"><div id="root">${html}</div></div><script type="module" src="/app.js"></script></body></html>`)
   })
   server.listen(0, '127.0.0.1'); await once(server, 'listening')
