@@ -35,7 +35,8 @@ for (const react of ['18.3.1', '19.3.0']) {
   const require = createRequire(join(dir, 'package.json')), pkg = require.resolve('@raulbellosom/atlas-web-builder/package.json')
   const atlas = require('@raulbellosom/atlas-web-builder')
   const esm = await import(pathToFileURL(join(pkg, '../dist/atlas-web-builder.js')))
-  assert.equal(atlas.version, '0.9.0'); assert.equal(atlas.getVersion(), '0.9.0')
+  const expectedVersion = JSON.parse(readFileSync('package.json')).version
+  assert.equal(atlas.version, expectedVersion); assert.equal(atlas.getVersion(), expectedVersion)
   assert.deepEqual(Object.keys(atlas).sort(), Object.keys(esm).sort())
   assert.equal(typeof atlas.inspectOverflowDetails, 'function')
   const legacy = createRequire(resolve('../runly-developer-hub/package.json'))('@raulbellosom/atlas-web-builder')
