@@ -24,12 +24,12 @@ export const tools = () => ({
 })
 
 /** Bundle `source` (JSX allowed, resolves imports from `resolveDir`) into { js, css } strings. */
-export async function bundle(source, { resolveDir = root, mode = 'development' } = {}) {
+export async function bundle(source, { resolveDir = root, mode = 'development', platform = 'browser', format = 'iife' } = {}) {
   const require = createRequire(resolve(root, 'package.json'))
   const esbuild = createRequire(require.resolve('vite/package.json'))('esbuild')
   const result = await esbuild.build({
     stdin: { contents: source, resolveDir, loader: 'jsx', sourcefile: 'harness.jsx' },
-    bundle: true, write: false, format: 'iife', jsx: 'automatic', logLevel: 'silent', outdir: 'out',
+    bundle: true, write: false, format, platform, jsx: 'automatic', logLevel: 'silent', outdir: 'out',
     define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
     loader: { '.svg': 'dataurl', '.png': 'dataurl' },
   })
