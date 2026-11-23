@@ -44,8 +44,9 @@ function buildVimeoEmbed(id, { autoplay, controls, loop, muted }) {
   return `https://player.vimeo.com/video/${id}?${params}`
 }
 
+// blob: covers host object URLs for library files (editors that hold private media in memory).
 function isSafeUrl(u) {
-  return typeof u === 'string' && u !== '' && /^(https?:|\/)/i.test(u)
+  return typeof u === 'string' && u !== '' && /^(https?:|\/|blob:)/i.test(u)
 }
 
 export const VideoBlock = defineBlock({
