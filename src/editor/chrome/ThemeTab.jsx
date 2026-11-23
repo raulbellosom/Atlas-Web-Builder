@@ -123,6 +123,13 @@ export function ThemeTab() {
         </button>
       </div>
       <CapabilityBoundary name="themeBrand"><BrandSection onApply={setTheme} /></CapabilityBoundary>
+      <fieldset className="atlas-wb-theme__group" disabled={allowedGroups && !allowedGroups.has('fluid')}>
+        <legend>Escala fluida</legend>
+        <label className="atlas-wb-effects-toggle">
+          <input type="checkbox" aria-label="Escala fluida de títulos" checked={tokens.fluid?.enabled === true} onChange={(event) => setThemeToken('fluid', 'enabled', event.target.checked)} />
+          <span className="atlas-wb-effects-toggle__text">Los tamaños de texto grandes (24 px o más) se reducen suavemente en pantallas angostas, entre 360 y 1280 px de ancho.</span>
+        </label>
+      </fieldset>
       {categories.length === 0 ? (
         <p className="atlas-wb-empty">{es.theme.empty}</p>
       ) : (

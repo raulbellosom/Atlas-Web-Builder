@@ -95,3 +95,21 @@ describe('image focal point', () => {
     expect(style('ImageElementBlock', { src: '/a.png', alt: 'x', focalX: 20, focalY: 30 })).toContain('object-position:20% 30%')
   })
 })
+
+describe('theme fluid scale control', () => {
+  it('toggles tokens.fluid.enabled and keeps the flag out of the token rows', async () => {
+    const { render, screen, fireEvent } = await import('@testing-library/react')
+    const { ThemeTab } = await import('../editor/chrome/ThemeTab.jsx')
+    const { EditorStoreProvider, useEditorStore } = await import('../editor/store/EditorStoreProvider.jsx')
+    const { AtlasWebBuilderProvider } = await import('../provider/AtlasWebBuilderProvider.jsx')
+    const page = { schemaVersion: 1, id: 'p', slug: '/', title: 't', visibility: 'public', regions: { main: { id: 'm', children: [] } }, blocks: {}, seo: {} }
+    function Probe() { const fluid = useEditorStore((s) => s.theme.tokens.fluid); return <output data-testid="fluid">{JSON.stringify(fluid ?? null)}</output> }
+    render(<AtlasWebBuilderProvider blocks={baseBlocks}><EditorStoreProvider initialPage={page}><Probe /><ThemeTab /></EditorStoreProvider></AtlasWebBuilderProvider>)
+    expect(screen.getByTestId('fluid').textContent).toBe('null')
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Escala fluida de títulos' }))
+    expect(JSON.parse(screen.getByTestId('fluid').textContent)).toEqual({ enabled: true })
+    expect(screen.queryByDisplayValue('true')).toBeNull()
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Escala fluida de títulos' }))
+    expect(JSON.parse(screen.getByTestId('fluid').textContent)).toEqual({ enabled: false })
+  })
+})
