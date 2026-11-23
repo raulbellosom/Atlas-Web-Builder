@@ -10,7 +10,8 @@ import './styles/editor.css'
 import './styles/elements.css'
 import packageJson from '../package.json'
 export { inspectOverflowDetails } from './editor/chrome/OverflowDiagnostics.jsx'
-export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, LogoElementBlock, elementStylePresets } from './blocks/index.js'
+export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, LogoElementBlock, IconElementBlock, elementStylePresets } from './blocks/index.js'
+export { ICONS, ICON_OPTIONS, iconFor } from './icons/registry.js'
 
 /** Package version. Kept in lockstep with package.json. */
 export const version = packageJson.version

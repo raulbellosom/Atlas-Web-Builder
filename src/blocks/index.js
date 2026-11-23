@@ -31,6 +31,7 @@ import { TypewriterBlock } from './TypewriterBlock.jsx'
 import { elementBlocks } from './elements/ElementBlocks.jsx'
 export { AccordionBlock, AccordionItemBlock } from './elements/AccordionBlocks.jsx'
 export { elementBlocks, BoxBlock, TextElementBlock, ButtonElementBlock, LinkElementBlock, ImageElementBlock, LogoElementBlock } from './elements/ElementBlocks.jsx'
+export { IconElementBlock } from './elements/IconElement.jsx'
 export { elementStylePresets } from './elements/design.js'
 
 export {

@@ -1,5 +1,11 @@
 # Changelog
 
+## Sin publicar
+
+- Iconografía nativa: nuevo elemento libre `IconElementBlock` con 49 iconos de trazo (`lucide-react`, ya dependencia) que siguen `currentColor` o un token del tema, con tamaño, grosor y descripción accesible (sin descripción = decorativo). El registro `ICONS`/`iconFor` se exporta; los documentos guardan el nombre estable del icono, no el componente.
+- Estados interactivos de enlaces y botones libres: hover y active por `filter` (no pisan el `transform` de la colocación) y transición solo con `prefers-reduced-motion: no-preference`.
+- Nuevo bloque = catálogo nuevo: publicar como versión nueva y registrar su catálogo en el host antes de adoptarla.
+
 ## 0.9.1
 
 - `ImageBlock` admite SVG: al elegir un SVG se muestra completo (`aspectRatio: auto`, `objectFit: contain`) y se marca `vector`. El nuevo campo `tint` (token del tema) lo recolorea con una máscara CSS; sin `tint` sigue siendo un `<img>` normal. La máscara se descarga con CORS, así que el origen de la imagen debe permitirlo.

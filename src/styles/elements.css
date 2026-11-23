@@ -20,6 +20,11 @@
 .atlas-element-layout:has(>.atlas-wb-dropzone){display:block}
 .atlas-element-layout>.atlas-wb-dropzone--empty{min-height:64px}
 .atlas-element-link:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+/* Interactive states for free links/buttons: filter only, since inline transform belongs to element placement. */
+.atlas-element-link:hover{filter:brightness(.94)}
+.atlas-element-link:active{filter:brightness(.86)}
+@media (prefers-reduced-motion:no-preference){.atlas-element-link{transition:filter .15s ease}}
+.atlas-element-icon svg{display:block;flex:none}
 .atlas-element-text{overflow-wrap:anywhere}
 .atlas-wb-transform-controls{position:absolute;inset:0;pointer-events:none;z-index:10000}
 .atlas-wb-transform-handle,.atlas-wb-transform-move{position:absolute;pointer-events:auto;touch-action:none;border:calc(1px / var(--awb-canvas-scale,1)) solid var(--awb-accent,#335dff);background:var(--awb-panel-bg,#fff);color:var(--awb-accent,#335dff);padding:0;display:grid;place-items:center}
