@@ -22,7 +22,7 @@
  * in edit mode or unsupported environments).
  */
 
-import { useRef, useEffect, useLayoutEffect, useState, useContext } from 'react'
+import { createContext, useRef, useEffect, useLayoutEffect, useState, useContext } from 'react'
 import { resolveFilter } from '../editor/fields/FilterField.jsx'
 import {
   EFFECT_SHAPES,
@@ -41,6 +41,9 @@ import {
 import { observeVisibility } from './RevealObserver.js'
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
+
+/** Editor-only: which block should replay its entrance now ({ id, nonce }). Public renders never provide it. */
+export const EffectPreviewContext = createContext(null)
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -252,6 +255,8 @@ export function EffectsWrapper({ blockId, props, mode, children }) {
 function EffectsInner({ blockId, props, mode, stagger, children }) {
   const { _opacity, _cursor, _zIndex, _sticky } = props
   const reduced = useReducedMotion()
+  const preview = useContext(EffectPreviewContext)
+  const previewing = mode === 'edit' && preview?.id === blockId
 
   const ownAnim = sanitizeAnimation(props._animation)
   // A child of a `_stagger` parent without its own animation inherits the
@@ -271,7 +276,7 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
   const filterVal = resolveFilter(sanitizeFilter(props._filter))
   const transformVal = resolveTransform(sanitizeTransform(props._transform))
   // Animation fires immediately unless scroll-reveal takes over
-  const animVal = scrollReveal || reduced ? undefined : resolveAnimation(anim)
+  const animVal = (scrollReveal && !previewing) || reduced ? undefined : resolveAnimation(anim)
 
   // Build the wrapper inline style
   const style = {}
@@ -313,6 +318,7 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
     <>
       {hasInteraction && <InteractionStyleTag blockId={blockId} hover={hover} pressed={pressed} />}
       <div
+        key={previewing ? preview.nonce : undefined}
         data-eid={hasInteraction ? blockId : undefined}
         className="atlas-wb-effects-wrap"
         style={style}

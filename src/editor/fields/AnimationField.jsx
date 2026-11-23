@@ -34,11 +34,15 @@ const EASINGS = [
   { value: 'linear', label: 'Lineal' },
 ]
 
+const SLIDES = /^(slide-|slide-fade-)/
+const ZOOMS = /^zoom-/
+
 function normalize(v) {
   if (!v || typeof v !== 'object') {
     return { preset: 'none', duration: 600, delay: 0, easing: 'ease-out' }
   }
   return {
+    ...v, // keeps distance / scaleFrom / blur / once
     preset: v.preset || 'none',
     duration: v.duration ?? 600,
     delay: v.delay ?? 0,
@@ -102,6 +106,38 @@ export function AnimationField({ value, onChange, label }) {
               <span className="atlas-wb-anim-field__val">{v.delay}ms</span>
             </div>
           </div>
+
+          {SLIDES.test(v.preset) && (
+            <div className="atlas-wb-anim-field__row">
+              <span className="atlas-wb-anim-field__sub-label">Distancia</span>
+              <div className="atlas-wb-anim-field__slider-group">
+                <input type="range" className="atlas-wb-anim-field__range" aria-label="Distancia del desplazamiento" min="0" max="400" step="4" value={v.distance ?? (v.preset.startsWith('slide-fade') ? 14 : 28)} onChange={(e) => update({ distance: Number(e.target.value) })} />
+                <span className="atlas-wb-anim-field__val">{v.distance ?? (v.preset.startsWith('slide-fade') ? 14 : 28)}px</span>
+              </div>
+            </div>
+          )}
+          {ZOOMS.test(v.preset) && (
+            <div className="atlas-wb-anim-field__row">
+              <span className="atlas-wb-anim-field__sub-label">Escala inicial</span>
+              <div className="atlas-wb-anim-field__slider-group">
+                <input type="range" className="atlas-wb-anim-field__range" aria-label="Escala inicial" min="0.5" max="1.5" step="0.02" value={v.scaleFrom ?? (v.preset === 'zoom-in' ? 0.88 : 1.12)} onChange={(e) => update({ scaleFrom: Number(e.target.value) })} />
+                <span className="atlas-wb-anim-field__val">{(v.scaleFrom ?? (v.preset === 'zoom-in' ? 0.88 : 1.12)).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+          {v.preset === 'blur-in' && (
+            <div className="atlas-wb-anim-field__row">
+              <span className="atlas-wb-anim-field__sub-label">Desenfoque</span>
+              <div className="atlas-wb-anim-field__slider-group">
+                <input type="range" className="atlas-wb-anim-field__range" aria-label="Intensidad del desenfoque" min="0" max="40" step="1" value={v.blur ?? 12} onChange={(e) => update({ blur: Number(e.target.value) })} />
+                <span className="atlas-wb-anim-field__val">{v.blur ?? 12}px</span>
+              </div>
+            </div>
+          )}
+          <label className="atlas-wb-effects-toggle">
+            <input type="checkbox" checked={v.once === false} onChange={(e) => update({ once: e.target.checked ? false : undefined })} />
+            <span className="atlas-wb-effects-toggle__text">Repetir cada vez que el bloque vuelve a entrar en pantalla</span>
+          </label>
 
           <div className="atlas-wb-anim-field__row">
             <span className="atlas-wb-anim-field__sub-label">Curva</span>

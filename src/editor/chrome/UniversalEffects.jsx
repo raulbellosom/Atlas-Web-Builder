@@ -5,6 +5,7 @@ import { AnimationField } from '../fields/AnimationField.jsx'
 import { FilterField } from '../fields/FilterField.jsx'
 import { HoverField } from '../fields/HoverField.jsx'
 import { TransformField } from '../fields/TransformField.jsx'
+import { KenBurnsField, PressedField } from '../fields/MotionFields.jsx'
 
 export function UniversalEffects({ merged, def, selectedId }) {
   const updateBlockProps = useEditorStore(state => state.updateBlockProps)
@@ -13,6 +14,10 @@ export function UniversalEffects({ merged, def, selectedId }) {
   const zIndexVal = merged._zIndex || ''
   const stickyVal = !!merged._sticky
   const scrollReveal = !!merged._scrollReveal
+  const playEffectPreview = useEditorStore(state => state.playEffectPreview)
+  // Ken Burns only makes sense on blocks that show an image or a background image.
+  const hasImage = Object.entries(def.fields ?? {}).some(([key, spec]) => spec?.type === 'image' || key === 'backgroundImage')
+  const hasEntrance = !!merged._animation && merged._animation.preset && merged._animation.preset !== 'none'
   return (
           <CapabilityBoundary name="effects">
           <div className="atlas-wb-field">
@@ -24,6 +29,11 @@ export function UniversalEffects({ merged, def, selectedId }) {
             value={merged._animation}
             onChange={(v) => updateBlockProps(selectedId, { _animation: v })}
           />
+          {hasEntrance && (
+            <div className="atlas-wb-field">
+              <button type="button" className="atlas-wb-btn atlas-wb-btn--secondary" onClick={() => playEffectPreview(selectedId)}>Reproducir entrada</button>
+            </div>
+          )}
           <div className="atlas-wb-field">
             <span className="atlas-wb-field__label">Revelar al hacer scroll</span>
             <label className="atlas-wb-effects-toggle">
@@ -44,6 +54,8 @@ export function UniversalEffects({ merged, def, selectedId }) {
             value={merged._hover}
             onChange={(v) => updateBlockProps(selectedId, { _hover: v })}
           />
+          <PressedField value={merged._pressed} onChange={(v) => updateBlockProps(selectedId, { _pressed: v })} />
+          {hasImage && <KenBurnsField value={merged._kenburns} onChange={(v) => updateBlockProps(selectedId, { _kenburns: v })} />}
           {def.slots && Object.keys(def.slots).length > 0 && (
             <div className="atlas-wb-field">
               <span className="atlas-wb-field__label">Cascada de hijos</span>

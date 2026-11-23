@@ -82,6 +82,9 @@ export function createEditorStore(initial = {}) {
         /** Inline editing: block id whose text is being edited in-place. */
         /** While a synced component is being edited: { id, name, returnPage }. The page above is then the definition. */
         editingComponent: null,
+        /** Replays the entrance animation of one block in the canvas (never saved, not in undo history). */
+        effectPreview: null,
+        playEffectPreview(id) { set((state) => ({ effectPreview: { id, nonce: (state.effectPreview?.nonce ?? 0) + 1 } })) },
         inlineEditId: null,
         /** Inline editing: which prop name on that block. */
         inlineEditProp: null,

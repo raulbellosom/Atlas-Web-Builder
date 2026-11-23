@@ -6,6 +6,7 @@ import { useTheme } from '../../theme/ThemeProvider.jsx'
 import { useBuilder } from '../../provider/BuilderContext.js'
 import { DEVICE_WIDTHS } from '../store/createEditorStore.js'
 import { EditorRenderContext } from '../dnd/EditorRenderContext.js'
+import { EffectPreviewContext } from '../../renderer/EffectsWrapper.jsx'
 import { EditableBlock } from './EditableBlock.jsx'
 import { EditorSlot } from './EditorSlot.jsx'
 import { es } from '../i18n/es.js'
@@ -146,6 +147,7 @@ export function Canvas({ onLinkClick }) {
   const theme = useTheme()
   const { layouts } = useBuilder()
   const editorRenderValue = useEditorRenderValue(page)
+  const effectPreview = useEditorStore((state) => state.effectPreview)
   const guardLinks = useMemo(() => createLinkGuard(onLinkClick, { blockNewTabs: true }), [onLinkClick])
 
   const regionNames = Object.keys(page.regions || {})
@@ -171,9 +173,11 @@ export function Canvas({ onLinkClick }) {
         layout={layout}
       />
       <CanvasViewport device={device} frameProps={{ 'data-atlas-theme': theme.id, 'data-active-region': safeActive, onClickCapture: guardLinks }}>
+        <EffectPreviewContext.Provider value={effectPreview}>
         <EditorRenderContext.Provider value={editorRenderValue}>
         <RegionTree page={page} regionName={safeActive} />
         </EditorRenderContext.Provider>
+        </EffectPreviewContext.Provider>
       </CanvasViewport>
       <OverflowDiagnostics canvasRef={canvasRef}/>
     </div>
