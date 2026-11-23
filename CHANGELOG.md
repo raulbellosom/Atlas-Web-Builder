@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar
+## 0.9.3
 
 - Componentes sincronizados en el editor: el host pasa `syncedComponents={{ definitions, save(next) }}` y aparece la pestaña **Componentes** (convertir la selección en componente, insertar, editar en el lienzo con banner Guardar/Cancelar, eliminar). Una referencia seleccionada muestra su inspector: editar, desvincular (copia independiente) y overrides de contenido por página. Mientras se edita una definición no se puede guardar ni publicar la página. `ComponentRefBlock` se exporta pero no entra en `baseBlocks` (el host lo añade a `blocks`), está oculto en la paleta y no cambia el catálogo base. Nuevas exportaciones: `ComponentRefBlock`, `componentFromBlock`, `detachReference`, `pageToSection`, `pageFromComponent`, `sectionFromComponentPage`, `componentIdFromName`.
 - Componentes sincronizados (motor, sin interfaz): `AtlasWebRenderer` acepta `components` (mapa a nivel de sitio `{ id: { name, section } }`) y expande los bloques `ComponentRefBlock` antes de renderizar. Los overrides solo cambian campos de contenido (texto, enlace, imagen) por ruta `root/<slot>/<índice>`; una referencia inválida se descarta, nunca se renderiza a medias. Exporta `resolveComponents`, `overridableFromRegistry`, `COMPONENT_REF_TYPE` y `COMPONENT_LIMITS`. No cambia el catálogo de bloques: `ComponentRefBlock` se registra en la etapa 2B-2 junto con el formato portable.

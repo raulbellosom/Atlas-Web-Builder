@@ -22,14 +22,17 @@ const hubRequire = createRequire(resolve('../runly-developer-hub/package.json'))
 const { build } = createRequire(createRequire(resolve('package.json')).resolve('vite/package.json'))('esbuild')
 const { chromium, webkit } = hubRequire('@playwright/test')
 const page = { schemaVersion: 1, id: 'packed', slug: '/', title: 'Packed', visibility: 'public',
-  regions: { main: { children: ['legacy', 'text', 'collapsed', 'hidden', 'icon', 'button'] } }, seo: { title: 'SEO preserved' }, blocks: {
+  regions: { main: { children: ['legacy', 'text', 'collapsed', 'hidden', 'icon', 'button', 'ref', 'override'] } }, seo: { title: 'SEO preserved' }, blocks: {
     legacy: { id: 'legacy', type: 'HeadingBlock', props: { text: 'Historical heading', customHistorical: 'preserved' } },
     text: { id: 'text', type: 'TextElementBlock', props: { text: 'Responsive release', fontSize: 64, tabletFontSize: 40, mobileFontSize: 28, mobilePaddingLeft: 0 } },
     collapsed: { id: 'collapsed', type: 'TextElementBlock', props: { text: 'Collapsed', mobileVisibility: 'collapsed' } },
     hidden: { id: 'hidden', type: 'TextElementBlock', props: { text: 'Hidden', mobileVisibility: 'hidden' } },
     icon: { id: 'icon', type: 'IconElementBlock', props: { icon: 'heart', label: 'Favorito', size: 48, strokeWidth: 1.5, tone: 'primary' } },
     button: { id: 'button', type: 'ButtonElementBlock', props: { label: 'Acción', href: '#accion' } },
+    ref: { id: 'ref', type: 'ComponentRefBlock', props: { componentId: 'footer' } },
+    override: { id: 'override', type: 'ComponentRefBlock', props: { componentId: 'footer', overrides: { root: { text: 'Local override' } } } },
   } }
+const components = { footer: { name: 'Pie compartido', section: { type: 'TextBlock', props: { text: 'Shared footer' } } } }
 for (const react of ['18.3.1', '19.3.0']) {
   const dir = mkdtempSync(join(tmpdir(), 'atlas-responsive-consumer-'))
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'packed-consumer', private: true, type: 'module' }))
@@ -42,6 +45,8 @@ for (const react of ['18.3.1', '19.3.0']) {
   assert.deepEqual(Object.keys(atlas).sort(), Object.keys(esm).sort())
   assert.equal(typeof atlas.inspectOverflowDetails, 'function')
   assert.equal(typeof atlas.iconFor, 'function'); assert(atlas.ICONS.heart)
+  assert.equal(typeof atlas.resolveComponents, 'function'); assert(atlas.ComponentRefBlock)
+  assert(!atlas.baseBlocks.some(block => block.type === 'ComponentRefBlock'))
   const legacy = createRequire(resolve('../runly-developer-hub/package.json'))('@raulbellosom/atlas-web-builder')
   assert(Object.keys(legacy).every(key => key in atlas))
   const map = JSON.parse(readFileSync(join(pkg, '../dist/atlas-web-builder.js.map')))
@@ -57,10 +62,11 @@ for (const react of ['18.3.1', '19.3.0']) {
   const { updatedAt, ...reopened } = atlas.parsePage(atlas.serializePage(page))
   assert.equal(typeof updatedAt, 'string'); assert.deepEqual(reopened, page)
   const React = require('react'), { renderToString } = require('react-dom/server')
-  const html = renderToString(React.createElement(atlas.AtlasWebBuilderProvider, { blocks: atlas.baseBlocks }, React.createElement(atlas.AtlasWebRenderer, { page })))
+  const html = renderToString(React.createElement(atlas.AtlasWebBuilderProvider, { blocks: atlas.baseBlocks }, React.createElement(atlas.AtlasWebRenderer, { page, components })))
   assert(html.includes('Historical heading')); assert(html.includes('--ar-mobile-fontSize:28px'))
+  assert(html.includes('Shared footer')); assert(html.includes('Local override'))
   const entry = join(dir, 'entry.js')
-  writeFileSync(entry, `import React from 'react'; import {hydrateRoot} from 'react-dom/client'; import {AtlasWebBuilderProvider,AtlasWebRenderer,baseBlocks} from '@raulbellosom/atlas-web-builder'; import '@raulbellosom/atlas-web-builder/styles'; hydrateRoot(document.getElementById('root'),React.createElement(AtlasWebBuilderProvider,{blocks:baseBlocks},React.createElement(AtlasWebRenderer,{page:${JSON.stringify(page)}}))); window.ready=true;`)
+  writeFileSync(entry, `import React from 'react'; import {hydrateRoot,createRoot} from 'react-dom/client'; import {AtlasWebBuilderProvider,AtlasWebRenderer,AtlasWebBuilderEditor,ComponentRefBlock,baseBlocks} from '@raulbellosom/atlas-web-builder'; import '@raulbellosom/atlas-web-builder/styles'; const page=${JSON.stringify(page)},components=${JSON.stringify(components)}; hydrateRoot(document.getElementById('root'),React.createElement(AtlasWebBuilderProvider,{blocks:baseBlocks},React.createElement(AtlasWebRenderer,{page,components}))); window.openEditor=()=>{const node=document.createElement('div');node.id='editor';node.style.cssText='position:fixed;inset:0;height:100vh;z-index:99;background:white';document.body.appendChild(node);createRoot(node).render(React.createElement(AtlasWebBuilderEditor,{initialPage:page,blocks:[...baseBlocks,ComponentRefBlock],syncedComponents:{definitions:components,save:async next=>{window.savedComponents=next}}}));};window.ready=true;`)
   const bundled = await build({ entryPoints: [entry], bundle: true, write: false, outfile: join(dir, 'app.js'), format: 'esm', define: { 'process.env.NODE_ENV': '"production"' }, logLevel: 'silent' })
   const js = bundled.outputFiles.find(f => f.path.endsWith('.js')).text, css = bundled.outputFiles.find(f => f.path.endsWith('.css')).text
   const server = createServer((req, res) => {
@@ -77,6 +83,8 @@ for (const react of ['18.3.1', '19.3.0']) {
         tab.on('pageerror', e => errors.push(e.message)); tab.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
         await tab.goto(`http://127.0.0.1:${server.address().port}`); await tab.waitForFunction(() => window.ready)
         assert.equal(await tab.getByRole('img', { name: 'Favorito' }).locator('svg').getAttribute('width'), '48')
+        assert.equal(await tab.getByText('Shared footer', { exact: true }).count(), 1)
+        assert.equal(await tab.getByText('Local override', { exact: true }).count(), 1)
         const button = tab.locator('[data-atlas-block="button"]')
         await button.hover()
         await tab.waitForFunction(() => getComputedStyle(document.querySelector('[data-atlas-block="button"]')).filter === 'brightness(0.94)')
@@ -92,6 +100,12 @@ for (const react of ['18.3.1', '19.3.0']) {
           assert.equal(await tab.locator('[data-atlas-block="hidden"]').evaluate(n => getComputedStyle(n).visibility), width < 640 ? 'hidden' : 'visible')
           browserCases.push({ browser: name, width, font, ssrHydration: true })
         }
+        await tab.evaluate(() => window.openEditor())
+        await tab.getByRole('tab', { name: 'Componentes', exact: true }).click()
+        await tab.getByRole('button', { name: 'Editar Pie compartido', exact: true }).click()
+        await tab.getByRole('region', { name: 'Edición de componente', exact: true }).waitFor()
+        await tab.getByRole('button', { name: 'Guardar componente', exact: true }).click()
+        await tab.waitForFunction(() => window.savedComponents?.footer?.section?.props?.text === 'Shared footer')
         assert.deepEqual(errors, [])
       } finally { await browser.close() }
     }
