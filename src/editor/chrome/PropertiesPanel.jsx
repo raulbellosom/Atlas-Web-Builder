@@ -12,6 +12,7 @@ import { es } from '../i18n/es.js'
 import {ResponsiveGeometry} from './ResponsiveGeometry.jsx'
 import {geometryKeys,geometryKey} from '../../blocks/elements/geometry.js'
 import {OverflowCorrection} from './OverflowDiagnostics.jsx'
+import { ComponentReferenceInspector } from './ComponentsPanel.jsx'
 
 function CollapseSection({ label, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -62,6 +63,8 @@ export function PropertiesPanel() {
   const def = registry.get(block.type)
   if (!def) return <p className="atlas-wb-empty">Tipo no registrado: {block.type}</p>
 
+  // A reference has no style of its own: it is the component, plus the per-page content overrides.
+  if (block.type === 'ComponentRefBlock') return <ComponentReferenceInspector blockId={selectedId} />
   const fields = def.fields || {}
   const merged = { ...(def.defaultProps || {}), ...(block.props || {}) }
 

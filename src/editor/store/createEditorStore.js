@@ -14,6 +14,7 @@ import { parsePage, serializePage } from '../../persistence/serializePage.js'
 import { applyTemplate as applyTemplateToDraft } from '../../templates/applyTemplate.js'
 import { applyLayoutToDraft } from '../../layouts/defineLayout.js'
 import { defaultTheme } from '../../theme/defaultTheme.js'
+import { pageFromComponent, sectionFromComponentPage } from '../../components/actions.js'
 
 /**
  * @typedef {'desktop'|'tablet'|'mobile'} DeviceMode
@@ -65,7 +66,7 @@ function firstRegionName(page) {
  */
 export function createEditorStore(initial = {}) {
   const initialTheme = initial.theme || defaultTheme
-  return createStore(
+  const store = createStore(
     temporal(
       (set, get) => ({
         /** @type {import('../schema/page.js').Page} */
@@ -79,6 +80,8 @@ export function createEditorStore(initial = {}) {
         /** @type {import('../schema/theme.js').Theme} */
         theme: initialTheme,
         /** Inline editing: block id whose text is being edited in-place. */
+        /** While a synced component is being edited: { id, name, returnPage }. The page above is then the definition. */
+        editingComponent: null,
         inlineEditId: null,
         /** Inline editing: which prop name on that block. */
         inlineEditProp: null,
@@ -225,6 +228,31 @@ export function createEditorStore(initial = {}) {
           return newBlockId
         },
 
+        // ---- Synced components --------------------------------------------
+        /** Swap the canvas to a component definition. Undo history is per mode, so it is cleared on entry and exit. */
+        enterComponentEdit(id, definition) {
+          if (get().editingComponent) return false
+          const returnPage = get().page
+          set({ editingComponent: { id, name: definition.name, returnPage }, page: pageFromComponent(id, definition), selectedId: null, activeRegion: 'main' })
+          store.temporal.getState().clear()
+          return true
+        },
+        /** The edited definition without leaving edit mode, so a failed save keeps the session. Throws if invalid. */
+        currentComponentDefinition() {
+          const editing = get().editingComponent
+          if (!editing) return null
+          return { id: editing.id, definition: { name: editing.name, section: sectionFromComponentPage(get().page) } }
+        },
+        /** Back to the page. With `apply` returns `{ id, definition }` to persist; throws if the definition is not valid. */
+        exitComponentEdit({ apply = false } = {}) {
+          const editing = get().editingComponent
+          if (!editing) return null
+          const result = apply ? { id: editing.id, definition: { name: editing.name, section: sectionFromComponentPage(get().page) } } : null
+          set({ editingComponent: null, page: editing.returnPage, selectedId: null, activeRegion: firstRegionName(editing.returnPage) || 'main' })
+          store.temporal.getState().clear()
+          return result
+        },
+
         // ---- Theme (NOT tracked by undo/redo) ---------------------------
         setTheme(theme) {
           if (!theme || typeof theme !== 'object') return
@@ -313,4 +341,5 @@ export function createEditorStore(initial = {}) {
       },
     ),
   )
+  return store
 }

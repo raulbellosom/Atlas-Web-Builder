@@ -15,6 +15,7 @@ import { CapabilityBoundary, useEditorCapabilities } from '../capabilities.jsx'
 import { findParent } from '../../utils/tree.js'
 import { MediaTab } from '../assets/MediaTab.jsx'
 import { CompositionsPanel } from './CompositionsPanel.jsx'
+import { ComponentsPanel } from './ComponentsPanel.jsx'
 
 /** A single draggable palette item. On narrow screens a tap inserts directly. */
 function PaletteItem({ def, onInserted }) {
@@ -68,7 +69,7 @@ function BlocksTab({ onInserted }) {
     const q = query.trim().toLowerCase()
     const hasElements = allDefs.some(def => def.kind === 'element')
     const isElement = def => def.kind === 'element' || (!hasElements && ['ButtonBlock','HeadingBlock','TextBlock','RichTextBlock','ImageBlock','SpacerBlock','DividerBlock'].includes(def.type))
-    const definitions = allDefs.filter(def => kind === 'all' || (kind === 'elements' ? isElement(def) : !isElement(def)))
+    const definitions = allDefs.filter(def => !def.hidden).filter(def => kind === 'all' || (kind === 'elements' ? isElement(def) : !isElement(def)))
     if (!q) return definitions
     return definitions.filter(
       (d) =>
@@ -298,7 +299,7 @@ function HostPagesTab({ pages, onSelected }) {
 
 export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChange: setTab, returnFocusRef }) {
   const panelRef = useRef(null)
-  const { assets, compositions, pages } = useBuilder()
+  const { assets, compositions, syncedComponents, pages } = useBuilder()
   const capabilities = useEditorCapabilities()
   usePanelInert(panelRef, closed)
   useDialogFocus(panelRef, onClose, compact && !closed, returnFocusRef)
@@ -311,6 +312,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
           ['blocks', es.leftPanel.blocks, Shapes],
           ...(capabilities.templates !== false ? [['templates', es.leftPanel.templates, LayoutTemplate]] : []),
           ...(compositions ? [['compositions', 'Mis bloques', Shapes]] : []),
+          ...(syncedComponents ? [['components', 'Componentes', Shapes]] : []),
           ['pages', es.leftPanel.pages, Files],
           ['layers', 'Capas', Layers],
           ...(assets ? [['media', 'Medios', Images]] : []),
@@ -325,6 +327,7 @@ export function LeftPanel({ onClose, closed, compact, activeTab: tab, onTabChang
         {tab === 'blocks'    && <BlocksTab onInserted={compact ? onClose : undefined} />}
         {tab === 'templates' && <CapabilityBoundary name="templates"><TemplatesTab onInserted={compact ? onClose : undefined} /></CapabilityBoundary>}
         {tab === 'compositions' && compositions && <CompositionsPanel onInserted={compact ? onClose : undefined} />}
+        {tab === 'components' && syncedComponents && <ComponentsPanel onInserted={compact ? onClose : undefined} />}
         {tab === 'layers' && <LayersPanel />}
         {tab === 'media' && assets && <MediaTab />}
         {tab === 'pages' && (pages ? <HostPagesTab pages={pages} onSelected={compact ? onClose : undefined} /> : <CapabilityBoundary name="pageCreation"><PagesTab /></CapabilityBoundary>)}

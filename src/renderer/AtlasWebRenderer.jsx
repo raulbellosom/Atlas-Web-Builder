@@ -26,11 +26,12 @@ export function AtlasWebRenderer({
   eagerBlocks = 2,
   components,
 }) {
-  const { blocks: registry } = useBuilder()
+  const { blocks: registry, syncedComponents } = useBuilder()
+  const definitions = components ?? syncedComponents?.definitions
   const safePage = useMemo(() => {
     const migrated = migrateContent(page)
-    return components ? resolveComponents(migrated, components, { overridable: overridableFromRegistry(registry) }).page : migrated
-  }, [page, components, registry])
+    return definitions ? resolveComponents(migrated, definitions, { overridable: overridableFromRegistry(registry) }).page : migrated
+  }, [page, definitions, registry])
 
   if (!safePage || !safePage.regions || !safePage.blocks) {
     return null

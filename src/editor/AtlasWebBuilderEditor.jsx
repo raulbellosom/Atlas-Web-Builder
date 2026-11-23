@@ -24,6 +24,7 @@ import { LeftPanel } from './chrome/LeftPanel.jsx'
 import { RightPanel } from './chrome/RightPanel.jsx'
 import { Canvas } from './chrome/Canvas.jsx'
 import { Breadcrumb } from './chrome/Breadcrumb.jsx'
+import { ComponentEditBanner } from './chrome/ComponentsPanel.jsx'
 import { AtlasWebRenderer } from '../renderer/AtlasWebRenderer.jsx'
 import { NotificationsProvider } from './notifications/NotificationsProvider.jsx'
 import { NotificationCenter } from './notifications/NotificationCenter.jsx'
@@ -62,6 +63,10 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
   const removeBlock = useEditorStore((s) => s.removeBlock)
   const duplicateBlock = useEditorStore((s) => s.duplicateBlock)
   const applyTemplateAction = useEditorStore((s) => s.applyTemplate)
+  // While a component definition is on the canvas, the page itself must not be saved or published.
+  const editingComponent = useEditorStore((s) => s.editingComponent)
+  const guardedSave = editingComponent ? undefined : onSaveDraft
+  const guardedPublish = editingComponent ? undefined : onPublish
 
   const undo = useTemporal((s) => s.undo)
   const redo = useTemporal((s) => s.redo)
@@ -303,8 +308,8 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         data-phone={phone ? '' : undefined}
       >
         <TopBar
-          onSaveDraft={onSaveDraft}
-          onPublish={onPublish}
+          onSaveDraft={guardedSave}
+          onPublish={guardedPublish}
           onTogglePreview={() => setPreviewActive(false)}
           previewActive={previewActive}
           compact={compact}
@@ -339,8 +344,8 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         data-right-closed={rightClosed ? '' : undefined}
       >
         <TopBar
-          onSaveDraft={onSaveDraft}
-          onPublish={onPublish}
+          onSaveDraft={guardedSave}
+          onPublish={guardedPublish}
           onTogglePreview={() => setPreviewActive(true)}
           previewActive={previewActive}
           compact={compact}
@@ -353,6 +358,7 @@ function EditorShell({ onSaveDraft, onPublish, onLinkClick, brandLogo, brandName
         />
         <LeftPanel onClose={() => setLeftClosed(true)} closed={leftClosed} compact={compact} activeTab={leftTab} onTabChange={setLeftTab} returnFocusRef={panelInvoker} />
         <main className="atlas-wb-editor__main">
+          <ComponentEditBanner />
           <Breadcrumb />
           <Canvas onLinkClick={onLinkClick} />
         </main>
@@ -411,6 +417,7 @@ export function AtlasWebBuilderEditor({
   blockRegistry,
   templates,
   compositions,
+  syncedComponents,
   pages,
   layouts,
   assets,
@@ -438,6 +445,7 @@ export function AtlasWebBuilderEditor({
       blockRegistry,
       templates,
       compositions,
+      syncedComponents,
       pages,
       layouts,
       assets,
@@ -452,6 +460,7 @@ export function AtlasWebBuilderEditor({
       blockRegistry,
       templates,
       compositions,
+      syncedComponents,
       pages,
       layouts,
       assets,
