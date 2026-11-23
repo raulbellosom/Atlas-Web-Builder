@@ -7,53 +7,34 @@
  */
 import { createContext, useEffect, useState } from 'react'
 
-export const EFFECT_PRESETS = Object.freeze([
-  'none',
-  'fade-in',
-  'slide-up',
-  'slide-down',
-  'slide-left',
-  'slide-right',
-  'zoom-in',
-  'zoom-out',
-  'blur-in',
-  'rotate-in',
-  'flip-up',
-  'slide-fade-up',
-  'slide-fade-down',
-  'slide-fade-left',
-  'slide-fade-right',
-])
+import { ANIMATION_EASINGS, EFFECT_PRESETS, HOVER_EASINGS, CURSORS, KENBURNS_PANS } from './universalProps.js'
+
+export { EFFECT_PRESETS }
 
 export const EFFECT_SHAPES = Object.freeze({
   animation: {
     preset: EFFECT_PRESETS,
     duration: [0, 5000],
     delay: [0, 5000],
-    easing: ['ease-out', 'ease', 'ease-in', 'ease-in-out', 'linear'],
+    easing: ANIMATION_EASINGS,
+    distance: [0, 400],
+    scaleFrom: [0.5, 1.5],
+    blur: [0, 40],
   },
+  kenburns: { zoom: [1, 1.5], direction: ['in', 'out'], pan: KENBURNS_PANS, duration: [3000, 30000], easing: ANIMATION_EASINGS },
+  pressed: { scale: [0.9, 1], brightness: [50, 150] },
   hover: {
     scale: 'string "0.xx" or "1.xx" (or empty)',
     shadow: ['', 'sm', 'md', 'lg'],
     brightness: [50, 150],
     duration: [0, 2000],
-    easing: ['ease', 'ease-out', 'ease-in-out'],
+    easing: HOVER_EASINGS,
   },
   opacity: [0, 1],
   zIndex: [-1000, 1000],
   stagger: [0, 1000],
   parallax: { speed: [-0.5, 0.5] },
-  cursor: [
-    'auto',
-    'default',
-    'pointer',
-    'grab',
-    'zoom-in',
-    'zoom-out',
-    'crosshair',
-    'not-allowed',
-    'text',
-  ],
+  cursor: CURSORS,
 })
 
 /** Finite number clamped to [min, max]; `fallback` when not numeric. */
@@ -71,12 +52,34 @@ export function sanitizeAnimation(a) {
     return undefined
   }
   const s = EFFECT_SHAPES.animation
-  return {
+  const out = {
     preset: a.preset,
     duration: clampNum(a.duration, 0, 5000, 600),
     delay: clampNum(a.delay, 0, 5000, 0),
     easing: pick(a.easing, s.easing, 'ease-out'),
   }
+  // Optional intensity knobs: absent keeps the historic look of each preset.
+  if (a.distance !== undefined) out.distance = clampNum(a.distance, 0, 400, undefined)
+  if (a.scaleFrom !== undefined) out.scaleFrom = clampNum(a.scaleFrom, 0.5, 1.5, undefined)
+  if (a.blur !== undefined) out.blur = clampNum(a.blur, 0, 40, undefined)
+  if (a.once === false) out.once = false
+  return out
+}
+
+/** @returns {{zoom:number,direction:'in'|'out',pan:string,duration:number,easing:string}|undefined} */
+export function sanitizeKenBurns(k) {
+  if (!k || typeof k !== 'object') return undefined
+  const s = EFFECT_SHAPES.kenburns
+  const zoom = clampNum(k.zoom, 1, 1.5, 1.15)
+  if (zoom <= 1) return undefined
+  return { zoom, direction: pick(k.direction, s.direction, 'in'), pan: pick(k.pan, s.pan, 'none'), duration: clampNum(k.duration, 3000, 30000, 12000), easing: pick(k.easing, s.easing, 'ease-in-out') }
+}
+
+/** @returns {{scale:number,brightness:number}|undefined} */
+export function sanitizePressed(p) {
+  if (!p || typeof p !== 'object') return undefined
+  const scale = clampNum(p.scale, 0.9, 1, 1), brightness = clampNum(p.brightness, 50, 150, 100)
+  return scale === 1 && brightness === 100 ? undefined : { scale, brightness }
 }
 
 /** @returns {object|undefined} */
@@ -132,11 +135,8 @@ export const StaggerContext = createContext(null)
 
 /** Tracks `prefers-reduced-motion: reduce`. False when matchMedia is unavailable. */
 export function useReducedMotion() {
-  const get = () =>
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const [reduced, setReduced] = useState(get)
+  // False on the server and on the first client render so hydration matches; the effect below adopts the real value.
+  const [reduced, setReduced] = useState(false)
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')

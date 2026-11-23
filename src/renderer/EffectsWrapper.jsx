@@ -22,7 +22,7 @@
  * in edit mode or unsupported environments).
  */
 
-import { useRef, useEffect, useState, useContext } from 'react'
+import { useRef, useEffect, useLayoutEffect, useState, useContext } from 'react'
 import { resolveFilter } from '../editor/fields/FilterField.jsx'
 import {
   EFFECT_SHAPES,
@@ -32,10 +32,15 @@ import {
   sanitizeAnimation,
   sanitizeFilter,
   sanitizeHover,
+  sanitizeKenBurns,
   sanitizeParallax,
+  sanitizePressed,
   sanitizeTransform,
   useReducedMotion,
 } from './effects.js'
+import { observeVisibility } from './RevealObserver.js'
+
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,6 +55,30 @@ export function resolveAnimation(anim) {
   const del = anim.delay ?? 0
   const ease = anim.easing || 'ease-out'
   return `atlas-anim-${anim.preset} ${dur}ms ${ease} ${del}ms both`
+}
+
+/** CSS custom properties that tune a preset (distance, start scale, blur). Absent values keep the historic look of each preset. */
+export function animationVars(anim) {
+  const vars = {}
+  if (typeof anim?.distance === 'number') vars['--atlas-anim-distance'] = `${anim.distance}px`
+  if (typeof anim?.scaleFrom === 'number') vars['--atlas-anim-scale'] = String(anim.scaleFrom)
+  if (typeof anim?.blur === 'number') vars['--atlas-anim-blur'] = `${anim.blur}px`
+  return vars
+}
+
+const HORIZONTAL = /^(slide-(left|right)|slide-fade-(left|right)|rotate-in|flip-up)$/
+
+/** Ken Burns custom properties: a slow zoom with an optional pan that stays inside the zoomed overflow. */
+export function kenBurnsVars(kb) {
+  const pan = ((kb.zoom - 1) / (2 * kb.zoom)) * 100
+  const vector = { none: [0, 0], center: [0, 0], left: [pan, 0], right: [-pan, 0], up: [0, pan], down: [0, -pan] }[kb.pan] ?? [0, 0]
+  const zoomIn = kb.direction === 'in'
+  const [x, y] = vector
+  return {
+    '--kb-from': zoomIn ? 1 : kb.zoom, '--kb-to': zoomIn ? kb.zoom : 1,
+    '--kb-fx': `${zoomIn ? x : -x}%`, '--kb-fy': `${zoomIn ? y : -y}%`, '--kb-tx': `${zoomIn ? -x : x}%`, '--kb-ty': `${zoomIn ? -y : y}%`,
+    '--kb-duration': `${kb.duration}ms`, '--kb-easing': kb.easing,
+  }
 }
 
 /**
@@ -72,30 +101,34 @@ const escapeAttr = (v) => String(v).replace(/[\\"<\n\r]/g, (c) => (c === '<' ? '
 // ── Hover style tag ───────────────────────────────────────────────────────────
 
 /**
- * Renders a scoped <style> tag that applies hover CSS to the block wrapper
- * identified by [data-eid="blockId"].
+ * Renders a scoped <style> tag with the interaction states of the block wrapper identified by [data-eid="blockId"]:
+ * hover only where a pointer can hover (never sticks after a tap), pressed (:active) everywhere, and no transitions when
+ * the visitor prefers reduced motion.
  */
-function HoverStyleTag({ blockId, hover }) {
-  if (!hover) return null
-  const { scale, shadow, brightness, duration = 200, easing = 'ease' } = hover
+function InteractionStyleTag({ blockId, hover, pressed }) {
+  const { scale, shadow, brightness, duration = 200, easing = 'ease' } = hover ?? {}
   const hasScale = scale && scale !== '' && scale !== '1'
   const hasShadow = shadow && shadow !== ''
   const hasBrightness = brightness !== undefined && brightness !== 100
-
-  if (!hasScale && !hasShadow && !hasBrightness) return null
+  const hasHover = hasScale || hasShadow || hasBrightness
+  if (!hasHover && !pressed) return null
 
   const sel = `[data-eid="${escapeAttr(blockId)}"]`
   const hoverParts = []
   if (hasScale) hoverParts.push(`transform: scale(${scale})`)
   if (hasShadow) hoverParts.push(`box-shadow: var(--atlas-shadow-${shadow}, none)`)
   if (hasBrightness) hoverParts.push(`filter: brightness(${brightness}%)`)
+  const pressedParts = []
+  if (pressed) {
+    if (pressed.scale !== 1) pressedParts.push(`transform: scale(${pressed.scale})`)
+    if (pressed.brightness !== 100) pressedParts.push(`filter: brightness(${pressed.brightness}%)`)
+  }
 
-  const transProps = ['transform', 'box-shadow', 'filter']
-    .map((p) => `${p} ${duration}ms ${easing}`)
-    .join(', ')
-
-  const css =
-    `${sel} { transition: ${transProps}; }\n` + `${sel}:hover { ${hoverParts.join('; ')}; }\n`
+  const transProps = ['transform', 'box-shadow', 'filter'].map((p) => `${p} ${hasHover ? duration : 120}ms ${easing}`).join(', ')
+  let css = `${sel} { transition: ${transProps}; }\n`
+  if (hoverParts.length) css += `@media (hover: hover) and (pointer: fine) {\n${sel}:hover { ${hoverParts.join('; ')}; }\n}\n`
+  if (pressedParts.length) css += `${sel}:active { ${pressedParts.join('; ')}; }\n`
+  css += `@media (prefers-reduced-motion: reduce) {\n${sel} { transition: none; }\n}\n`
 
   // Raw HTML: React would entity-escape the quotes in SSR output, which <style> never decodes.
   return <style dangerouslySetInnerHTML={{ __html: css }} />
@@ -104,43 +137,43 @@ function HoverStyleTag({ blockId, hover }) {
 // ── Scroll-reveal wrapper ─────────────────────────────────────────────────────
 
 /**
- * Wraps children and triggers the entrance animation when the element enters
- * the viewport. In edit mode the block is always visible immediately.
+ * Entrance on scroll. The server (and the first client render) always show the content: nothing is hidden by markup, so
+ * no-JS, slow-script and crawler renders are complete. After mount, only elements that start BELOW the fold are hidden
+ * (class `atlas-reveal--pending`, opacity only, so layout never shifts) and revealed with the animation when they enter
+ * the viewport. Elements already on screen keep their final state: no flash of hide-then-show.
  */
 function ScrollRevealWrapper({ animation, mode, reduced, children }) {
   const ref = useRef(null)
-  // Edit mode → always visible; public/preview → hidden until intersecting
-  const [visible, setVisible] = useState(mode === 'edit' || reduced)
+  const [phase, setPhase] = useState('idle') // idle = visible | pending = hidden until seen | shown = animating
+  const replay = animation?.once === false
 
-  useEffect(() => {
-    if (mode === 'edit' || reduced) {
-      setVisible(true)
-      return
-    }
+  useIsoLayoutEffect(() => {
     const el = ref.current
-    if (!el || typeof IntersectionObserver === 'undefined') {
-      setVisible(true)
-      return
-    }
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          obs.disconnect()
-        }
-      },
-      { threshold: 0.08 },
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [mode, reduced])
+    if (mode === 'edit' || reduced || !el || typeof IntersectionObserver === 'undefined') { setPhase('idle'); return undefined }
+    if (el.getBoundingClientRect().top <= window.innerHeight) return undefined
+    setPhase('pending')
+    const stop = observeVisibility(el, 0.08, (visible) => {
+      if (visible) { setPhase('shown'); if (!replay) stop() } else if (replay) setPhase('pending')
+    })
+    return stop
+  }, [mode, reduced, replay])
 
-  const animStr = reduced ? undefined : resolveAnimation(animation)
-  const style = visible && animStr ? { animation: animStr } : !visible ? { opacity: 0 } : {}
-
+  const animStr = phase === 'shown' ? resolveAnimation(animation) : undefined
+  const style = animStr ? { animation: animStr, ...animationVars(animation) } : undefined
   return (
-    <div ref={ref} style={style}>
+    <div ref={ref} className={phase === 'pending' ? 'atlas-reveal--pending' : undefined} style={style}>
       {children}
+    </div>
+  )
+}
+
+// ── Ken Burns ─────────────────────────────────────────────────────────────────
+
+/** Slow zoom/pan inside a clipped frame: the layout box never changes and nothing can cause horizontal scroll. */
+function KenBurnsFrame({ kenburns, children }) {
+  return (
+    <div className="atlas-kenburns">
+      <div className="atlas-kenburns__layer" style={kenBurnsVars(kenburns)}>{children}</div>
     </div>
   )
 }
@@ -152,6 +185,7 @@ function ScrollRevealWrapper({ animation, mode, reduced, children }) {
  * (passive, rAF-throttled) exist only while the IntersectionObserver reports
  * the element on screen, and are removed on unmount.
  */
+const PARALLAX_MAX = 160
 function ParallaxWrapper({ speed, children }) {
   const ref = useRef(null)
 
@@ -162,7 +196,8 @@ function ParallaxWrapper({ speed, children }) {
     let listening = false
     const update = () => {
       raf = 0
-      el.style.transform = `translate3d(0, ${parallaxOffset(el.getBoundingClientRect(), window.innerHeight, speed)}px, 0)`
+      const offset = parallaxOffset(el.getBoundingClientRect(), window.innerHeight, speed)
+      el.style.transform = `translate3d(0, ${Math.max(-PARALLAX_MAX, Math.min(PARALLAX_MAX, offset))}px, 0)`
     }
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update)
@@ -229,6 +264,8 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
       : baseAnim
   const scrollReveal = (!!props._scrollReveal && !!ownAnim) || !!inherited
   const hover = sanitizeHover(props._hover)
+  const pressed = sanitizePressed(props._pressed)
+  const kenburns = reduced || mode === 'edit' ? undefined : sanitizeKenBurns(props._kenburns)
   const parallax = reduced || mode === 'edit' ? undefined : sanitizeParallax(props._parallax)
 
   const filterVal = resolveFilter(sanitizeFilter(props._filter))
@@ -241,9 +278,12 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
   const opacity = clampNum(_opacity, 0, 1, 1)
   if (opacity !== 1) style.opacity = opacity
   if (filterVal) style.filter = filterVal
-  if (animVal) style.animation = animVal
+  if (animVal) { style.animation = animVal; Object.assign(style, animationVars(anim)) }
   if (transformVal) style.transform = transformVal
   if (EFFECT_SHAPES.cursor.includes(_cursor) && _cursor !== 'auto') style.cursor = _cursor
+  // Horizontal slides, parallax and Ken Burns move content beyond its box: clip horizontally so the page never scrolls sideways.
+  const movesSideways = (anim && HORIZONTAL.test(anim.preset)) || (anim && anim.distance > 0) || !!parallax || !!kenburns
+  if (movesSideways) style.overflowX = 'clip'
   if (_sticky) {
     style.position = 'sticky'
     style.top = 0
@@ -252,12 +292,14 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
   if (z) style.zIndex = Math.round(z)
 
   const hasHover = !!hover && !!(hover.scale || hover.shadow || hover.brightness !== 100)
+  const hasInteraction = hasHover || !!pressed
   const hasScrollReveal = scrollReveal && !!anim
-  const hasEffects = Object.keys(style).length > 0 || hasHover || hasScrollReveal || !!parallax
+  const hasEffects = Object.keys(style).length > 0 || hasInteraction || hasScrollReveal || !!parallax || !!kenburns
 
   if (!hasEffects) return children
 
   let content = children
+  if (kenburns) content = <KenBurnsFrame kenburns={kenburns}>{content}</KenBurnsFrame>
   if (parallax) content = <ParallaxWrapper speed={parallax.speed}>{content}</ParallaxWrapper>
   if (hasScrollReveal) {
     content = (
@@ -269,9 +311,9 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
 
   return (
     <>
-      {hasHover && <HoverStyleTag blockId={blockId} hover={hover} />}
+      {hasInteraction && <InteractionStyleTag blockId={blockId} hover={hover} pressed={pressed} />}
       <div
-        data-eid={hasHover ? blockId : undefined}
+        data-eid={hasInteraction ? blockId : undefined}
         className="atlas-wb-effects-wrap"
         style={style}
       >

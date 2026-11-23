@@ -1,0 +1,41 @@
+/* Motion Engine styles (entrance presets, Ken Burns, scroll reveal, reduced motion, print).
+   Presets read custom properties set by EffectsWrapper (--atlas-anim-distance, --atlas-anim-scale, --atlas-anim-blur);
+   the fallbacks are the historic values, so documents without those knobs look exactly as before. */
+
+@keyframes atlas-anim-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes atlas-anim-slide-up { from { opacity: 0; transform: translateY(var(--atlas-anim-distance, 28px)); } to { opacity: 1; transform: translateY(0); } }
+@keyframes atlas-anim-slide-down { from { opacity: 0; transform: translateY(calc(var(--atlas-anim-distance, 28px) * -1)); } to { opacity: 1; transform: translateY(0); } }
+@keyframes atlas-anim-slide-left { from { opacity: 0; transform: translateX(var(--atlas-anim-distance, 28px)); } to { opacity: 1; transform: translateX(0); } }
+@keyframes atlas-anim-slide-right { from { opacity: 0; transform: translateX(calc(var(--atlas-anim-distance, 28px) * -1)); } to { opacity: 1; transform: translateX(0); } }
+@keyframes atlas-anim-zoom-in { from { opacity: 0; transform: scale(var(--atlas-anim-scale, 0.88)); } to { opacity: 1; transform: scale(1); } }
+@keyframes atlas-anim-zoom-out { from { opacity: 0; transform: scale(var(--atlas-anim-scale, 1.12)); } to { opacity: 1; transform: scale(1); } }
+@keyframes atlas-anim-blur-in { from { opacity: 0; filter: blur(var(--atlas-anim-blur, 12px)); } to { opacity: 1; filter: blur(0); } }
+@keyframes atlas-anim-rotate-in { from { opacity: 0; transform: rotate(-8deg) scale(0.92); } to { opacity: 1; transform: rotate(0) scale(1); } }
+@keyframes atlas-anim-flip-up { from { opacity: 0; transform: perspective(800px) rotateX(35deg) translateY(24px); } to { opacity: 1; transform: perspective(800px) rotateX(0) translateY(0); } }
+@keyframes atlas-anim-slide-fade-up { from { opacity: 0; transform: translateY(var(--atlas-anim-distance, 14px)); } to { opacity: 1; transform: translateY(0); } }
+@keyframes atlas-anim-slide-fade-down { from { opacity: 0; transform: translateY(calc(var(--atlas-anim-distance, 14px) * -1)); } to { opacity: 1; transform: translateY(0); } }
+@keyframes atlas-anim-slide-fade-left { from { opacity: 0; transform: translateX(var(--atlas-anim-distance, 14px)); } to { opacity: 1; transform: translateX(0); } }
+@keyframes atlas-anim-slide-fade-right { from { opacity: 0; transform: translateX(calc(var(--atlas-anim-distance, 14px) * -1)); } to { opacity: 1; transform: translateX(0); } }
+
+/* Scroll reveal: set by script AFTER mount, only on elements that start below the fold. Opacity only: no layout shift. */
+.atlas-reveal--pending { opacity: 0; }
+
+/* Ken Burns: the frame is clipped and keeps the layout box; only the inner layer moves. */
+@keyframes atlas-kenburns {
+  from { transform: scale(var(--kb-from, 1)) translate(var(--kb-fx, 0%), var(--kb-fy, 0%)); }
+  to { transform: scale(var(--kb-to, 1.15)) translate(var(--kb-tx, 0%), var(--kb-ty, 0%)); }
+}
+.atlas-kenburns { overflow: clip; contain: paint; }
+.atlas-kenburns__layer { transform-origin: center; animation: atlas-kenburns var(--kb-duration, 12000ms) var(--kb-easing, ease-in-out) infinite alternate; will-change: transform; }
+
+/* Reduced motion and print: final state, nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  .atlas-wb-effects-wrap, .atlas-wb-effects-wrap > div, .atlas-kenburns__layer { animation: none !important; }
+  .atlas-reveal--pending { opacity: 1; }
+  .atlas-kenburns__layer { transform: none !important; will-change: auto; }
+}
+@media print {
+  .atlas-wb-effects-wrap, .atlas-wb-effects-wrap > div, .atlas-kenburns__layer { animation: none !important; }
+  .atlas-reveal--pending { opacity: 1; }
+  .atlas-kenburns__layer { transform: none !important; }
+}

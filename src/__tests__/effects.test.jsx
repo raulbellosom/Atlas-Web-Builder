@@ -51,15 +51,17 @@ beforeEach(() => {
   globalThis.IntersectionObserver = class {
     constructor(cb) {
       this.cb = cb
+      this.targets = []
       this.disconnect = vi.fn()
       observers.push(this)
     }
-    observe() {}
+    observe(target) { this.targets.push(target) }
+    unobserve(target) { this.targets = this.targets.filter((t) => t !== target) }
   }
 })
 afterEach(() => vi.useRealTimers())
 
-const fire = (list) => act(() => list.forEach((o) => o.cb([{ isIntersecting: true }])))
+const fire = (list) => act(() => list.forEach((o) => o.cb(o.targets.map((target) => ({ target, isIntersecting: true })))))
 
 describe('sanitizers', () => {
   it('whitelists presets and clamps numbers', () => {
@@ -126,6 +128,8 @@ describe('stagger', () => {
   )
 
   it('reveals children in sequence', () => {
+    // Only elements that start below the fold are hidden and revealed; jsdom reports top = 0 unless told otherwise.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ top: 5000, bottom: 5100, left: 0, right: 100, width: 100, height: 100 })
     const { container } = mount(page)
     expect(container.querySelectorAll('.atlas-wb-effects-wrap')).toHaveLength(3)
     fire(observers)
