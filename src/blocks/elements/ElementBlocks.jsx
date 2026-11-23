@@ -1,6 +1,6 @@
 import { responsiveFields, resolveResponsive } from './responsive.js'
 import { defineBlock } from '../../registry/createBlockRegistry.js'
-import { designFields, designGroups, typographyFields, elementSurfaceStyle, elementClass, containerLimit } from './design.js'
+import { designFields, designGroups, focalFields, typographyFields, elementSurfaceStyle, elementClass, containerLimit } from './design.js'
 import {BrandIdentity,brandIdentityDefaults,brandIdentityFields} from './BrandIdentity.jsx'
 import {AccordionBlock,AccordionItemBlock} from './AccordionBlocks.jsx'
 import {IconElementBlock} from './IconElement.jsx'
@@ -73,8 +73,8 @@ export const ButtonElementBlock=linkElement('ButtonElementBlock','Botón libre',
 export const ImageElementBlock=element({
   type:'ImageElementBlock',label:'Imagen libre',icon:'image',defaultProps:{src:'',alt:'',widthMode:'fill',fit:'cover'},
   fields:{src:{type:'image',label:'Imagen'},alt:{type:'text',label:'Descripción accesible'},fit:field('Ajuste de imagen',['cover','contain']),
-    imageHeight:{type:'number',label:'Alto de imagen (px)',min:1,max:4000}},
-  groups:[{label:'Contenido',fields:['src','alt','fit','imageHeight']}],
+    imageHeight:{type:'number',label:'Alto de imagen (px)',min:1,max:4000},...focalFields},
+  groups:[{label:'Contenido',fields:['src','alt','fit','imageHeight',...Object.keys(focalFields)]}],
   render:({ctx,...props})=>{
     const src=typeof props.src==='string'&&/^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|webp|gif);base64,)/i.test(props.src)?props.src:''
     const style={display:'block',objectFit:props.fit==='contain'?'contain':'cover',...elementSurfaceStyle(props,ctx)}

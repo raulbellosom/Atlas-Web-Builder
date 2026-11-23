@@ -15,8 +15,9 @@ export function UniversalEffects({ merged, def, selectedId }) {
   const stickyVal = !!merged._sticky
   const scrollReveal = !!merged._scrollReveal
   const playEffectPreview = useEditorStore(state => state.playEffectPreview)
-  // Ken Burns only makes sense on blocks that show an image or a background image.
-  const hasImage = Object.entries(def.fields ?? {}).some(([key, spec]) => spec?.type === 'image' || key === 'backgroundImage')
+  // Ken Burns zooms the block content inside its frame, so it only makes sense on blocks whose content IS an image. Every element has
+  // an optional background image, which must not count (it would offer a zooming text box).
+  const hasImage = Object.entries(def.fields ?? {}).some(([key, spec]) => spec?.type === 'image' && !/backgroundImage/i.test(key))
   const hasEntrance = !!merged._animation && merged._animation.preset && merged._animation.preset !== 'none'
   return (
           <CapabilityBoundary name="effects">

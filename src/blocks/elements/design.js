@@ -51,8 +51,9 @@ Object.assign(baseDesignFields,{
   backgroundPosition:select('Posición del fondo',['center','top','bottom','left','right']),
   boxShadow:select('Sombra',['none','0 4px 16px #0000001a','0 12px 32px #00000026']),
   objectPosition:select('Posición de imagen',['center','top','bottom','left','right']),
-  focalX:number('Punto focal horizontal (%)',0,100),focalY:number('Punto focal vertical (%)',0,100),
 })
+// Focal point (image elements only; per-device through the shared pipeline, see surfaceProperties).
+export const focalFields=responsiveFields({focalX:number('Punto focal horizontal (%)',0,100),focalY:number('Punto focal vertical (%)',0,100)},['focalX','focalY'])
 Object.assign(baseTypographyFields,{
   letterSpacing:{...number('Espaciado entre letras (px)',-10,40),step:0.1},
   fontFamily:select('Familia',['inherit','var(--atlas-font-sans)','var(--atlas-font-serif)','system-ui','serif','monospace']),

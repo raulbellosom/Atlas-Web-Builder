@@ -89,3 +89,13 @@ describe('effects inspector writes exactly the contract shape', () => {
     expect(stored()._kenburns).toBeUndefined()
   })
 })
+
+describe('Ken Burns availability', () => {
+  it('is offered for image blocks and not for elements that only have an optional background image', () => {
+    for (const [type, expected] of [['ImageBlock', true], ['ImageElementBlock', true], ['TextElementBlock', false], ['BoxBlock', false], ['ButtonElementBlock', false], ['HeadingBlock', false]]) {
+      mount(type, {})
+      expect(screen.queryByRole('checkbox', { name: 'Activar Ken Burns' }) !== null, type).toBe(expected)
+      cleanup()
+    }
+  })
+})

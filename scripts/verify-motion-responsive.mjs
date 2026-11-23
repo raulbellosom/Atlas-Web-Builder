@@ -51,7 +51,19 @@ new Function('module', 'exports', 'require', ssrBundle.js)(module_, module_.expo
 const serverHtml = module_.exports.html()
 const doc = (js = true) => html({ js: js ? clientBundle.js : '', css: clientBundle.css, body: `<div id="root">${serverHtml}</div>` })
 
-const server = await serve({ '/page': { body: doc(true) }, '/nojs': { body: doc(false) } })
+
+const editorEntry = `
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { AtlasWebBuilderEditor, baseBlocks, useEditorStoreInstance } from '${src}/src/index.js'
+import '${src}/src/styles/editor.css'
+import '${src}/src/styles/elements.css'
+import '${src}/src/styles/motion.css'
+function Bridge() { window.__store = useEditorStoreInstance(); return null }
+createRoot(document.getElementById('root')).render(<AtlasWebBuilderEditor blocks={baseBlocks} brandLogo={<Bridge />} />)
+`
+const editorBundle = await bundle(editorEntry)
+const server = await serve({ '/page': { body: doc(true) }, '/nojs': { body: doc(false) }, '/editor': { body: html({ js: editorBundle.js, css: editorBundle.css }) } })
 const evidence = { generatedAt: new Date().toISOString(), checks: [] }
 const check = (engine, name, detail = {}) => evidence.checks.push({ engine, name, ...detail })
 
@@ -131,6 +143,34 @@ try {
     return {}
   })
   void all
+
+
+  // The editor: composing elements keeps the inspector usable (a stray collapsed section once hid the text field), and the new
+  // Phase 3 controls are present exactly where they belong.
+  await inEngines(async (page, engine, errors) => {
+    await page.setViewportSize({ width: 1600, height: 1100 })
+    await page.goto(`${server.origin}/editor`)
+    await page.getByRole('button', { name: 'Elementos', exact: true }).click()
+    await page.getByRole('button', { name: 'Insertar Contenedor libre', exact: true }).click()
+    await page.locator('[data-property=layout] select').selectOption('grid')
+    await page.getByRole('button', { name: 'Insertar Texto libre', exact: true }).click()
+    await page.locator('[data-property=text] textarea').fill('Un sitio diseñado elemento por elemento')
+    assert.equal(await page.locator('[data-property=focalX]').count(), 0, `${engine}: focal point must not leak onto text elements`)
+    await page.getByRole('button', { name: 'Efectos', exact: true }).click()
+    await page.locator('select').filter({ has: page.locator('option[value="slide-up"]') }).first().selectOption('slide-up')
+    await page.getByLabel('Distancia del desplazamiento').waitFor()
+    await page.getByRole('button', { name: 'Reproducir entrada' }).click()
+    assert.equal(await page.getByLabel('Activar Ken Burns').count(), 0, `${engine}: Ken Burns is for image blocks only`)
+    await page.getByRole('button', { name: 'Insertar Imagen libre', exact: true }).click()
+    assert.ok(await page.locator('[data-property=focalX]').first().isVisible(), `${engine}: image elements expose the focal point`)
+    const effectsHeader = page.getByRole('button', { name: 'Efectos', exact: true })
+    if ((await effectsHeader.getAttribute('aria-expanded')) !== 'true') await effectsHeader.click()
+    await page.getByLabel('Activar Ken Burns').check()
+    assert.deepEqual(await page.evaluate(() => { const s = window.__store.getState(); return s.page.blocks[s.selectedId].props._kenburns }), { zoom: 1.15, direction: 'in', pan: 'none', duration: 12000, easing: 'ease-in-out' })
+    assert.deepEqual(errors.filter((message) => !/Failed to load resource/.test(message)), [], `${engine}: console errors in the editor`)
+    check(engine, 'editor-compose-and-effects')
+    return {}
+  })
 
   // Criterion 7 (touch half): no hover on touch devices, and the media guard is present.
   await inEngines(async (page, engine) => {
