@@ -1,5 +1,10 @@
 # Changelog
 
+## Sin publicar
+
+- Corrección verificada en navegador (Chromium y WebKit): un SVG recoloreado desde otro origen sin CORS ya no se ve vacío. Se muestra como imagen normal y pasa a máscara solo si el navegador confirma que puede leerlo; las URLs relativas y `data:` usan máscara directamente.
+- Nuevo `scripts/verify-phase2-browser.mjs` (aceptación real de componentes sincronizados, SVG con CORS e iconos) y `scripts/lib/browser.mjs` (empaquetado de la fuente actual + Playwright), base de la matriz de movimiento y responsive.
+
 ## 0.9.3
 
 - Componentes sincronizados en el editor: el host pasa `syncedComponents={{ definitions, save(next) }}` y aparece la pestaña **Componentes** (convertir la selección en componente, insertar, editar en el lienzo con banner Guardar/Cancelar, eliminar). Una referencia seleccionada muestra su inspector: editar, desvincular (copia independiente) y overrides de contenido por página. Mientras se edita una definición no se puede guardar ni publicar la página. `ComponentRefBlock` se exporta pero no entra en `baseBlocks` (el host lo añade a `blocks`), está oculto en la paleta y no cambia el catálogo base. Nuevas exportaciones: `ComponentRefBlock`, `componentFromBlock`, `detachReference`, `pageToSection`, `pageFromComponent`, `sectionFromComponentPage`, `componentIdFromName`.

@@ -11,7 +11,7 @@ import {
   COLOR_TOKENS,
   colorVar,
 } from './_tokens.js'
-import { cssUrl, isVectorAsset } from '../media/vector.js'
+import { cssUrl, isVectorAsset, useMaskReadable } from '../media/vector.js'
 
 const OBJECT_FIT_OPTIONS = [
   { value: 'cover',   label: 'Cubrir (recortar)' },
@@ -35,6 +35,23 @@ function isSafeImageUrl(url) {
 function isSafeHref(u) {
   return typeof u === 'string' && u !== '' && /^(https?:|mailto:|tel:|\/|#)/i.test(u)
 }
+
+// Recolored vector: a CSS mask over a token-colored box. Masks are fetched with CORS, so a cross-origin SVG is shown as a
+// plain <img> (original colors, always visible) until the browser confirms it can read it; never an empty box.
+function TintedVector({ src, alt, tint, ratio, radius, shadow, fallback }) {
+  const readable = useMaskReadable(src)
+  if (!readable) return fallback
+  const mask = `${cssUrl(src)} center / contain no-repeat`
+  return (
+    <div
+      role="img"
+      aria-label={alt || undefined}
+      aria-hidden={alt ? undefined : true}
+      style={{ width: '100%', aspectRatio: ratio, backgroundColor: colorVar(tint), WebkitMask: mask, mask, borderRadius: radius, boxShadow: shadow }}
+    />
+  )
+}
+
 
 export const ImageBlock = defineBlock({
   type: 'ImageBlock',
@@ -131,25 +148,7 @@ export const ImageBlock = defineBlock({
     // Recolored vector: the SVG is a CSS mask over a token-colored box (an <img> cannot be recolored).
     // The mask is fetched with CORS, so the asset origin must allow it; untinted SVGs stay a plain <img>.
     const tinted = isVectorAsset({ vector, src }) && tint && tint !== 'none' && COLOR_TOKENS.includes(tint) && isSafeImageUrl(src)
-    const maskUrl = tinted ? cssUrl(src) : undefined
-    const img = tinted
-      ? (
-        <div
-          role="img"
-          aria-label={alt || undefined}
-          aria-hidden={alt ? undefined : true}
-          style={{
-            width: '100%',
-            aspectRatio: safeRatio || (naturalWidth && naturalHeight ? `${naturalWidth} / ${naturalHeight}` : '1 / 1'),
-            backgroundColor: colorVar(tint),
-            WebkitMask: `${maskUrl} center / contain no-repeat`,
-            mask: `${maskUrl} center / contain no-repeat`,
-            borderRadius: radiusVal,
-            boxShadow: shadowVal,
-          }}
-        />
-      )
-      : isSafeImageUrl(src)
+    const plain = isSafeImageUrl(src)
       ? (
         <AtlasImage
           src={src}
@@ -165,6 +164,9 @@ export const ImageBlock = defineBlock({
         />
       )
       : placeholder
+    const img = tinted
+      ? <TintedVector src={src} alt={alt} tint={tint} ratio={safeRatio || (naturalWidth && naturalHeight ? `${naturalWidth} / ${naturalHeight}` : '1 / 1')} radius={radiusVal} shadow={shadowVal} fallback={plain} />
+      : plain
 
     const wrapped = safeLink
       ? <a href={safeLink} style={{ display: 'block', borderRadius: radiusVal, overflow: radiusVal ? 'hidden' : undefined }}>{img}</a>
