@@ -29,6 +29,20 @@ describe('audio and video media', () => {
     expect(show('AudioBlock', {}).querySelector('audio')).toBeNull()
   })
 
+  it('media URLs with an executable or local scheme never reach an <audio> or <video> element', () => {
+    for (const bad of ['javascript:alert(1)', 'JaVaScRiPt:alert(1)', 'vbscript:x', 'data:audio/mpeg;base64,AAAA', 'data:text/html,<script>1</script>', 'file:///etc/passwd', 'ftp://host/a.mp3', 'about:blank', ' javascript:alert(1)']) {
+      expect(show('AudioBlock', { file: bad }).querySelector('audio')).toBeNull()
+      expect(show('VideoBlock', { file: bad }).querySelector('video')).toBeNull()
+      expect(show('VideoBlock', { file: 'https://cdn.example/v.mp4', poster: bad }).querySelector('video')?.getAttribute('poster') ?? null).toBeNull()
+    }
+  })
+
+  it('https, site-relative paths and blob: previews play; blob: is the editor-session form of a library file', () => {
+    for (const ok of ['https://cdn.example/a.mp3', '/media/a.mp3', 'blob:https://erp.example/6f1c']) {
+      expect(show('AudioBlock', { file: ok }).querySelector('audio')?.getAttribute('src')).toBe(ok)
+    }
+  })
+
   it('assets go only to a field of their own kind', () => {
     expect(assetKind({ mime: 'video/mp4' })).toBe('video')
     expect(assetKind({ kind: 'audio', mime: 'video/mp4' })).toBe('audio')
