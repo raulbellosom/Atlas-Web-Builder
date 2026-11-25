@@ -21,6 +21,7 @@ function layoutVariables(props) {
     variables[`--ae-${prefix||'desktop'}-wrap`]=resolved.wrap==='wrap'?'wrap':'nowrap'
     variables[`--ac-${prefix||'desktop'}-inner-limit`]=resolved.fullBleed===true?(containerLimit(resolved)??'none'):'none'
     if (layouts.includes(layout)) {
+      variables[`--ae-${prefix || 'desktop'}-fill-flex`] = layout === 'row' ? '1 1 0%' : '0 1 auto'
       variables[`--ae-${prefix || 'desktop'}-display`] = layout === 'grid' ? 'grid' : layout==='free'?'block':'flex'
       variables[`--ae-${prefix || 'desktop'}-direction`] = layout === 'row' ? 'row' : 'column'
     }

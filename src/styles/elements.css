@@ -8,8 +8,13 @@
 @container atlas-page (max-width:1023.98px){.atlas-focal{object-position:var(--atlas-focal-tablet,var(--atlas-focal-desktop,50% 50%))}}
 @container atlas-page (max-width:639.98px){.atlas-focal{object-position:var(--atlas-focal-mobile,var(--atlas-focal-tablet,var(--atlas-focal-desktop,50% 50%)))}}
 .atlas-wb-canvas__frame,[data-atlas-page]{font-family:var(--atlas-font-sans,system-ui,sans-serif);font-size:16px;line-height:1.5;color:var(--atlas-color-fg,#0b0b0f)}
-.atlas-element-box{container-type:inline-size;min-width:0;display:flex;flex-direction:column}
+/* The named page is the responsive container. Size containment here collapses auto-width boxes. */
+.atlas-element-box{min-width:0;display:flex;flex-direction:column}
 .atlas-element-surface{min-height:var(--ae-minheight,0px)}
+/* Match the public flex item without introducing an inline baseline or losing its ratio. */
+.atlas-wb-block.atlas-element-item,.atlas-element-frame{display:flex;flex-direction:column}
+.atlas-element-effect-layer{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;aspect-ratio:inherit}
+.atlas-wb-block.atlas-element-item>.atlas-element-surface,.atlas-element-frame>.atlas-element-surface,.atlas-element-effect-layer>.atlas-element-surface{flex:1 1 auto;min-width:0;aspect-ratio:inherit}
 .atlas-element-layout{position:relative;flex:1 1 auto}
 .atlas-element-item{
   --ae-position:var(--ae-desktop-position);--ae-width:var(--ae-desktop-width);--ae-height:var(--ae-desktop-height);--ae-minheight:var(--ae-desktop-minheight);--ae-flex:var(--ae-desktop-flex);
@@ -20,11 +25,12 @@
   transform:var(--ae-dnd-transform) var(--ae-translate) rotate(var(--ae-rotate));box-sizing:border-box;
 }
 .atlas-element-layout,.atlas-element-layout>.atlas-wb-dropzone{
+  --ae-fill-flex:var(--ae-desktop-fill-flex,0 1 auto);
   display:var(--ae-desktop-display,flex);flex-direction:var(--ae-desktop-direction,column);
   grid-template-columns:var(--ae-desktop-columns,repeat(2,minmax(0,1fr)));
   gap:var(--ae-desktop-gap,16px);align-items:var(--ae-desktop-align,stretch);justify-content:var(--ae-desktop-justify,start);flex-wrap:var(--ae-desktop-wrap,nowrap);min-width:0;
 }
-.atlas-element-layout>.atlas-wb-dropzone{width:100%;height:100%;flex:1 1 0%;padding:0;position:static}
+.atlas-element-layout>.atlas-wb-dropzone{width:100%;height:100%;flex:1 1 0%;padding:0;position:static;min-height:0}
 .atlas-element-layout:has(>.atlas-wb-dropzone){display:block}
 .atlas-element-layout>.atlas-wb-dropzone--empty{min-height:64px}
 .atlas-element-link:focus-visible{outline:2px solid currentColor;outline-offset:4px}
@@ -75,6 +81,7 @@
     --ae-translate:var(--ae-tablet-translate);--ae-rotate:var(--ae-tablet-rotate);
   }
   .atlas-element-layout,.atlas-element-layout>.atlas-wb-dropzone{
+    --ae-fill-flex:var(--ae-tablet-fill-flex,0 1 auto);
     gap:var(--ae-tablet-gap,16px);align-items:var(--ae-tablet-align,stretch);justify-content:var(--ae-tablet-justify,start);flex-wrap:var(--ae-tablet-wrap,nowrap);
     display:var(--ae-tablet-display,var(--ae-desktop-display,flex));
     flex-direction:var(--ae-tablet-direction,var(--ae-desktop-direction,column));
@@ -88,6 +95,7 @@
     --ae-translate:var(--ae-mobile-translate);--ae-rotate:var(--ae-mobile-rotate);
   }
   .atlas-element-layout,.atlas-element-layout>.atlas-wb-dropzone{
+    --ae-fill-flex:var(--ae-mobile-fill-flex,0 1 auto);
     gap:var(--ae-mobile-gap,16px);align-items:var(--ae-mobile-align,stretch);justify-content:var(--ae-mobile-justify,start);flex-wrap:var(--ae-mobile-wrap,nowrap);
     display:var(--ae-mobile-display,var(--ae-tablet-display,var(--ae-desktop-display,flex)));
     flex-direction:var(--ae-mobile-direction,var(--ae-tablet-direction,var(--ae-desktop-direction,column)));

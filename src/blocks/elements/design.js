@@ -87,7 +87,7 @@ export function elementItemStyle(props) {
 }
 function surfaceStyle(props, ctx) {
   const style = { boxSizing: 'border-box', ...elementStylePresets[props.stylePreset]?.style,
-    ...(ctx?.mode === 'edit' ? { width: '100%',height:'var(--ae-height, auto)' } : elementOuterStyle(props)) }
+    ...(ctx?.mode === 'edit' || ctx?.geometryWrapped ? { width: '100%',height:'var(--ae-height, auto)' } : elementOuterStyle(props)) }
   for (const [key,min,max] of [['paddingTop',0,256],['paddingRight',0,256],['paddingBottom',0,256],['paddingLeft',0,256],
     ['fontSize',8,200],['lineHeight',0.8,3],['letterSpacing',-10,40]]) {
     const value = numeric(props,key,min,max)
@@ -121,10 +121,10 @@ export function elementSurfaceStyle(props,ctx) {
     if(fluid&&!hasDeviceFontSize(props,device))style.fontSize=fluid
     return style
   }
-  return {...responsiveStyle(props,factory,surfaceProperties),...(ctx?.mode==='edit'?{}:elementOuterStyle(props))}
+  return {...responsiveStyle(props,factory,surfaceProperties),...(ctx?.mode==='edit'||ctx?.geometryWrapped?{}:elementOuterStyle(props))}
 }
-// Geometry belongs to the editable wrapper in edit mode and to the element in public mode.
-export const elementClass=(ctx,name='')=>`${name} atlas-element-surface${ctx?.mode==='edit'?'':' atlas-element-item'}`.trim()
+// The editable wrapper or renderer frame owns geometry; standalone block renders own it directly.
+export const elementClass=(ctx,name='')=>`${name} atlas-element-surface${ctx?.mode==='edit'||ctx?.geometryWrapped?'':' atlas-element-item'}`.trim()
 export function elementOuterStyle(props) {
   const factory=value=>{
     const style=elementItemStyle(value)

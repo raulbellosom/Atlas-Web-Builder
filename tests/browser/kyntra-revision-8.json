@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "id": "kyntra-revision-8-hero",
+  "slug": "/",
+  "title": "Inicio",
+  "visibility": "public",
+  "regions": {
+    "main": {
+      "id": "main",
+      "children": [
+        "block-6"
+      ]
+    }
+  },
+  "blocks": {
+    "block-6": {
+      "id": "block-6",
+      "type": "BoxBlock",
+      "props": {
+        "layout": "row",
+        "gap": 0,
+        "tabletLayout": "column",
+        "mobileLayout": "column",
+        "align": "center",
+        "backgroundColor": "#111C19",
+        "minHeight": 530,
+        "overflow": "hidden",
+        "paddingLeft": 50,
+        "paddingRight": 24,
+        "mobilePaddingLeft": 18,
+        "mobilePaddingRight": 18,
+        "tabletPaddingLeft": 28,
+        "tabletPaddingRight": 28,
+        "_stagger": 110,
+        "paddingTop": 36,
+        "paddingBottom": 36,
+        "backgroundImage": "/fixture-background.svg",
+        "backgroundSize": "cover",
+        "backgroundPosition": "center"
+      },
+      "children": {
+        "children": [
+          "block-7",
+          "block-18"
+        ]
+      }
+    },
+    "block-7": {
+      "id": "block-7",
+      "type": "BoxBlock",
+      "props": {
+        "layout": "column",
+        "gap": 15,
+        "widthMode": "percent",
+        "widthPercent": 47,
+        "tabletWidthPercent": 100,
+        "mobileWidthPercent": 100,
+        "justify": "center",
+        "paddingTop": 30,
+        "paddingBottom": 25,
+        "paddingLeft": 12,
+        "paddingRight": 8,
+        "mobilePaddingLeft": 0,
+        "mobilePaddingRight": 0,
+        "align": "stretch",
+        "minWidth": 0
+      },
+      "children": {
+        "children": [
+          "block-8",
+          "block-9",
+          "block-10",
+          "block-13",
+          "block-14",
+          "block-17"
+        ]
+      }
+    },
+    "block-8": {
+      "id": "block-8",
+      "type": "TextElementBlock",
+      "props": {
+        "text": "PERFORMANCE FOOTWEAR",
+        "tag": "p",
+        "fontSize": 12,
+        "textColor": "#F6F5F0",
+        "fontWeight": "700",
+        "lineHeight": 1.45,
+        "letterSpacing": 1.3,
+        "widthMode": "fill",
+        "whiteSpace": "nowrap",
+        "overflowWrap": "normal"
+      }
+    },
+    "block-9": {
+      "id": "block-9",
+      "type": "TextElementBlock",
+      "props": {
+        "text": "Movement",
+        "tag": "h1",
+        "fontSize": 58,
+        "textColor": "#F6F5F0",
+        "fontWeight": "800",
+        "lineHeight": 1,
+        "fluidType": true,
+        "fontSizeMin": 39,
+        "fontSizeMax": 62,
+        "fluidMinViewport": 320,
+        "fluidMaxViewport": 1600,
+        "mobileFontSize": 39,
+        "letterSpacing": -1.8,
+        "_animation": {
+          "preset": "slide-fade-up",
+          "duration": 780,
+          "delay": 80,
+          "easing": "ease-out",
+          "distance": 26,
+          "once": true
+        },
+        "_scrollReveal": true,
+        "fontStyle": "italic",
+        "tabletFontSize": 50,
+        "whiteSpace": "nowrap",
+        "widthMode": "fill",
+        "overflowWrap": "normal"
+      }
+    },
+    "block-10": {
+      "id": "block-10",
+      "type": "BoxBlock",
+      "props": {
+        "layout": "row",
+        "tabletLayout": "row",
+        "mobileLayout": "row",
+        "gap": 9,
+        "align": "start",
+        "justify": "start",
+        "widthMode": "fill",
+        "paddingTop": 0,
+        "paddingBottom": 3,
+        "paddingLeft": 0,
+        "paddingRight": 0,
+        "minWidth": 0
+      },
+      "children": {
+        "children": [
+          "block-11",
+          "block-12"
+        ]
+      }
+    },
+    "block-11": {
+      "id": "block-11",
+      "type": "TextElementBlock",
+      "props": {
+        "text": "is",
+        "tag": "span",
+        "fontSize": 51,
+        "tabletFontSize": 44,
+        "mobileFontSize": 33,
+        "fontWeight": "800",
+        "fontStyle": "italic",
+        "lineHeight": 1,
+        "textColor": "#F6F5F0",
+        "whiteSpace": "nowrap",
+        "letterSpacing": -1
+      }
+    },
+    "block-12": {
+      "id": "block-12",
+      "type": "TextElementBlock",
+      "props": {
+        "text": "everything.",
+        "tag": "h2",
+        "fontStyle": "italic",
+        "fontSize": 51,
+        "tabletFontSize": 44,
+        "mobileFontSize": 33,
+        "fontWeight": "800",
+        "textColor": "#B9F34C",
+        "lineHeight": 1,
+        "letterSpacing": -1.7,
+        "fluidType": true,
+        "fontSizeMin": 33,
+        "fontSizeMax": 55,
+        "fluidMinViewport": 320,
+        "fluidMaxViewport": 1600,
+        "whiteSpace": "nowrap"
+      }
+    },
+    "block-13": {
+      "id": "block-13",
+      "type": "TextElementBlock",
+      "props": {
+        "text": "Calzado de alto rendimiento diseñado para acompañar tu ritmo, en la ciudad, en el entrenamiento y más allá.",
+        "tag": "p",
+        "fontSize": 16,
+        "textColor": "#E6EDE8",
+        "fontWeight": "400",
+        "lineHeight": 1.5,
+        "mobileFontSize": 14,
+        "_animation": {
+          "preset": "fade-in",
+          "duration": 750,
+          "delay": 240
+        },
+        "widthMode": "fill",
+        "overflowWrap": "normal"
+      }
+    },
+    "block-14": {
+      "id": "block-14",
+      "type": "BoxBlock",
+      "props": {
+        "layout": "row",
+        "gap": 14,
+        "tabletLayout": "row",
+        "mobileLayout": "column",
+        "align": "start",
+        "widthMode": "fill"
+      },
+      "children": {
+        "children": [
+          "block-15",
+          "block-16"
+        ]
+      }
+    },
+    "block-15": {
+      "id": "block-15",
+      "type": "ButtonElementBlock",
+      "props": {
+        "label": "Explorar colección  →",
+        "href": "/productos",
+        "stylePreset": "pill",
+        "backgroundColor": "#B9F34C",
+        "textColor": "#171B19",
+        "cornerRadius": 14,
+        "fontSize": 14,
+        "fontWeight": "700",
+        "paddingLeft": 19,
+        "paddingRight": 19,
+        "paddingTop": 15,
+        "paddingBottom": 15,
+        "_hover": {
+          "scale": "1.03",
+          "shadow": "sm",
+          "brightness": 106,
+          "duration": 220
+        },
+        "_pressed": {
+          "scale": 0.97,
+          "brightness": 96
+        }
+      }
+    },
+    "block-16": {
+      "id": "block-16",
+      "type": "ButtonElementBlock",
+      "props": {
+        "label": "Conoce KX-1  ↗",
+        "href": "/producto",
+        "stylePreset": "none",
+        "backgroundColor": "#101A18",
+        "textColor": "#F6F5F0",
+        "fontSize": 14,
+        "fontWeight": "700",
+        "paddingTop": 13,
+        "paddingBottom": 13,
+        "_hover": {
+          "scale": "1.02",
+          "shadow": "",
+          "brightness": 116
+        }
+      }
+    },
+    "block-17": {
+      "id": "block-17",
+      "type": "TextElementBlock",
+      "props": {
+        "text": "KX-1   /   PERFORMANCE",
+        "tag": "p",
+        "fontSize": 11,
+        "textColor": "#B9F34C",
+        "fontWeight": "700",
+        "lineHeight": 1.45,
+        "letterSpacing": 1.1
+      }
+    },
+    "block-18": {
+      "id": "block-18",
+      "type": "BoxBlock",
+      "props": {
+        "layout": "column",
+        "gap": 0,
+        "widthMode": "percent",
+        "widthPercent": 53,
+        "tabletWidthPercent": 100,
+        "mobileWidthPercent": 100,
+        "align": "center",
+        "justify": "center",
+        "paddingTop": 0,
+        "paddingBottom": 0,
+        "paddingLeft": 0,
+        "paddingRight": 0,
+        "tabletPaddingTop": 0,
+        "mobilePaddingTop": 0,
+        "overflow": "visible",
+        "position": "flow",
+        "heightMode": "auto",
+        "height": 530,
+        "mobileHeight": 350,
+        "mobilePaddingLeft": 0,
+        "mobilePaddingRight": 0,
+        "minHeight": 420,
+        "mobileMinHeight": 260
+      },
+      "children": {
+        "children": [
+          "block-19"
+        ]
+      }
+    },
+    "block-19": {
+      "id": "block-19",
+      "type": "ImageBlock",
+      "props": {
+        "src": "/fixture-product.svg",
+        "alt": "KYNTRA KX-1 blanco y lima, protagonista del diseño original",
+        "aspectRatio": "auto",
+        "objectFit": "contain",
+        "width": "100%",
+        "loading": "eager",
+        "_animation": {
+          "preset": "zoom-in",
+          "duration": 900,
+          "delay": 100
+        },
+        "_hover": {
+          "scale": "1.03",
+          "shadow": "",
+          "brightness": 107
+        },
+        "mobileFocalX": 53,
+        "mobileFocalY": 50
+      }
+    }
+  },
+  "seo": {}
+}

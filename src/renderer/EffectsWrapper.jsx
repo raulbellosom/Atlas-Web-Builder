@@ -145,7 +145,7 @@ function InteractionStyleTag({ blockId, hover, pressed }) {
  * (class `atlas-reveal--pending`, opacity only, so layout never shifts) and revealed with the animation when they enter
  * the viewport. Elements already on screen keep their final state: no flash of hide-then-show.
  */
-function ScrollRevealWrapper({ animation, mode, reduced, children }) {
+function ScrollRevealWrapper({ animation, mode, reduced, children, element }) {
   const ref = useRef(null)
   const [phase, setPhase] = useState('idle') // idle = visible | pending = hidden until seen | shown = animating
   const replay = animation?.once === false
@@ -164,7 +164,7 @@ function ScrollRevealWrapper({ animation, mode, reduced, children }) {
   const animStr = phase === 'shown' ? resolveAnimation(animation) : undefined
   const style = animStr ? { animation: animStr, ...animationVars(animation) } : undefined
   return (
-    <div ref={ref} className={phase === 'pending' ? 'atlas-reveal--pending' : undefined} style={style}>
+    <div ref={ref} className={[element && 'atlas-element-effect-layer', phase === 'pending' && 'atlas-reveal--pending'].filter(Boolean).join(' ') || undefined} style={style}>
       {children}
     </div>
   )
@@ -173,10 +173,10 @@ function ScrollRevealWrapper({ animation, mode, reduced, children }) {
 // ── Ken Burns ─────────────────────────────────────────────────────────────────
 
 /** Slow zoom/pan inside a clipped frame: the layout box never changes and nothing can cause horizontal scroll. */
-function KenBurnsFrame({ kenburns, children }) {
+function KenBurnsFrame({ kenburns, children, element }) {
   return (
-    <div className="atlas-kenburns">
-      <div className="atlas-kenburns__layer" style={kenBurnsVars(kenburns)}>{children}</div>
+    <div className={`atlas-kenburns${element ? ' atlas-element-effect-layer' : ''}`}>
+      <div className={`atlas-kenburns__layer${element ? ' atlas-element-effect-layer' : ''}`} style={kenBurnsVars(kenburns)}>{children}</div>
     </div>
   )
 }
@@ -189,7 +189,7 @@ function KenBurnsFrame({ kenburns, children }) {
  * the element on screen, and are removed on unmount.
  */
 const PARALLAX_MAX = 160
-function ParallaxWrapper({ speed, children }) {
+function ParallaxWrapper({ speed, children, element }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -223,7 +223,7 @@ function ParallaxWrapper({ speed, children }) {
   }, [speed])
 
   return (
-    <div ref={ref} style={{ willChange: 'transform' }}>
+    <div ref={ref} className={element ? 'atlas-element-effect-layer' : undefined} style={{ willChange: 'transform' }}>
       {children}
     </div>
   )
@@ -241,10 +241,10 @@ function ParallaxWrapper({ speed, children }) {
  *   children: React.ReactNode,
  * }} param0
  */
-export function EffectsWrapper({ blockId, props, mode, children }) {
+export function EffectsWrapper({ blockId, props, mode, children, element = false }) {
   const stagger = useContext(StaggerContext)
   const out = (
-    <EffectsInner blockId={blockId} props={props} mode={mode} stagger={stagger}>
+    <EffectsInner blockId={blockId} props={props} mode={mode} stagger={stagger} element={element}>
       {children}
     </EffectsInner>
   )
@@ -252,7 +252,7 @@ export function EffectsWrapper({ blockId, props, mode, children }) {
   return stagger ? <StaggerContext.Provider value={null}>{out}</StaggerContext.Provider> : out
 }
 
-function EffectsInner({ blockId, props, mode, stagger, children }) {
+function EffectsInner({ blockId, props, mode, stagger, children, element }) {
   const { _opacity, _cursor, _zIndex, _sticky } = props
   const reduced = useReducedMotion()
   const preview = useContext(EffectPreviewContext)
@@ -304,11 +304,11 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
   if (!hasEffects) return children
 
   let content = children
-  if (kenburns) content = <KenBurnsFrame kenburns={kenburns}>{content}</KenBurnsFrame>
-  if (parallax) content = <ParallaxWrapper speed={parallax.speed}>{content}</ParallaxWrapper>
+  if (kenburns) content = <KenBurnsFrame kenburns={kenburns} element={element}>{content}</KenBurnsFrame>
+  if (parallax) content = <ParallaxWrapper speed={parallax.speed} element={element}>{content}</ParallaxWrapper>
   if (hasScrollReveal) {
     content = (
-      <ScrollRevealWrapper animation={anim} mode={mode} reduced={reduced}>
+      <ScrollRevealWrapper animation={anim} mode={mode} reduced={reduced} element={element}>
         {content}
       </ScrollRevealWrapper>
     )
@@ -320,7 +320,7 @@ function EffectsInner({ blockId, props, mode, stagger, children }) {
       <div
         key={previewing ? preview.nonce : undefined}
         data-eid={hasInteraction ? blockId : undefined}
-        className="atlas-wb-effects-wrap"
+        className={`atlas-wb-effects-wrap${element ? ' atlas-element-effect-layer' : ''}`}
         style={style}
       >
         {content}

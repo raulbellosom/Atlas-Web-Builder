@@ -28,7 +28,7 @@ export function geometryStyle(props,device='desktop') {
     width:g.widthMode==='fill'?'100%':g.widthMode==='fixed'?`${finite(g.width,1,4000,200)}px`:g.widthMode==='percent'?`${finite(g.widthPercent,1,100,100)}%`:'fit-content',
     height:g.heightMode==='fixed'?`${finite(g.height,1,4000,100)}px`:'auto',
     minheight:`${finite(g.minHeight,0,4000,0)}px`,
-    flex:g.widthMode==='fill'?'1 1 0%':g.widthMode==='fixed'?'0 0 auto':'0 1 auto',
+    flex:g.widthMode==='fill'?'var(--ae-fill-flex, 0 1 auto)':g.widthMode==='fixed'?'0 0 auto':'0 1 auto',
     left:absolute&&anchorX==='right'?'auto':g.position==='flow'?'auto':absolute&&anchorX==='center'?`calc(50% + ${x}px)`:`${x}px`,
     right:absolute&&anchorX==='right'?`${x}px`:'auto',
     top:absolute&&anchorY==='bottom'?'auto':g.position==='flow'?'auto':absolute&&anchorY==='center'?`calc(50% + ${y}px)`:`${y}px`,

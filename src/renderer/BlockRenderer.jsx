@@ -8,6 +8,7 @@ import { StaggerContext, sanitizeAnimation, sanitizeStagger } from './effects.js
 import { useResource } from './useResource.js'
 import { LazyMount } from './LazyMount.jsx'
 import { ParentBlockContext } from './ParentBlockContext.js'
+import { elementOuterStyle } from '../blocks/elements/design.js'
 
 /**
  * Render a single block instance by id. The block must exist in the page
@@ -87,6 +88,7 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
 
   const ctx = {
     mode,
+    geometryWrapped: def.kind === 'element',
     theme,
     resources: mode === 'edit' ? mockResources || resources : resources,
     actions,
@@ -115,11 +117,15 @@ function BlockRendererImpl({ blockId, blocks, mode = 'public', eager = false }) 
     )
   }
 
-  return (
-    <EffectsWrapper blockId={blockId} props={props} mode={mode}>
+  const output = (
+    <EffectsWrapper blockId={blockId} props={props} mode={mode} element={def.kind === 'element'}>
       {rendered}
     </EffectsWrapper>
   )
+  // Editor chrome already owns this box. Keep percentages and flex outside effect layers in presentation too.
+  return def.kind === 'element' && mode !== 'edit'
+    ? <div className="atlas-element-item atlas-element-frame" style={elementOuterStyle(props)}>{output}</div>
+    : output
 }
 
 /**
