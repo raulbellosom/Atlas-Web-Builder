@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.1
+
+- Corrige la geometría responsive entre editor, previsualización y presentación: los porcentajes, posiciones libres y límites pertenecen al contenedor exterior, también cuando hay animaciones o stagger.
+- Evita que los contenedores de ancho por contenido colapsen y que llenar el ancho distribuya espacio vertical en columnas.
+- Conserva proporciones de imágenes, alineación y fondos propios de cada elemento. No cambia los campos ni el esquema del catálogo de 0.11.0.
+- Añade regresiones con el hero de KYNTRA revisión 8 y composiciones de filas, grids y contenedores, verificadas en Chromium y WebKit de 320 a 1440 px.
+
 ## 0.11.0
 
 Audio y video de biblioteca (Fase B de Runly). Cambia el catálogo: hay que registrar los catálogos nuevos en el host antes de adoptarla.
